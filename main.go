@@ -7,12 +7,19 @@ import (
 	"log"
 	"net/http"
 	"strconv"
-	"time"
+	"sync"
+	"chessSever/player"
+	"chessSever/game"
+	"fmt"
 )
 
 var addr = flag.String("addr", "localhost:8080", "http service address")
 
 var upgrader = websocket.Upgrader{} // use default options
+
+var userID int
+
+var m sync.RWMutex
 
 func echo(w http.ResponseWriter, r *http.Request) {
 	con, err := upgrader.Upgrade(w, r, nil)
@@ -23,33 +30,47 @@ func echo(w http.ResponseWriter, r *http.Request) {
 	defer con.Close()
 	stopChan := make(chan int)
 	go func() {
-		for {
-			mt, message, err := con.ReadMessage()
-			if err != nil {
-				log.Println("read:", err)
-
-				break
-			}
-			log.Printf("recv: %s", message)
-			err = con.WriteMessage(mt, message)
-			if err != nil {
-				log.Println("write:", err)
-				break
-			}
+		m.Lock()
+		userID++
+		nowId := userID
+		m.Unlock()
+		player := player.NewPlayer(nowId,strconv.Itoa(nowId),con,"1headPic")
+		if player.Id == 1{
+			player.CreateTable(&game.Game{})
+			fmt.Println("createTable")
+		}else{
+			fmt.Println("joinTable")
+			player.JoinTable("table1")
 		}
-		stopChan <- 1
+		//
+		//
+		//for {
+		//	mt, message, err := con.ReadMessage()
+		//	if err != nil {
+		//		log.Println("read:", err)
+		//
+		//		break
+		//	}
+		//	log.Printf("recv: %s", message)
+		//	err = con.WriteMessage(mt, message)
+		//	if err != nil {
+		//		log.Println("write:", err)
+		//		break
+		//	}
+		//}
+		//stopChan <- 1
 	}()
-	go func() {
-		for i := 0; i < 10; i++ {
-			err := con.WriteMessage(websocket.TextMessage, []byte(""+string(i)))
-			if err != nil {
-				log.Println("write:", err)
-				break
-			}
-			time.Sleep(time.Second * 1)
-		}
-		stopChan <- 2
-	}()
+	//go func() {
+		//for i := 0; i < 10; i++ {
+		//	err := con.WriteMessage(websocket.TextMessage, []byte(""+string(i)))
+		//	if err != nil {
+		//		log.Println("write:", err)
+		//		break
+		//	}
+		//	time.Sleep(time.Second * 1)
+		//}
+		//stopChan <- 2
+	//}()
 	sig := <-stopChan
 	log.Println("stop with unkonwn signal" + strconv.Itoa(sig))
 }

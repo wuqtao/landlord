@@ -1,6 +1,10 @@
 package player
 
-import "sync"
+import (
+	"sync"
+	"fmt"
+	"strconv"
+)
 
 type Room struct {
 	tables map[string]*Table
@@ -9,14 +13,15 @@ type Room struct {
 
 var room *Room = nil
 
-//获得全局room对象
+//获得全局room单例对象
 func getRoom() *Room {
 	if room != nil {
 		return room
 	} else {
-		return &Room{
+		room = &Room{
 			tables: make(map[string]*Table),
 		}
+		return room
 	}
 }
 
@@ -25,15 +30,17 @@ func (r *Room) getTable(key string) *Table {
 }
 
 func (r *Room) addTable(key string, table *Table) {
-	r.RLock()
+	r.Lock()
 	r.tables[key] = table
-	r.RUnlock()
+	fmt.Println("添加桌子"+key+"后，当前房间桌子数量为"+strconv.Itoa(len(r.tables)))
+	r.Unlock()
 }
 
 func (r *Room) removeTable(key string) {
-	r.RLock()
+	r.Lock()
 	delete(r.tables, key)
-	r.RUnlock()
+	fmt.Println("移除桌子"+key+"后，当前房间桌子数量为"+strconv.Itoa(len(r.tables)))
+	r.Unlock()
 }
 
 func (r *Room) tablesCounts() int {

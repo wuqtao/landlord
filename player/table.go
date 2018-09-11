@@ -5,6 +5,7 @@ import (
 	"errors"
 	"strconv"
 	"sync"
+	"fmt"
 )
 
 /*
@@ -20,8 +21,9 @@ type Table struct {
 func newTable(player *Player, game *game.Game) *Table {
 	table := Table{
 		game: game,
-		key:  "table" + strconv.Itoa(player.id),
+		key:  "table" + strconv.Itoa(player.Id),
 	}
+	fmt.Println("创建新桌子"+"table" + strconv.Itoa(player.Id))
 	table.joinRoom()
 	table.addPlayer(player)
 	return &table
@@ -31,36 +33,42 @@ func (t *Table) joinRoom() {
 }
 
 func (t *Table) destory() {
+	t.Lock()
 	if len(t.players) >= 0 {
 		for _, p := range t.players {
-			p.leaveTable()
+			p.LeaveTable()
 		}
 	}
 	getRoom().removeTable(t.key)
+	fmt.Println("桌子"+t.key+"销毁")
+	t.Unlock()
 }
 
 func (t *Table) addPlayer(player *Player) error {
+	t.Lock()
+	var err error = nil
 	if len(t.players) >= t.game.PlayerNum {
-		return errors.New("该卓玩家已经满了")
+		err = errors.New("该卓玩家已经满了")
+		fmt.Println("桌子"+t.key+"已经满了")
 	} else {
-		t.RLock()
 		t.players = append(t.players, player)
-		t.RUnlock()
-		return nil
+		fmt.Println("桌子"+t.key+"新加入一个玩家"+strconv.Itoa(player.Id)+"，当前玩家数是"+strconv.Itoa(len(t.players)))
 	}
+	t.Unlock()
+	return err
 }
 
-func (t *Table) removePlayer(palyer *Player) {
+func (t *Table) removePlayer(player *Player) {
+	t.Lock()
 	for i, p := range t.players {
-		if p == palyer {
-			t.RLock()
+		if p == player {
+			t.Lock()
 			t.players[i] = nil
-			palyer.tableKey = ""
-			t.RUnlock()
 			break
 		}
 	}
-
+	fmt.Println("桌子"+t.key+"移除玩家"+strconv.Itoa(player.Id)+"，当前玩家数是"+strconv.Itoa(len(t.players)))
+	t.Unlock()
 	if len(t.players) == 0 {
 		t.destory()
 	}

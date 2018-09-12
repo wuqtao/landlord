@@ -37,7 +37,6 @@ func (p *Player) JoinTable(key string) error {
 //开牌桌
 func (p *Player) CreateTable(game *game.Game) {
 	table := newTable(p, game)
-	table.addPlayer(p)
 	p.Lock()
 	p.Table = table
 	p.Unlock()
@@ -48,4 +47,24 @@ func (p *Player) LeaveTable() {
 	p.Lock()
 	p.Table = nil
 	p.Unlock()
+}
+//用户跟该桌所有人说话
+func (p *Player) SayToTable(msg []byte){
+	p.Table.RLock()
+	for _,po := range p.Table.players{
+		if po != p {
+			po.Conn.WriteMessage(websocket.TextMessage,msg)
+		}
+	}
+	p.Table.RUnlock()
+}
+//用户跟该桌某一个说话
+func (p *Player) sayToAnother(id int,msg []byte){
+	p.Table.RLock()
+	for _,po := range p.Table.players{
+		if po.Id == id {
+			po.Conn.WriteMessage(websocket.TextMessage,msg)
+		}
+	}
+	p.Table.RUnlock()
 }

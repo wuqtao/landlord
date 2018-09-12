@@ -10,7 +10,6 @@ import (
 	"sync"
 	"chessSever/player"
 	"chessSever/game"
-	"fmt"
 )
 
 var addr = flag.String("addr", "localhost:8080", "http service address")
@@ -22,57 +21,48 @@ var userID int
 var m sync.RWMutex
 
 func echo(w http.ResponseWriter, r *http.Request) {
+
 	con, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Print("upgrade:", err)
 		return
 	}
 	defer con.Close()
-	stopChan := make(chan int)
+
+	var wg sync.WaitGroup
+	wg.Add(1)
+	//暂时用变量模拟用户登陆，后续从数据库读取用户信息，实例化用户，游戏过程中用redis来暂存游戏信息，用户推出后持久化到数据库
+	m.Lock()
+	userID++
+	nowId := userID
+	m.Unlock()
+
+	player := player.NewPlayer(nowId,strconv.Itoa(nowId),con,"1headPic")
+	if player.Id == 1{
+		player.CreateTable(game.GetDoudizhu())
+	}else{
+		player.JoinTable("table1")
+	}
+	//启动一个goroutine监听该客户端发来的消息
 	go func() {
-		m.Lock()
-		userID++
-		nowId := userID
-		m.Unlock()
-		player := player.NewPlayer(nowId,strconv.Itoa(nowId),con,"1headPic")
-		if player.Id == 1{
-			player.CreateTable(&game.Game{})
-			fmt.Println("createTable")
-		}else{
-			fmt.Println("joinTable")
-			player.JoinTable("table1")
+		defer wg.Done()
+		for{
+			msgType,msg,err := con.ReadMessage()
+			if err == nil{
+				switch msgType {
+				case websocket.TextMessage:
+					//同桌用户交流，包含对话流程和出牌流程
+					player.SayToTable(msg)
+				case websocket.CloseMessage:
+					//离开桌子流程，后续包含断线保持，自动出牌
+				default:
+
+				}
+			}
 		}
-		//
-		//
-		//for {
-		//	mt, message, err := con.ReadMessage()
-		//	if err != nil {
-		//		log.Println("read:", err)
-		//
-		//		break
-		//	}
-		//	log.Printf("recv: %s", message)
-		//	err = con.WriteMessage(mt, message)
-		//	if err != nil {
-		//		log.Println("write:", err)
-		//		break
-		//	}
-		//}
-		//stopChan <- 1
 	}()
-	//go func() {
-		//for i := 0; i < 10; i++ {
-		//	err := con.WriteMessage(websocket.TextMessage, []byte(""+string(i)))
-		//	if err != nil {
-		//		log.Println("write:", err)
-		//		break
-		//	}
-		//	time.Sleep(time.Second * 1)
-		//}
-		//stopChan <- 2
-	//}()
-	sig := <-stopChan
-	log.Println("stop with unkonwn signal" + strconv.Itoa(sig))
+
+	wg.Wait()
 }
 
 func home(w http.ResponseWriter, r *http.Request) {

@@ -8,8 +8,8 @@ import (
 	"net/http"
 	"strconv"
 	"sync"
-	"chessSever/player"
-	"chessSever/game"
+	"chessSever/program/logic/player"
+	"chessSever/program/logic/game"
 )
 
 var addr = flag.String("addr", "localhost:8080", "http service address")

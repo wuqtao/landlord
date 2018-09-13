@@ -1,7 +1,7 @@
 package player
 
 import (
-	"chessSever/game"
+	"chessSever/program/logic/game"
 	"github.com/gorilla/websocket"
 	"sync"
 )

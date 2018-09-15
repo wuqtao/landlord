@@ -10,6 +10,8 @@ import (
 	"sync"
 	"chessSever/program/logic/player"
 	"chessSever/program/logic/game"
+	"fmt"
+	"chessSever/config"
 )
 
 var addr = flag.String("addr", "localhost:8080", "http service address")
@@ -72,9 +74,11 @@ func home(w http.ResponseWriter, r *http.Request) {
 func main() {
 	flag.Parse()
 	log.SetFlags(0)
+	fmt.Println(config.Con.Database)
 	http.HandleFunc("/echo", echo)
 	http.HandleFunc("/", home)
 	log.Fatal(http.ListenAndServe(*addr, nil))
+
 }
 
 var homeTemplate = template.Must(template.New("").Parse(`

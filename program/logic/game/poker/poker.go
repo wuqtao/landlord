@@ -39,16 +39,9 @@ type PokerCard struct {
 type PokerDeck struct {
 	Cards [54]*PokerCard
 }
-
-var Deck *PokerDeck
-
-func init(){
-	Deck = &PokerDeck{}
-	createDeck(Deck)
-}
-
-func createDeck(deck *PokerDeck){
-
+//每个游戏桌子都有单独的扑克牌，防止洗牌等冲突
+func CreateDeck() *PokerDeck{
+	deck := &PokerDeck{}
 	for i := 0;i<52;i++ {
 		shang := i/4;
 		yu := i%4;
@@ -123,6 +116,7 @@ func createDeck(deck *PokerDeck){
 		PokerSuitNO,
 		"RedJoker",
 	}
+	return deck
 }
 
 

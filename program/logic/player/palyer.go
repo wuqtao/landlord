@@ -1,9 +1,10 @@
 package player
 
 import (
-	"chessSever/program/logic/game"
 	"github.com/gorilla/websocket"
 	"sync"
+	"chessSever/program/logic/game/poker"
+	"chessSever/program/logic/game/games"
 )
 
 /**
@@ -16,6 +17,7 @@ type Player struct {
 	HeadPic  string          //用户头像
 	Table    *Table          //桌子索引
 	sync.RWMutex
+	PokerCards []poker.PokerCard
 }
 
 func NewPlayer(id int, nickName string, conn *websocket.Conn, headPic string) *Player {
@@ -35,7 +37,7 @@ func (p *Player) JoinTable(key string) error {
 }
 
 //开牌桌
-func (p *Player) CreateTable(game *game.Game) {
+func (p *Player) CreateTable(game *games.Game) {
 	table := newTable(p, game)
 	p.Lock()
 	p.Table = table

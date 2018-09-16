@@ -1,11 +1,13 @@
 package player
 
 import (
-	"chessSever/program/logic/game"
 	"errors"
 	"strconv"
 	"sync"
 	"fmt"
+	"chessSever/program/logic/game/games"
+	"chessSever/program/logic/game/poker"
+	"chessSever/program/logic/util"
 )
 
 /*
@@ -14,15 +16,25 @@ import (
 type Table struct {
 	key          string     //桌子key,用于从room索引中查找桌子
 	players      []*Player  //玩家数组
-	game         *game.Game //该桌玩的游戏
+	game         *games.Game //该桌玩的游戏
 	sync.RWMutex            //操作playNum以及player时加锁
+	PokerCards []poker.PokerCard
 }
 
-func newTable(player *Player, game *game.Game) *Table {
+func newTable(player *Player, game *games.Game) *Table {
 	table := Table{
 		game: game,
 		key:  "table" + strconv.Itoa(player.Id),
 	}
+	porkerCards := []poker.PokerCard{}
+	//根据游戏类型，初始化该桌子的扑克牌数组
+	for i:=0;i<table.game.DeckNum;i++{
+		for _,card := range poker.CreateDeck().Cards{
+			porkerCards = append(porkerCards,*card)
+		}
+	}
+	table.PokerCards = porkerCards
+
 	fmt.Println("创建新桌子"+"table" + strconv.Itoa(player.Id))
 	table.joinRoom()
 	table.addPlayer(player)
@@ -73,3 +85,14 @@ func (t *Table) removePlayer(player *Player) {
 		t.destory()
 	}
 }
+//洗牌
+func (t *Table) flushPokerCards(){
+	util.Random(t.PokerCards,len(t.PokerCards))
+}
+
+//发牌
+func (t *Table) dipatchPokerCards(){
+
+}
+
+

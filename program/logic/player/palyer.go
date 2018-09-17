@@ -17,7 +17,7 @@ type Player struct {
 	HeadPic  string          //用户头像
 	Table    *Table          //桌子索引
 	sync.RWMutex
-	PokerCards []*poker.PokerCard //玩家手里的扑克牌
+	PokerCards []poker.PokerCard //玩家手里的扑克牌
 }
 
 func NewPlayer(id int, nickName string, conn *websocket.Conn, headPic string) *Player {
@@ -53,7 +53,7 @@ func (p *Player) LeaveTable() {
 //用户跟该桌所有人说话
 func (p *Player) SayToTable(msg []byte){
 	p.Table.RLock()
-	for _,po := range p.Table.players{
+	for _,po := range p.Table.Players{
 		if po != p {
 			po.Conn.WriteMessage(websocket.TextMessage,msg)
 		}
@@ -63,7 +63,7 @@ func (p *Player) SayToTable(msg []byte){
 //用户跟该桌某一个说话
 func (p *Player) sayToAnother(id int,msg []byte){
 	p.Table.RLock()
-	for _,po := range p.Table.players{
+	for _,po := range p.Table.Players{
 		if po.Id == id {
 			po.Conn.WriteMessage(websocket.TextMessage,msg)
 		}

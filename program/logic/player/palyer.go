@@ -17,7 +17,7 @@ type Player struct {
 	HeadPic  string          //用户头像
 	Table    *Table          //桌子索引
 	sync.RWMutex
-	PokerCards []poker.PokerCard
+	PokerCards []*poker.PokerCard //玩家手里的扑克牌
 }
 
 func NewPlayer(id int, nickName string, conn *websocket.Conn, headPic string) *Player {

@@ -4,7 +4,6 @@ import (
 	"github.com/gorilla/websocket"
 	"sync"
 	"chessSever/program/logic/game/poker"
-	"chessSever/program/logic/game/games"
 )
 
 /**
@@ -17,7 +16,7 @@ type Player struct {
 	HeadPic  string          //用户头像
 	Table    *Table          //桌子索引
 	sync.RWMutex
-	PokerCards []poker.PokerCard //玩家手里的扑克牌
+	PokerCards []*poker.PokerCard //玩家手里的扑克牌
 }
 
 func NewPlayer(id int, nickName string, conn *websocket.Conn, headPic string) *Player {
@@ -37,8 +36,8 @@ func (p *Player) JoinTable(key string) error {
 }
 
 //开牌桌
-func (p *Player) CreateTable(game *games.Game) {
-	table := newTable(p, game)
+func (p *Player) CreateTable(gameName string) {
+	table := newTable(p, gameName)
 	p.Lock()
 	p.Table = table
 	p.Unlock()

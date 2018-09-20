@@ -21,7 +21,8 @@ type Table struct {
 	CurrPalyerIndex int 					//当前出牌的玩家切片index
 }
 //创建桌子
-func newTable(player *Player, game *games.Game) *Table {
+func newTable(player *Player, gameName string) *Table {
+	game := games.GetGame(gameName)
 	table := Table{
 		Game: game,
 		Key:  "table" + strconv.Itoa(player.Id),
@@ -33,6 +34,7 @@ func newTable(player *Player, game *games.Game) *Table {
 	table.addPlayer(player)
 	return &table
 }
+//加入房间
 func (t *Table) joinRoom() {
 	getRoom().addTable(t.Key, t)
 }

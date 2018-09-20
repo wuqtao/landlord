@@ -6,7 +6,6 @@ import (
 	"time"
 	"chessSever/program/logic/game/poker"
 	"chessSever/program/logic/player"
-	"errors"
 )
 
 type Doudizhu struct {
@@ -14,30 +13,29 @@ type Doudizhu struct {
 	name string
 	playerNum int
 	deckNum int
-	pokerCards []poker.PokerCard
-	lastCards []poker.PokerCard
-	lastPlayerIndex int
-	table *player.Table
+	pokerCards []*poker.PokerCard
+	lastCards []*poker.PokerCard
 }
 
-func GetDoudizhu(table *player.Table) games.Game{
-	return Doudizhu{
-		1,
-		"斗地主",
-		3,
-		1,
-		[]poker.PokerCard{},
-		[]poker.PokerCard{},
-		2,
-		table,
+func GetDoudizhu() *games.Game{
+	dou := Doudizhu{
+		id:1,
+		name:"斗地主",
+		playerNum:3,
+		deckNum:1,
+		pokerCards:[]*poker.PokerCard{},
+		lastCards:[]*poker.PokerCard{},
 	}
+	dou.initCards()
+	return &dou
 }
+
 
 func (dou Doudizhu)GetPlayerNum() int{
 	return dou.playerNum
 }
 
-func (dou Doudizhu)GetPokerCards() []poker.PokerCard{
+func (dou Doudizhu)GetPokerCards() []*poker.PokerCard{
 	return dou.pokerCards
 }
 
@@ -52,53 +50,48 @@ func (dou Doudizhu)GetGameID() int{
 func (dou Doudizhu)GetDeckNum() int{
 	return dou.deckNum
 }
+
+func (dou Doudizhu)GetLastCards() []*poker.PokerCard{
+	return dou.lastCards
+}
+
+//初始化游戏中的牌
+func (dou Doudizhu)initCards(){
+	for i:=0;i<dou.playerNum;i++{
+		deck := poker.CreateDeck()
+		for _,card := range deck.Cards{
+			dou.pokerCards = append(dou.pokerCards,card)
+		}
+	}
+}
+
 //洗牌
-func (dou Doudizhu)ShuffleCards(){
+func (dou Doudizhu)shuffleCards(){
 	rand.Seed(time.Now().Unix())
 	for i := len(dou.pokerCards) - 1; i > 0; i-- {
 		num := rand.Intn(i + 1)
 		dou.pokerCards[i], dou.pokerCards[num] = dou.pokerCards[num], dou.pokerCards[i]
 	}
 }
+
 //发牌
-func (dou Doudizhu)DealCards() error{
-
-	if(len(dou.table.Players) != dou.playerNum){
-		return errors.New("玩家数不满足游戏规则")
-	}
-
-	for i:=0;i<len(dou.pokerCards);i++{
+func (dou Doudizhu)DealCards(players ...*player.Player){
+	dou.shuffleCards()
+	for i:=0; i<len(dou.pokerCards);i++  {
 		yu := i%dou.playerNum
-		dou.table.Players[yu].PokerCards = append(dou.table.Players[yu].PokerCards,dou.pokerCards[i])
+		players[yu-1].PokerCards = append(players[yu-1].PokerCards,dou.pokerCards[i])
 	}
-
-	return nil
 }
 
-func (dou Doudizhu)GetLastCards() []poker.PokerCard{
-	return dou.lastCards
-}
-
-func (dou Doudizhu)GetLastPlayer() int{
-	return dou.lastPlayerIndex
-}
-
-func (dou Doudizhu)GetNextPlayer() int{
-	return dou.playerNum-1-dou.lastPlayerIndex
-}
-
-func (dou Doudizhu)Hint() []poker.PokerCard{
-	return []poker.PokerCard{}
+func (dou Doudizhu)Hint() []*poker.PokerCard{
+	return []*poker.PokerCard{}
 }
 
 func (dou Doudizhu)CompareCards(cardsNow []poker.PokerDeck,lastCards []poker.PokerCard) bool{
 	return false
 }
 
-func (dou Doudizhu)DisCard(cards []poker.PokerCard){
-
+func (dou Doudizhu)IsMatchRoles() bool{
+	return false
 }
 
-func (dou Doudizhu)Rules(cards []poker.PokerCard) bool{
-	return true
-}

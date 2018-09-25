@@ -9,9 +9,9 @@ import (
 	"strconv"
 	"sync"
 	"chessSever/program/logic/player"
-	"chessSever/program/logic/game"
 	"fmt"
 	"chessSever/config"
+	"chessSever/program/logic/game/games"
 )
 
 var addr = flag.String("addr", "localhost:8080", "http service address")
@@ -41,7 +41,7 @@ func echo(w http.ResponseWriter, r *http.Request) {
 
 	player := player.NewPlayer(nowId,strconv.Itoa(nowId),con,"1headPic")
 	if player.Id == 1{
-		player.CreateTable(game.GetDoudizhu())
+		player.CreateTable(games.DouDiZhu)
 	}else{
 		player.JoinTable("table1")
 	}

@@ -19,6 +19,7 @@ type Table struct {
 	sync.RWMutex            				//操作playNum以及player时加锁
 	CurrPokerCards []*poker.PokerCard  		//当前出的牌
 	CurrPalyerIndex int 					//当前出牌的玩家切片index
+
 }
 //创建桌子
 func newTable(player *Player, gameName string) *Table {

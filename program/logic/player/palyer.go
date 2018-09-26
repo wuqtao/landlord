@@ -4,6 +4,9 @@ import (
 	"github.com/gorilla/websocket"
 	"sync"
 	"chessSever/program/logic/game/poker"
+	"strconv"
+	"github.com/tidwall/gjson"
+	"chessSever/program/logic/msg"
 )
 
 /**
@@ -60,12 +63,32 @@ func (p *Player) SayToTable(msg []byte){
 	p.Table.RUnlock()
 }
 //用户跟该桌某一个说话
-func (p *Player) sayToAnother(id int,msg []byte){
+func (p *Player) sayToAnother(id int,msgB []byte){
 	p.Table.RLock()
 	for _,po := range p.Table.Players{
 		if po.Id == id {
-			po.Conn.WriteMessage(websocket.TextMessage,msg)
+			po.Conn.WriteMessage(websocket.TextMessage,msgB)
 		}
 	}
 	p.Table.RUnlock()
+}
+
+func (p *Player)ResolveMsg(msgB []byte) error{
+	msgType,err := strconv.Atoi(gjson.Get(string(msgB),"msgType").String())
+	if err != nil{
+		return err
+	}
+
+	switch strconv.Itoa(msgType) {
+		case msg.TypeOfAuto:
+		case msg.TypeOfUnReady:
+		case msg.TypeOfReady:
+		case msg.TypeOfPlay:
+		case msg.TypeOfPass:
+		case msg.TypeOfLeaveTable:
+		case msg.TypeOfJoinTable:
+		case msg.TypeOfHint:
+	}
+
+	return nil
 }

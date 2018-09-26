@@ -1,11 +1,10 @@
 package doudizhu
 
 import (
-	"chessSever/program/logic/game/games"
 	"math/rand"
 	"time"
 	"chessSever/program/logic/game/poker"
-	"chessSever/program/logic/player"
+	"chessSever/program/logic/game/games"
 )
 
 type Doudizhu struct {
@@ -18,9 +17,11 @@ type Doudizhu struct {
 	currMulti int                         //当前倍率
 	lordIndex int                         //地主索引
 	lastThreeCards  []*poker.PokerCard    //最后三张底牌
+	playerCards [][]*poker.PokerCard      //同桌不同玩家的牌的切片
+	bottomCards []*poker.PokerCard        //底牌
 }
 
-func GetDoudizhu() games.Game{
+func GetDoudizhu() games.IGame{
 	dou := Doudizhu{
 		id:1,
 		name:"斗地主",
@@ -29,7 +30,7 @@ func GetDoudizhu() games.Game{
 		pokerCards:[]*poker.PokerCard{},
 		lastCards:[]*poker.PokerCard{},
 	}
-	dou.initCards()
+	dou.InitCards()
 	return dou
 }
 
@@ -59,7 +60,7 @@ func (dou Doudizhu)GetLastCards() []*poker.PokerCard{
 }
 
 //初始化游戏中的牌
-func (dou Doudizhu)initCards(){
+func (dou Doudizhu)InitCards(){
 	for i:=0;i<dou.playerNum;i++{
 		deck := poker.CreateDeck()
 		for _,card := range deck.Cards{
@@ -69,7 +70,7 @@ func (dou Doudizhu)initCards(){
 }
 
 //洗牌
-func (dou Doudizhu)shuffleCards(){
+func (dou Doudizhu)ShuffleCards(){
 	rand.Seed(time.Now().Unix())
 	for i := len(dou.pokerCards) - 1; i > 0; i-- {
 		num := rand.Intn(i + 1)
@@ -78,16 +79,17 @@ func (dou Doudizhu)shuffleCards(){
 }
 
 //发牌
-func (dou Doudizhu)DealCards(table *player.Table){
-	players := make([]*player.Player,dou.GetPlayerNum())
-	for _,player := range table.Players{
-		players = append(players,player)
+func (dou Doudizhu)DealCards(){
+
+	pc := make([][]*poker.PokerCard,dou.GetPlayerNum())
+	for i:=0;i<len(pc);i++{
+		pc[i] = make([]*poker.PokerCard,20)
 	}
-	
-	dou.shuffleCards()
+
+	dou.ShuffleCards()
 	for i:=0; i<len(dou.pokerCards);i++  {
 		yu := i%dou.playerNum
-		players[yu-1].PokerCards = append(players[yu-1].PokerCards,dou.pokerCards[i])
+		dou.playerCards[yu-1] = append(dou.playerCards[yu-1],dou.pokerCards[i])
 	}
 }
 
@@ -101,5 +103,9 @@ func (dou Doudizhu)CompareCards(cardsNow []poker.PokerDeck,lastCards []poker.Pok
 
 func (dou Doudizhu)IsMatchRoles() bool{
 	return false
+}
+
+func (dou Doudizhu)GetPlayerCards() [][]*poker.PokerCard{
+	return dou.playerCards
 }
 

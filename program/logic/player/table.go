@@ -1,12 +1,13 @@
 package player
 
 import (
-	"errors"
-	"strconv"
-	"sync"
-	"fmt"
 	"chessSever/program/logic/game/games"
+	"sync"
 	"chessSever/program/logic/game/poker"
+	"chessSever/program/logic/game"
+	"strconv"
+	"fmt"
+	"errors"
 )
 
 /*
@@ -15,7 +16,7 @@ import (
 type Table struct {
 	Key          string     				//桌子key,用于从room索引中查找桌子
 	Players      []*Player  				//玩家数组
-	Game         games.Game 				//该桌玩的游戏
+	Game         games.IGame 				//该桌玩的游戏
 	sync.RWMutex            				//操作playNum以及player时加锁
 	CurrPokerCards []*poker.PokerCard  		//当前出的牌
 	CurrPalyerIndex int 					//当前出牌的玩家切片index
@@ -23,7 +24,7 @@ type Table struct {
 }
 //创建桌子
 func newTable(player *Player, gameName string) *Table {
-	game := games.GetGame(gameName)
+	game := game.GetGame(gameName)
 	table := Table{
 		Game: game,
 		Key:  "table" + strconv.Itoa(player.Id),

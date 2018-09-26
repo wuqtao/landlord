@@ -54,7 +54,7 @@ func echo(w http.ResponseWriter, r *http.Request) {
 				switch msgType {
 				case websocket.TextMessage:
 					//同桌用户交流，包含对话流程和出牌流程
-					player.SayToTable(msg)
+					player.ResolveMsg(msg)
 				case websocket.CloseMessage:
 					//离开桌子流程，后续包含断线保持，自动出牌
 				default:
@@ -78,7 +78,6 @@ func main() {
 	http.HandleFunc("/echo", echo)
 	http.HandleFunc("/", home)
 	log.Fatal(http.ListenAndServe(*addr, nil))
-
 }
 
 var homeTemplate = template.Must(template.New("").Parse(`

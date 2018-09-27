@@ -17,9 +17,12 @@ type Player struct {
 	NickName string          //用户昵称
 	Conn     *websocket.Conn //用户socket链接
 	HeadPic  string          //用户头像
-	Table    *Table          //桌子索引
+	Table    *Table          //桌子
 	sync.RWMutex
 	PokerCards []*poker.PokerCard //玩家手里的扑克牌
+	Index    int             //在桌子上的索引
+	IsReady  bool			 //是否准备
+	IsAuto   bool            //是否托管
 }
 
 func NewPlayer(id int, nickName string, conn *websocket.Conn, headPic string) *Player {
@@ -81,14 +84,34 @@ func (p *Player)ResolveMsg(msgB []byte) error{
 
 	switch strconv.Itoa(msgType) {
 		case msg.TypeOfAuto:
+
 		case msg.TypeOfUnReady:
+			p.unReady()
 		case msg.TypeOfReady:
+			p.Ready()
 		case msg.TypeOfPlay:
+
 		case msg.TypeOfPass:
+
 		case msg.TypeOfLeaveTable:
+
 		case msg.TypeOfJoinTable:
+
 		case msg.TypeOfHint:
 	}
 
 	return nil
+}
+
+func (p *Player)Ready(){
+	p.Lock()
+	p.IsReady = true
+	p.Unlock()
+	p.Table.userReady()
+}
+
+func (p *Player)unReady(){
+	p.Lock()
+	p.IsReady = false
+	p.Unlock()
 }

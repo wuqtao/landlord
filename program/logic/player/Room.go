@@ -39,7 +39,7 @@ func (r *Room) addTable(key string, table *Table) {
 func (r *Room) removeTable(key string) {
 	r.Lock()
 	delete(r.tables, key)
-	fmt.Println("移除桌子"+key+"后，当前房间桌子数量为"+strconv.Itoa(len(r.tables)))
+	fmt.Println("移除桌子"+key+"后，当前房间桌子数量为"+strconv.Itoa(r.tablesCounts()))
 	r.Unlock()
 }
 

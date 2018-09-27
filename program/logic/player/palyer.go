@@ -92,7 +92,7 @@ func (p *Player)ResolveMsg(msgB []byte) error{
 			p.unReady()
 		case msg.TypeOfReady:
 			p.Ready()
-		case msg.TypeOfPlay:
+		case msg.TypeOfPlayCard:
 
 		case msg.TypeOfPass:
 

@@ -16,7 +16,7 @@ import (
 */
 type Table struct {
 	Key          string     				//桌子key,用于从room索引中查找桌子
-	Players      [...]*Player  				//玩家数组
+	Players      []*Player        			//玩家数组
 	Game         games.IGame 				//该桌玩的游戏
 	sync.RWMutex            				//操作playNum以及player时加锁
 	CurrPokerCards []*poker.PokerCard  		//当前出的牌
@@ -30,7 +30,7 @@ func newTable(player *Player, gameName string) *Table {
 	table := Table{
 		Game: currGame,
 		Key:  "table" + strconv.Itoa(time.Now().Nanosecond()),//桌子的key要保证唯一且好找，所以用时间戳，
-		Players:[currGame.GetPlayerNum()]*Player{},
+		Players:make([]*Player,currGame.GetPlayerNum()),
 		IsPlaying:false,
 	}
 	fmt.Println("创建新桌子"+"table" + strconv.Itoa(player.Id))
@@ -42,7 +42,7 @@ func newTable(player *Player, gameName string) *Table {
 }
 //加入房间
 func (t *Table) joinRoom() {
-	getRoom().addTable(t.Key, t)
+	GetRoom().addTable(t.Key, t)
 }
 //销毁桌子
 func (t *Table) destory() {
@@ -52,7 +52,7 @@ func (t *Table) destory() {
 			p.LeaveTable()
 		}
 	}
-	getRoom().removeTable(t.Key)
+	GetRoom().removeTable(t.Key)
 	fmt.Println("桌子"+t.Key+"销毁")
 	t.Unlock()
 }
@@ -63,6 +63,7 @@ func (t *Table) addPlayer(player *Player) error {
 	for i,p := range t.Players{
 		if(p == nil){
 			p = player
+			fmt.Println(t.Key+"有新玩家加入")
 			return nil
 		}else{
 			if i == len(t.Players)-1 {
@@ -70,6 +71,7 @@ func (t *Table) addPlayer(player *Player) error {
 			}
 		}
 	}
+	return nil
 }
 //移除玩家
 func (t *Table) removePlayer(player *Player) {

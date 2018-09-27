@@ -36,11 +36,14 @@ func NewPlayer(id int, nickName string, conn *websocket.Conn, headPic string) *P
 }
 
 //按照桌号加入牌桌
-func (p *Player) JoinTable(key string) error {
-	err := getRoom().getTable(key).addPlayer(p)
+func (p *Player) JoinTableByKey(key string) error {
+	err := GetRoom().getTable(key).addPlayer(p)
 	return err
 }
 
+func (p *Player) JoinTable(table *Table){
+	table.addPlayer(p)
+}
 //开牌桌
 func (p *Player) CreateTable(gameName string) {
 	table := newTable(p, gameName)
@@ -82,7 +85,7 @@ func (p *Player)ResolveMsg(msgB []byte) error{
 		return err
 	}
 
-	switch strconv.Itoa(msgType) {
+	switch msgType {
 		case msg.TypeOfAuto:
 
 		case msg.TypeOfUnReady:

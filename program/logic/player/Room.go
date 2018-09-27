@@ -14,7 +14,7 @@ type Room struct {
 var room *Room = nil
 
 //获得全局room单例对象
-func getRoom() *Room {
+func GetRoom() *Room {
 	if room != nil {
 		return room
 	} else {
@@ -45,4 +45,18 @@ func (r *Room) removeTable(key string) {
 
 func (r *Room) tablesCounts() int {
 	return len(r.tables)
+}
+
+func (r *Room) GetAllTable() []*Table{
+
+	if len(room.tables) == 0{
+		return nil
+	}
+
+	tables := []*Table{}
+
+	for _,table := range room.tables{
+		tables = append(tables,table)
+	}
+	return tables
 }

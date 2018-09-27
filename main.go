@@ -9,12 +9,10 @@ import (
 	"strconv"
 	"sync"
 	"chessSever/program/logic/player"
-	"fmt"
-	"chessSever/config"
 	"chessSever/program/logic/game/games"
 )
 
-var addr = flag.String("addr", "localhost:8080", "http service address")
+var addr = flag.String("addr", "localhost:9999", "http service address")
 
 var upgrader = websocket.Upgrader{} // use default options
 
@@ -39,11 +37,11 @@ func echo(w http.ResponseWriter, r *http.Request) {
 	nowId := userID
 	m.Unlock()
 
-	player := player.NewPlayer(nowId,strconv.Itoa(nowId),con,"1headPic")
-	if player.Id == 1{
-		player.CreateTable(games.DouDiZhu)
+	currPlayer := player.NewPlayer(nowId,strconv.Itoa(nowId),con,"1headPic")
+	if currPlayer.Id == 1{
+		currPlayer.CreateTable(games.DouDiZhu)
 	}else{
-		player.JoinTable("table1")
+		currPlayer.JoinTable(player.GetRoom().GetAllTable()[0])
 	}
 	//启动一个goroutine监听该客户端发来的消息
 	go func() {
@@ -54,7 +52,7 @@ func echo(w http.ResponseWriter, r *http.Request) {
 				switch msgType {
 				case websocket.TextMessage:
 					//同桌用户交流，包含对话流程和出牌流程
-					player.ResolveMsg(msg)
+					currPlayer.ResolveMsg(msg)
 				case websocket.CloseMessage:
 					//离开桌子流程，后续包含断线保持，自动出牌
 				default:
@@ -74,7 +72,6 @@ func home(w http.ResponseWriter, r *http.Request) {
 func main() {
 	flag.Parse()
 	log.SetFlags(0)
-	fmt.Println(config.Con.Database)
 	http.HandleFunc("/echo", echo)
 	http.HandleFunc("/", home)
 	log.Fatal(http.ListenAndServe(*addr, nil))

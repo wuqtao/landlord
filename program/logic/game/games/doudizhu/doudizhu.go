@@ -83,14 +83,15 @@ func (dou Doudizhu)DealCards(){
 
 	pc := make([][]*poker.PokerCard,dou.GetPlayerNum())
 	for i:=0;i<len(pc);i++{
-		pc[i] = make([]*poker.PokerCard,20)
+		pc[i] = []*poker.PokerCard{}
 	}
 
 	dou.ShuffleCards()
 	dou.bottomCards = make([]*poker.PokerCard,3)
-	dou.bottomCards = append(dou.bottomCards,dou.pokerCards[0])
-	dou.bottomCards = append(dou.bottomCards,dou.pokerCards[1])
-	dou.bottomCards = append(dou.bottomCards,dou.pokerCards[2])
+	dou.bottomCards[0] = dou.pokerCards[0]
+	dou.bottomCards[1] = dou.pokerCards[1]
+	dou.bottomCards[2] = dou.pokerCards[2]
+
 	for i:=3; i<len(dou.pokerCards);i++  {
 		yu := i%dou.playerNum
 		dou.playerCards[yu-1] = append(dou.playerCards[yu-1],dou.pokerCards[i])

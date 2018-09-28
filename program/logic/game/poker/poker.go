@@ -10,10 +10,10 @@ const (
 	PokerFive
 	PokerSix
 	PokerSeven
-	PokerJack
 	PokerEight
 	PokerNine
 	PokerTen
+	PokerJack
 	PokerQueen
 	PokerKing
 	PokerAce
@@ -105,13 +105,13 @@ func CreateDeck() *PokerDeck{
 			pokerName,
 		}
 	}
-	deck.Cards[50] = &PokerCard{
+	deck.Cards[52] = &PokerCard{
 		PokerBlackJoker,
 		PokerSuitNO,
 		"BlackJoker",
 	}
 
-	deck.Cards[51] = &PokerCard{
+	deck.Cards[53] = &PokerCard{
 		PokerRedJoker,
 		PokerSuitNO,
 		"RedJoker",
@@ -119,6 +119,13 @@ func CreateDeck() *PokerDeck{
 	return deck
 }
 
+func CardCommonCompare(card1 *PokerCard,card2 *PokerCard) bool{
+	if card1.CardValue > card2.CardValue{
+		return true
+	}
+
+	return false
+}
 
 
 

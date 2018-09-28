@@ -3,13 +3,14 @@ package main
 import (
 	"flag"
 	"github.com/gorilla/websocket"
-	"html/template"
 	"log"
 	"net/http"
 	"strconv"
 	"sync"
 	"chessSever/program/logic/player"
 	"chessSever/program/logic/game/games"
+	"fmt"
+	"runtime/debug"
 )
 
 var addr = flag.String("addr", "localhost:9999", "http service address")
@@ -46,6 +47,12 @@ func echo(w http.ResponseWriter, r *http.Request) {
 	//启动一个goroutine监听该客户端发来的消息
 	go func() {
 		defer wg.Done()
+		defer func(){
+			if p := recover();p != nil{
+				fmt.Printf("panic recover! p: %v", p)
+				debug.PrintStack()
+			}
+		}()
 		for{
 			msgType,msg,err := con.ReadMessage()
 			if err == nil{
@@ -54,10 +61,14 @@ func echo(w http.ResponseWriter, r *http.Request) {
 					//同桌用户交流，包含对话流程和出牌流程
 					currPlayer.ResolveMsg(msg)
 				case websocket.CloseMessage:
+					fmt.Println("链接关闭")
+					break
 					//离开桌子流程，后续包含断线保持，自动出牌
 				default:
 
 				}
+			}else{
+				break
 			}
 		}
 	}()
@@ -66,7 +77,7 @@ func echo(w http.ResponseWriter, r *http.Request) {
 }
 
 func home(w http.ResponseWriter, r *http.Request) {
-	homeTemplate.Execute(w, "ws://"+r.Host+"/echo")
+	http.Redirect(w,r,"/pages/index.html",301)
 }
 
 func main() {
@@ -74,78 +85,7 @@ func main() {
 	log.SetFlags(0)
 	http.HandleFunc("/echo", echo)
 	http.HandleFunc("/", home)
+	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./views/static"))))
+	http.Handle("/pages/", http.StripPrefix("/pages/", http.FileServer(http.Dir("./views/pages"))))
 	log.Fatal(http.ListenAndServe(*addr, nil))
 }
-
-var homeTemplate = template.Must(template.New("").Parse(`
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="utf-8">
-<script>  
-window.addEventListener("load", function(evt) {
-    var output = document.getElementById("output");
-    var input = document.getElementById("input");
-    var ws;
-    var print = function(message) {
-        var d = document.createElement("div");
-        d.innerHTML = message;
-        output.appendChild(d);
-    };
-    document.getElementById("open").onclick = function(evt) {
-        if (ws) {
-            return false;
-        }
-        ws = new WebSocket("{{.}}");
-        ws.onopen = function(evt) {
-            print("OPEN");
-        }
-        ws.onclose = function(evt) {
-            print("CLOSE");
-            ws = null;
-        }
-        ws.onmessage = function(evt) {
-            print("RESPONSE: " + evt.data);
-        }
-        ws.onerror = function(evt) {
-            print("ERROR: " + evt.data);
-        }
-        return false;
-    };
-    document.getElementById("send").onclick = function(evt) {
-        if (!ws) {
-            return false;
-        }
-        print("SEND: " + input.value);
-        ws.send(input.value);
-        return false;
-    };
-    document.getElementById("close").onclick = function(evt) {
-        if (!ws) {
-            return false;
-        }
-        ws.close();
-        return false;
-    };
-});
-</script>
-</head>
-<body>
-<table>
-<tr><td valign="top" width="50%">
-<p>Click "Open" to create a connection to the server, 
-"Send" to send a message to the server and "Close" to close the connection. 
-You can change the message and send multiple times.
-<p>
-<form>
-<button id="open">Open</button>
-<button id="close">Close</button>
-<p><input id="input" type="text" value="Hello world!">
-<button id="send">Send</button>
-</form>
-</td><td valign="top" width="50%">
-<div id="output"></div>
-</td></tr></table>
-</body>
-</html>
-`))

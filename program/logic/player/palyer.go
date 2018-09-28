@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"github.com/tidwall/gjson"
 	"chessSever/program/logic/msg"
+	"fmt"
 )
 
 /**
@@ -36,13 +37,18 @@ func NewPlayer(id int, nickName string, conn *websocket.Conn, headPic string) *P
 }
 
 //按照桌号加入牌桌
-func (p *Player) JoinTableByKey(key string) error {
+func (p *Player) JoinTableByKey(key string){
 	err := GetRoom().getTable(key).addPlayer(p)
-	return err
+	if err != nil{
+		fmt.Println(err.Error())
+	}
 }
 
 func (p *Player) JoinTable(table *Table){
-	table.addPlayer(p)
+	err := table.addPlayer(p)
+	if err != nil{
+		fmt.Println(err.Error())
+	}
 }
 //开牌桌
 func (p *Player) CreateTable(gameName string) {
@@ -108,9 +114,12 @@ func (p *Player)ResolveMsg(msgB []byte) error{
 
 func (p *Player)Ready(){
 	p.Lock()
-	p.IsReady = true
+	if(p.Table != nil){
+		p.IsReady = true
+		fmt.Println(strconv.Itoa(p.Id)+"is ready")
+		p.Table.userReady()
+	}
 	p.Unlock()
-	p.Table.userReady()
 }
 
 func (p *Player)unReady(){

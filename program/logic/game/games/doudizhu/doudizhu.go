@@ -5,6 +5,8 @@ import (
 	"time"
 	"chessSever/program/logic/game/poker"
 	"chessSever/program/logic/game/games"
+	"fmt"
+	"chessSever/program/util"
 )
 
 type Doudizhu struct {
@@ -31,7 +33,7 @@ func GetDoudizhu() games.IGame{
 		lastCards:[]*poker.PokerCard{},
 	}
 	dou.InitCards()
-	return dou
+	return &dou
 }
 
 
@@ -60,8 +62,8 @@ func (dou Doudizhu)GetLastCards() []*poker.PokerCard{
 }
 
 //初始化游戏中的牌
-func (dou Doudizhu)InitCards(){
-	for i:=0;i<dou.playerNum;i++{
+func (dou *Doudizhu)InitCards(){
+	for i:=0;i<dou.deckNum;i++{
 		deck := poker.CreateDeck()
 		for _,card := range deck.Cards{
 			dou.pokerCards = append(dou.pokerCards,card)
@@ -70,7 +72,7 @@ func (dou Doudizhu)InitCards(){
 }
 
 //洗牌
-func (dou Doudizhu)ShuffleCards(){
+func (dou *Doudizhu)ShuffleCards(){
 	rand.Seed(time.Now().Unix())
 	for i := len(dou.pokerCards) - 1; i > 0; i-- {
 		num := rand.Intn(i + 1)
@@ -79,14 +81,15 @@ func (dou Doudizhu)ShuffleCards(){
 }
 
 //发牌
-func (dou Doudizhu)DealCards(){
+func (dou *Doudizhu)DealCards(){
 
-	pc := make([][]*poker.PokerCard,dou.GetPlayerNum())
-	for i:=0;i<len(pc);i++{
-		pc[i] = []*poker.PokerCard{}
+	dou.playerCards = make([][]*poker.PokerCard,dou.GetPlayerNum())
+	for i:=0;i<len(dou.playerCards);i++{
+		dou.playerCards[i] = []*poker.PokerCard{}
 	}
 
 	dou.ShuffleCards()
+	fmt.Println(dou.playerCards)
 	dou.bottomCards = make([]*poker.PokerCard,3)
 	dou.bottomCards[0] = dou.pokerCards[0]
 	dou.bottomCards[1] = dou.pokerCards[1]
@@ -94,23 +97,34 @@ func (dou Doudizhu)DealCards(){
 
 	for i:=3; i<len(dou.pokerCards);i++  {
 		yu := i%dou.playerNum
-		dou.playerCards[yu-1] = append(dou.playerCards[yu-1],dou.pokerCards[i])
+		dou.playerCards[yu] = append(dou.playerCards[yu],dou.pokerCards[i])
 	}
+
+	dou.sortPlayerCards()
 }
 
-func (dou Doudizhu)Hint() []*poker.PokerCard{
+func (dou *Doudizhu)Hint() []*poker.PokerCard{
 	return []*poker.PokerCard{}
 }
 
-func (dou Doudizhu)CompareCards(cardsNow []poker.PokerDeck,lastCards []poker.PokerCard) bool{
+func (dou *Doudizhu)CompareCards(cardsNow []poker.PokerDeck,lastCards []poker.PokerCard) bool{
 	return false
 }
 
-func (dou Doudizhu)IsMatchRoles() bool{
+func (dou *Doudizhu)IsMatchRoles() bool{
 	return false
 }
 
-func (dou Doudizhu)GetPlayerCards() [][]*poker.PokerCard{
-	return dou.playerCards
+func (dou *Doudizhu)GetPlayerCards(index int) []*poker.PokerCard{
+	return dou.playerCards[index]
 }
+//对玩家手中扑克牌，按照从小到大排序
+func (dou *Doudizhu)sortPlayerCards(){
+	for _,cards := range dou.playerCards{
+		util.BubbleSortCards(cards,poker.CardCommonCompare)
+	}
 
+	for _,card := range dou.playerCards[0]{
+		fmt.Println(card)
+	}
+}

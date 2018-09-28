@@ -3,7 +3,7 @@ package config
 import (
 	"github.com/BurntSushi/toml"
 	"fmt"
-	"chessSever/program/logic/util"
+	"chessSever/program/util"
 )
 
 //订制配置文件解析载体

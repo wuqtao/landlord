@@ -60,18 +60,30 @@ func (t *Table) destory() {
 func (t *Table) addPlayer(player *Player) error {
 	t.Lock()
 	defer t.Unlock()
-	for i,p := range t.Players{
-		if(p == nil){
-			p = player
-			fmt.Println(t.Key+"有新玩家加入")
-			return nil
-		}else{
-			if i == len(t.Players)-1 {
-				return errors.New("该卓玩家已经满了")
+	if(len(t.Players) >= t.Game.GetPlayerNum()){
+		for i,p := range t.Players{
+			if p == nil{
+				t.Players[i] = player
+				player.Lock()
+				player.Table = t
+				player.Unlock()
+				fmt.Println(t.Key+"有新玩家加入")
+				return nil
+			}else{
+				if(i == len(t.Players)){
+					return errors.New("该桌玩家已满")
+				}
 			}
 		}
+		return errors.New("该桌玩家已满")
+	}else{
+		t.Players = append(t.Players,player)
+		player.Lock()
+		player.Table = t
+		player.Unlock()
+		fmt.Println(t.Key+"有新玩家加入")
+		return nil
 	}
-	return nil
 }
 //移除玩家
 func (t *Table) removePlayer(player *Player) {
@@ -82,7 +94,7 @@ func (t *Table) removePlayer(player *Player) {
 			break
 		}
 	}
-	fmt.Println("桌子"+t.Key+"移除玩家"+strconv.Itoa(player.Id)+"，当前玩家数是"+strconv.Itoa(len(t.Players)))
+	fmt.Println("桌子"+t.Key+"移除玩家"+strconv.Itoa(player.Id))
 	t.Unlock()
 }
 
@@ -97,13 +109,16 @@ func (t *Table) userReady(){
 	}
 	//用户都准备好了，则发牌
 	if userAllReady {
+		fmt.Println(t.Key+"的玩家都准备好了")
 		t.Game.DealCards()
 		t.dealCards()
 	}
 }
 
 func (t *Table) dealCards(){
-
+	for i,player := range t.Players{
+		player.PokerCards = t.Game.GetPlayerCards(i)
+	}
 }
 
 

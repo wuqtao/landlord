@@ -99,6 +99,7 @@ func (t *Table) removePlayer(player *Player) {
 }
 
 func (t *Table) userReady(){
+	t.Lock()
 	userAllReady := false
 	for _,p := range t.Players{
 		if p != nil && p.IsReady{
@@ -110,14 +111,18 @@ func (t *Table) userReady(){
 	//用户都准备好了，则发牌
 	if userAllReady {
 		fmt.Println(t.Key+"的玩家都准备好了")
+		t.IsPlaying = true
 		t.Game.DealCards()
 		t.dealCards()
 	}
+	t.Unlock()
 }
 
 func (t *Table) dealCards(){
+	fmt.Println("开始发牌")
 	for i,player := range t.Players{
 		player.PokerCards = t.Game.GetPlayerCards(i)
+		sendPlayerCards(player)
 	}
 }
 

@@ -9,8 +9,8 @@ import (
 	"sync"
 	"chessSever/program/logic/player"
 	"chessSever/program/logic/game/games"
+	"encoding/json"
 	"fmt"
-	"runtime/debug"
 )
 
 var addr = flag.String("addr", "localhost:9999", "http service address")
@@ -45,33 +45,7 @@ func echo(w http.ResponseWriter, r *http.Request) {
 		currPlayer.JoinTable(player.GetRoom().GetAllTable()[0])
 	}
 	//启动一个goroutine监听该客户端发来的消息
-	go func() {
-		defer wg.Done()
-		defer func(){
-			if p := recover();p != nil{
-				fmt.Printf("panic recover! p: %v", p)
-				debug.PrintStack()
-			}
-		}()
-		for{
-			msgType,msg,err := con.ReadMessage()
-			if err == nil{
-				switch msgType {
-				case websocket.TextMessage:
-					//同桌用户交流，包含对话流程和出牌流程
-					currPlayer.ResolveMsg(msg)
-				case websocket.CloseMessage:
-					fmt.Println("链接关闭")
-					break
-					//离开桌子流程，后续包含断线保持，自动出牌
-				default:
-
-				}
-			}else{
-				break
-			}
-		}
-	}()
+	go player.HandlerUserMsg(&wg,con,currPlayer)
 
 	wg.Wait()
 }
@@ -79,13 +53,40 @@ func echo(w http.ResponseWriter, r *http.Request) {
 func home(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w,r,"/pages/index.html",301)
 }
+type A struct{
+	a int
+	b string
+}
+type Host struct {
+	IP string
+	Name string
+	a []A
+}
 
 func main() {
-	flag.Parse()
-	log.SetFlags(0)
-	http.HandleFunc("/echo", echo)
-	http.HandleFunc("/", home)
-	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./views/static"))))
-	http.Handle("/pages/", http.StripPrefix("/pages/", http.FileServer(http.Dir("./views/pages"))))
-	log.Fatal(http.ListenAndServe(*addr, nil))
+
+	m := Host{
+		Name:"Sky",
+		IP:"192.168.23.92",
+		a:[]A{A{1,"11"},{2,"22"}},
+	}
+	fmt.Println(m)
+	b, err := json.Marshal(m)
+	if err != nil {
+
+		fmt.Println("Umarshal failed:", err)
+		return
+	}
+
+
+	fmt.Println("json:", string(b))
 }
+//func main() {
+	//flag.Parse()
+	//log.SetFlags(0)
+	//http.HandleFunc("/echo", echo)
+	//http.HandleFunc("/", home)
+	//http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./views/static"))))
+	//http.Handle("/pages/", http.StripPrefix("/pages/", http.FileServer(http.Dir("./views/pages"))))
+	//log.Fatal(http.ListenAndServe(*addr, nil))
+//}

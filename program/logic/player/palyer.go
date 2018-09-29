@@ -6,7 +6,6 @@ import (
 	"chessSever/program/logic/game/poker"
 	"strconv"
 	"github.com/tidwall/gjson"
-	"chessSever/program/logic/msg"
 	"fmt"
 )
 
@@ -86,27 +85,32 @@ func (p *Player) sayToAnother(id int,msgB []byte){
 }
 
 func (p *Player)ResolveMsg(msgB []byte) error{
+
 	msgType,err := strconv.Atoi(gjson.Get(string(msgB),"msgType").String())
 	if err != nil{
+		p.Conn.WriteMessage(websocket.TextMessage,msgB)
 		return err
 	}
 
 	switch msgType {
-		case msg.TypeOfAuto:
+		case TypeOfAuto:
 
-		case msg.TypeOfUnReady:
+		case TypeOfUnReady:
 			p.unReady()
-		case msg.TypeOfReady:
+		case TypeOfReady:
 			p.Ready()
-		case msg.TypeOfPlayCard:
+		case TypeOfPlayCard:
 
-		case msg.TypeOfPass:
+		case TypeOfPass:
 
-		case msg.TypeOfLeaveTable:
+		case TypeOfLeaveTable:
 
-		case msg.TypeOfJoinTable:
+		case TypeOfJoinTable:
 
-		case msg.TypeOfHint:
+		case TypeOfHint:
+
+		default:
+			p.Conn.WriteMessage(msgType,msgB)
 	}
 
 	return nil

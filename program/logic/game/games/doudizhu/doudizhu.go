@@ -5,7 +5,6 @@ import (
 	"time"
 	"chessSever/program/logic/game/poker"
 	"chessSever/program/logic/game/games"
-	"fmt"
 	"chessSever/program/util"
 )
 
@@ -37,23 +36,23 @@ func GetDoudizhu() games.IGame{
 }
 
 
-func (dou Doudizhu)GetPlayerNum() int{
+func (dou *Doudizhu)GetPlayerNum() int{
 	return dou.playerNum
 }
 
-func (dou Doudizhu)GetPokerCards() []*poker.PokerCard{
+func (dou *Doudizhu)GetPokerCards() []*poker.PokerCard{
 	return dou.pokerCards
 }
 
-func (dou Doudizhu)GetGameName() string{
+func (dou *Doudizhu)GetGameName() string{
 	return dou.name
 }
 
-func (dou Doudizhu)GetGameID() int{
+func (dou *Doudizhu)GetGameID() int{
 	return dou.id
 }
 
-func (dou Doudizhu)GetDeckNum() int{
+func (dou *Doudizhu)GetDeckNum() int{
 	return dou.deckNum
 }
 
@@ -89,7 +88,6 @@ func (dou *Doudizhu)DealCards(){
 	}
 
 	dou.ShuffleCards()
-	fmt.Println(dou.playerCards)
 	dou.bottomCards = make([]*poker.PokerCard,3)
 	dou.bottomCards[0] = dou.pokerCards[0]
 	dou.bottomCards[1] = dou.pokerCards[1]
@@ -123,8 +121,8 @@ func (dou *Doudizhu)sortPlayerCards(){
 	for _,cards := range dou.playerCards{
 		util.BubbleSortCards(cards,poker.CardCommonCompare)
 	}
+}
 
-	for _,card := range dou.playerCards[0]{
-		fmt.Println(card)
-	}
+func (dou *Doudizhu) GetBottomCards() []*poker.PokerCard{
+	return dou.bottomCards
 }

@@ -66,6 +66,7 @@
                 var readyMsg = {}
                 readyMsg.msgType = TypeOfReady;
                 ws.send(JSON.stringify(readyMsg))
+                return false;
             }
             
             document.getElementById("unReady").onclik = function () {

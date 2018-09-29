@@ -25,5 +25,6 @@ type IGame interface {
 	CompareCards(cardsNow []poker.PokerDeck,lastCards []poker.PokerCard) bool 	//比较牌型大小
 	IsMatchRoles() bool                     //是否符合出牌规则
 	DealCards() 						    //发牌
-	GetPlayerCards(index int) []*poker.PokerCard
+	GetPlayerCards(index int) []*poker.PokerCard  //根据玩家索引获取玩家的牌
+	GetBottomCards() []*poker.PokerCard		//获取底牌
 }

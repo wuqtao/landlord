@@ -9,6 +9,9 @@ import (
 	"fmt"
 	"errors"
 	"time"
+	"math/rand"
+	"github.com/gorilla/websocket"
+	"log"
 )
 
 /*
@@ -123,6 +126,14 @@ func (t *Table) dealCards(){
 	for i,player := range t.Players{
 		player.PokerCards = t.Game.GetPlayerCards(i)
 		sendPlayerCards(player)
+	}
+	rand.Seed(time.Now().Unix())
+	currUserIndex := rand.Int31n(int32(t.Game.GetPlayerNum()-1))
+	callScoreMsg,err := newCallScoreMsg()
+	if err == nil{
+		t.Players[currUserIndex].Conn.WriteMessage(websocket.TextMessage,callScoreMsg)
+	}else{
+		log.Fatal(err.Error())
 	}
 }
 

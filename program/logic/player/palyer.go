@@ -74,7 +74,7 @@ func (p *Player) SayToTable(msg []byte){
 	p.Table.RUnlock()
 }
 //用户跟该桌某一个说话
-func (p *Player) sayToAnother(id int,msgB []byte){
+func (p *Player) SayToAnother(id int,msgB []byte){
 	p.Table.RLock()
 	for _,po := range p.Table.Players{
 		if po.Id == id {

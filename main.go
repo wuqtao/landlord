@@ -9,8 +9,6 @@ import (
 	"sync"
 	"chessSever/program/logic/player"
 	"chessSever/program/logic/game/games"
-	"encoding/json"
-	"fmt"
 )
 
 var addr = flag.String("addr", "localhost:9999", "http service address")
@@ -53,40 +51,13 @@ func echo(w http.ResponseWriter, r *http.Request) {
 func home(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w,r,"/pages/index.html",301)
 }
-type A struct{
-	a int
-	b string
-}
-type Host struct {
-	IP string
-	Name string
-	a []A
-}
 
 func main() {
-
-	m := Host{
-		Name:"Sky",
-		IP:"192.168.23.92",
-		a:[]A{A{1,"11"},{2,"22"}},
-	}
-	fmt.Println(m)
-	b, err := json.Marshal(m)
-	if err != nil {
-
-		fmt.Println("Umarshal failed:", err)
-		return
-	}
-
-
-	fmt.Println("json:", string(b))
+	flag.Parse()
+	log.SetFlags(0)
+	http.HandleFunc("/echo", echo)
+	http.HandleFunc("/", home)
+	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./views/static"))))
+	http.Handle("/pages/", http.StripPrefix("/pages/", http.FileServer(http.Dir("./views/pages"))))
+	log.Fatal(http.ListenAndServe(*addr, nil))
 }
-//func main() {
-	//flag.Parse()
-	//log.SetFlags(0)
-	//http.HandleFunc("/echo", echo)
-	//http.HandleFunc("/", home)
-	//http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./views/static"))))
-	//http.Handle("/pages/", http.StripPrefix("/pages/", http.FileServer(http.Dir("./views/pages"))))
-	//log.Fatal(http.ListenAndServe(*addr, nil))
-//}

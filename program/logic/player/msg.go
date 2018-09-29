@@ -3,7 +3,6 @@ package player
 import (
 	"chessSever/program/logic/game/poker"
 	"encoding/json"
-	"fmt"
 )
 
 const(
@@ -22,30 +21,38 @@ const(
 	TypeOfConfirm         //客户端出牌等操作确认信息
 )
 type SendCard struct {
-	index int          //标志当前牌在用户所有牌中的索引位置
-	card poker.PokerCard
+	Index int          //标志当前牌在用户所有牌中的索引位置
+	Card poker.PokerCard
 }
 //发送给客户端的消息类型
-type CardMsg struct{
-	msgType int
-	cards []SendCard
+type SendCardMsg struct{
+	MsgType int
+	Cards []*SendCard
 }
 
 func newSendCardMsg(cards []*poker.PokerCard) ([]byte,error){
-	cardMsg := CardMsg{
+	cardMsg := SendCardMsg{
 		TypeOfSendCard,
-		[]SendCard{},
+		[]*SendCard{},
 	}
 	for i,card := range cards{
 		sendCard := SendCard{}
-		sendCard.index =i
-		sendCard.card = *card
-		cardMsg.cards = append(cardMsg.cards,sendCard)
+		sendCard.Index =i
+		sendCard.Card = *card
+		cardMsg.Cards = append(cardMsg.Cards,&sendCard)
 	}
-	fmt.Println(cardMsg)
-	json,err := json.Marshal(cardMsg)
-	fmt.Println(string(json))
-	return json,err
+	return json.Marshal(cardMsg)
+}
+
+type Msg struct {
+	MsgType int
+}
+
+func newCallScoreMsg() ([]byte,error){
+	msg := Msg{
+		TypeOfCallScore,
+	}
+	return json.Marshal(msg)
 }
 /*
 	确认消息

@@ -2,78 +2,8 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <script>
-        window.addEventListener("load", function(evt) {
-            var output = document.getElementById("output");
-            var input = document.getElementById("input");
-            var ws;
-            var print = function(message) {
-                var d = document.createElement("div");
-                d.innerHTML = message;
-                output.appendChild(d);
-            };
-            const 	TypeOfReady = 0;    //准备
-            const   TypeOfUnReady =1;	 	  //取消准备
-            const   TypeOfJoinTable	= 2;      //加入桌子
-            const  TypeOfLeaveTable = 3;    //离开桌子
-
-            const  TypeOfHint       =  4;     //提示
-            const  TypeOfPlayCard   =  5;  //出牌
-            const  TypeOfPass       =  6;  //过牌
-
-            const  TypeOfAuto		= 7;  //托管
-            const  TypeOfSendCard	= 8;  //发牌
-            const  TypeOfCallScore   = 9;  //抢地主叫分
-            const    TypeOfConfirm   = 10;   //客户端出牌等操作确认信息
-
-            document.getElementById("open").onclick = function(evt) {
-                if (ws) {
-                    return false;
-                }
-                ws = new WebSocket("ws://localhost:9999/echo");
-                ws.onopen = function(evt) {
-                    print("OPEN");
-                }
-                ws.onclose = function(evt) {
-                    print("CLOSE");
-                    ws = null;
-                }
-                ws.onmessage = function(evt) {
-                    print("RESPONSE: " + evt.data);
-                }
-                ws.onerror = function(evt) {
-                    print("ERROR: " + evt.data);
-                }
-                return false;
-            };
-            document.getElementById("send").onclick = function(evt) {
-                if (!ws) {
-                    return false;
-                }
-                print("SEND: " + input.value);
-                ws.send(input.value);
-                return false;
-            };
-            document.getElementById("close").onclick = function(evt) {
-                if (!ws) {
-                    return false;
-                }
-                ws.close();
-                return false;
-            };
-            
-            document.getElementById("ready").onclick = function () {
-                var readyMsg = {}
-                readyMsg.msgType = TypeOfReady;
-                ws.send(JSON.stringify(readyMsg))
-                return false;
-            }
-            
-            document.getElementById("unReady").onclik = function () {
-                
-            }
-        });
-    </script>
+    <script src="../static/js/jquery-3.3.1.min.js"></script>
+    <script src="../static/js/home.js"></script>
 </head>
 <body>
 <table>
@@ -84,11 +14,13 @@
                 <button id="close">Close</button>
                 <button id="ready">Ready</button>
                 <button id="unReady">UnReady</button>
-
-
                 </br>
                 <input id="input" type="text" value="Hello world!">
                 <button id="send">Send</button>
+                <div id="divScore" style="display: none">
+                    <input id="score" type="text" value="Hello world!" type="number">
+                    <button id="callScore" onclick="callScore()">叫分</button>
+                </div>
             </form>
         </td>
         <td valign="top" width="50%" style="background: coral">

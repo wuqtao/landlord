@@ -16,13 +16,29 @@ var print = function(message) {
     d.innerHTML = message;
     $("#output").append(d);
 };
+
+
 var ws;
+
+function sendScore() {
+    msg = {};
+    msg.MsgType = TypeOfCallScore;
+    msg.Data = {
+        "Score":$("#score").val()
+    }
+    if(!ws){
+        return false
+    }
+    ws.send(JSON.stringify(msg));
+    $("#divScore").hide();
+}
+
 $(function(){
     $("#open").bind('click',function(){
         if (ws) {
             return false;
         }
-        ws = new WebSocket("ws://localhost:9999/echo");
+        ws = new WebSocket("ws://localhost:8888/echo");
         ws.onopen = function(evt) {
             print("OPEN");
         }
@@ -31,6 +47,7 @@ $(function(){
             ws = null;
         }
         ws.onmessage = function(evt) {
+
             data = JSON.parse(evt.data)
             switch(data.MsgType){
                 case TypeOfReady:
@@ -54,6 +71,7 @@ $(function(){
                     break;
                 case TypeOfCallScore:
                     $("#divScore").show()
+                    print("请叫分");
                     break;
                 case TypeOfConfirm:
                     break;
@@ -70,8 +88,8 @@ $(function(){
         if (!ws) {
             return false;
         }
-        print("SEND: " + $("#input").val());
         ws.send(input.value);
+
         return false;
     });
     $("#close").bind('click',function(evt) {
@@ -84,7 +102,7 @@ $(function(){
 
     $("#ready").bind('click',function () {
         var readyMsg = {}
-        readyMsg.msgType = TypeOfReady;
+        readyMsg.MsgType = TypeOfReady;
         ws.send(JSON.stringify(readyMsg))
         return false;
     });
@@ -93,12 +111,3 @@ $(function(){
 
     })
 })
-
-function callScore() {
-    msg = {};
-    msg.MsgType = TypeOfCallScore;
-    msg.Data = {
-        "score":$("#score").val()
-    }
-    ws.send(JSON.stringify(msg))
-}

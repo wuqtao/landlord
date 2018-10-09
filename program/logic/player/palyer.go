@@ -23,6 +23,7 @@ type Player struct {
 	Index    int             //在桌子上的索引
 	IsReady  bool			 //是否准备
 	IsAuto   bool            //是否托管
+	CallScore int            //用户叫地主分数
 }
 
 func NewPlayer(id int, nickName string, conn *websocket.Conn, headPic string) *Player {
@@ -85,8 +86,8 @@ func (p *Player) SayToAnother(id int,msgB []byte){
 }
 
 func (p *Player)ResolveMsg(msgB []byte) error{
-
-	msgType,err := strconv.Atoi(gjson.Get(string(msgB),"msgType").String())
+	fmt.Println(string(msgB))
+	msgType,err := strconv.Atoi(gjson.Get(string(msgB),"MsgType").String())
 	if err != nil{
 		p.Conn.WriteMessage(websocket.TextMessage,msgB)
 		return err
@@ -109,6 +110,10 @@ func (p *Player)ResolveMsg(msgB []byte) error{
 
 		case TypeOfHint:
 
+		case TypeOfCallScore:
+			score,_ := strconv.Atoi(gjson.Get(string(msgB),"Data.Score").String())
+			p.callScore(score)
+
 		default:
 			p.Conn.WriteMessage(msgType,msgB)
 	}
@@ -130,4 +135,16 @@ func (p *Player)unReady(){
 	p.Lock()
 	p.IsReady = false
 	p.Unlock()
+}
+
+func (p *Player)callScore(score int){
+	p.Lock()
+	defer p.Unlock()
+	p.CallScore = score
+
+	if p.CallScore == 3 {
+		p.Table.callLoardEnd(p)
+	}else{
+		p.Table.nextCallLoard()
+	}
 }

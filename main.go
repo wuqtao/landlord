@@ -11,7 +11,7 @@ import (
 	"chessSever/program/logic/game/games"
 )
 
-var addr = flag.String("addr", "localhost:9999", "http service address")
+var addr = flag.String("addr", "localhost:8888", "http service address")
 
 var upgrader = websocket.Upgrader{} // use default options
 

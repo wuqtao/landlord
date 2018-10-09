@@ -10,16 +10,16 @@
     <tr>
         <td valign="top" width="50%">
             <form>
-                <button id="open">Open</button>
-                <button id="close">Close</button>
-                <button id="ready">Ready</button>
-                <button id="unReady">UnReady</button>
+                <button id="open" type="button">Open</button>
+                <button id="close" type="button">Close</button>
+                <button id="ready" type="button">Ready</button>
+                <button id="unReady" type="button">UnReady</button>
                 </br>
                 <input id="input" type="text" value="Hello world!">
-                <button id="send">Send</button>
-                <div id="divScore" style="display: none">
-                    <input id="score" type="text" value="Hello world!" type="number">
-                    <button id="callScore" onclick="callScore()">叫分</button>
+                <button id="send" type="button">Send</button>
+                <div id="divScore" style="display:none">
+                    <input id="score" value="3" type="number">
+                    <button id="callScore" onclick="sendScore()" type="button">叫分</button>
                 </div>
             </form>
         </td>

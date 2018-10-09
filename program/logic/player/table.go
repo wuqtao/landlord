@@ -25,6 +25,7 @@ type Table struct {
 	CurrPokerCards []*poker.PokerCard  		//当前出的牌
 	CurrPalyerIndex int 					//当前出牌的玩家数组index
 	IsPlaying    bool                       //是否正在游戏中
+	CurrLoardIndex int                     //当前叫地主或者地主的Index
 }
 //创建桌子
 func newTable(player *Player, gameName string) *Table {
@@ -127,15 +128,82 @@ func (t *Table) dealCards(){
 		player.PokerCards = t.Game.GetPlayerCards(i)
 		sendPlayerCards(player)
 	}
+	t.callLoard()
+}
+
+func (t *Table) callLoard(){
 	rand.Seed(time.Now().Unix())
 	currUserIndex := rand.Int31n(int32(t.Game.GetPlayerNum()-1))
+	t.CurrLoardIndex = int(currUserIndex)
+
 	callScoreMsg,err := newCallScoreMsg()
 	if err == nil{
 		t.Players[currUserIndex].Conn.WriteMessage(websocket.TextMessage,callScoreMsg)
+		fmt.Println(strconv.Itoa(t.Players[currUserIndex].Id)+"开始叫地主")
 	}else{
 		log.Fatal(err.Error())
 	}
 }
+
+func (t *Table) callLoardEnd(player *Player){
+	t.Lock()
+	defer t.Unlock()
+	for i,p := range t.Players{
+		if p == player{
+			t.CurrLoardIndex = i
+		}
+	}
+	fmt.Println("叫地主结束"+strconv.Itoa(t.CurrLoardIndex)+"成为地主")
+	currPlayer := t.Players[t.CurrLoardIndex]
+	for _,card := range t.Game.GetBottomCards(){
+		currPlayer.PokerCards = append(currPlayer.PokerCards,card)
+	}
+	sendPlayerCards(player)
+	fmt.Println("底牌发送完毕，开始游戏")
+	t.play()
+}
+
+func (t *Table) nextCallLoard(){
+	player := t.GetNextLoard()
+	callScoreMsg,err := newCallScoreMsg()
+	if err == nil{
+		player.Conn.WriteMessage(websocket.TextMessage,callScoreMsg)
+		fmt.Println(strconv.Itoa(player.Id)+"开始叫地主")
+	}else{
+		log.Fatal(err.Error())
+	}
+}
+
+func (t *Table) play(){
+
+}
+
+func (t *Table) GetNextPlayer() *Player{
+	t.Lock()
+	defer t.Unlock()
+	if(t.CurrPalyerIndex >= t.Game.GetPlayerNum()){
+		t.CurrPalyerIndex = 0
+	}else{
+		t.CurrPalyerIndex++
+	}
+
+	return t.Players[t.CurrPalyerIndex]
+}
+
+func (t *Table) GetNextLoard() *Player{
+	t.Lock()
+	defer t.Unlock()
+	if(t.CurrLoardIndex >= t.Game.GetPlayerNum()){
+		t.CurrLoardIndex = 0
+	}else{
+		t.CurrLoardIndex++
+	}
+
+	return t.Players[t.CurrLoardIndex]
+}
+
+
+
 
 
 

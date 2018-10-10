@@ -12,6 +12,7 @@ import (
 	"math/rand"
 	"github.com/gorilla/websocket"
 	"log"
+	"chessSever/program/util"
 )
 
 /*
@@ -26,6 +27,7 @@ type Table struct {
 	CurrPalyerIndex int 					//当前出牌的玩家数组index
 	IsPlaying    bool                       //是否正在游戏中
 	CurrLoardIndex int                     //当前叫地主或者地主的Index
+	CurrLoardScore int 						//当前地主分数
 }
 //创建桌子
 func newTable(player *Player, gameName string) *Table {
@@ -145,12 +147,24 @@ func (t *Table) callLoard(){
 	}
 }
 
-func (t *Table) callLoardEnd(player *Player){
+func (t *Table) callLoardEnd(){
 	t.Lock()
 	defer t.Unlock()
 	for i,p := range t.Players{
-		if p == player{
+		if p.CallScore == 3{
+			t.CurrLoardScore = 3
 			t.CurrLoardIndex = i
+			break
+		}else{
+			if i == 0{
+				t.CurrLoardIndex = i
+				t.CurrLoardScore = p.CallScore
+			}else{
+				if p.CallScore > t.CurrLoardScore{
+					t.CurrLoardIndex = i
+					t.CurrLoardScore = p.CallScore
+				}
+			}
 		}
 	}
 	fmt.Println("叫地主结束"+strconv.Itoa(t.CurrLoardIndex)+"成为地主")
@@ -158,7 +172,8 @@ func (t *Table) callLoardEnd(player *Player){
 	for _,card := range t.Game.GetBottomCards(){
 		currPlayer.PokerCards = append(currPlayer.PokerCards,card)
 	}
-	sendPlayerCards(player)
+	util.BubbleSortCards(t.Players[t.CurrLoardIndex].PokerCards,poker.CardCommonCompare)
+	sendPlayerCards(t.Players[t.CurrLoardIndex])
 	fmt.Println("底牌发送完毕，开始游戏")
 	t.play()
 }
@@ -181,7 +196,7 @@ func (t *Table) play(){
 func (t *Table) GetNextPlayer() *Player{
 	t.Lock()
 	defer t.Unlock()
-	if(t.CurrPalyerIndex >= t.Game.GetPlayerNum()){
+	if(t.CurrPalyerIndex >= t.Game.GetPlayerNum()-1){
 		t.CurrPalyerIndex = 0
 	}else{
 		t.CurrPalyerIndex++
@@ -193,7 +208,7 @@ func (t *Table) GetNextPlayer() *Player{
 func (t *Table) GetNextLoard() *Player{
 	t.Lock()
 	defer t.Unlock()
-	if(t.CurrLoardIndex >= t.Game.GetPlayerNum()){
+	if(t.CurrLoardIndex >= t.Game.GetPlayerNum()-1){
 		t.CurrLoardIndex = 0
 	}else{
 		t.CurrLoardIndex++

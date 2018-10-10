@@ -2,31 +2,54 @@
 <html>
 <head>
     <meta charset="utf-8">
+    <link href="../static/css/index.css" type="text/css" rel="stylesheet">
     <script src="../static/js/jquery-3.3.1.min.js"></script>
     <script src="../static/js/home.js"></script>
 </head>
 <body>
-<table>
-    <tr>
-        <td valign="top" width="50%">
-            <form>
-                <button id="open" type="button">Open</button>
-                <button id="close" type="button">Close</button>
-                <button id="ready" type="button">Ready</button>
-                <button id="unReady" type="button">UnReady</button>
-                </br>
-                <input id="input" type="text" value="Hello world!">
-                <button id="send" type="button">Send</button>
-                <div id="divScore" style="display:none">
-                    <input id="score" value="3" type="number">
-                    <button id="callScore" onclick="sendScore()" type="button">叫分</button>
+    <div class="container" style="height: ">
+        <div>
+            <div class="divPlay">
+
+            </div>
+            <div class="divCards" id="userCards">
+
+            </div>
+            <template id="tempCard">
+                <div class="divCard">
+                    <div class="divNum">
+                        {0}
+                    </div>
+                    <div class="divColor">
+                        {1}
+                    </div>
                 </div>
-            </form>
-        </td>
-        <td valign="top" width="50%" style="background: coral">
-            <div id="output"></div>
-        </td>
-    </tr>
-</table>
+            </template>
+            <div class="divButton">
+                <table>
+                    <tr>
+                        <td valign="top" width="50%">
+                            <form>
+                                <button id="open" type="button">Open</button>
+                                <button id="close" type="button">Close</button>
+                                <button id="ready" type="button">Ready</button>
+                                <button id="unReady" type="button">UnReady</button>
+                                </br>
+                                <input id="input" type="text" value="Hello world!">
+                                <button id="send" type="button">Send</button>
+                                <div id="divScore" style="display:none">
+                                    <input id="score" value="3" type="number">
+                                    <button id="callScore" onclick="sendScore()" type="button">叫分</button>
+                                </div>
+                            </form>
+                        </td>
+                        <td valign="top" width="50%" style="background: coral">
+                            <div id="output"></div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

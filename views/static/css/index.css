@@ -1,0 +1,40 @@
+.container {
+    height: 100%;
+    width: 100%;
+    background: aqua;
+    position: absolute
+}
+.divPlay {
+    height:300px;
+    width:100%;
+    background: red;
+    position: relative
+}
+.divCards {
+    height:250px;
+    width:100%;
+    background: blueviolet;
+    position: relative
+}
+.divCard {
+    align-self:center;
+    height: 80%;
+    width: 40px;
+    background: beige;
+}
+.divNum {
+    height: 50%;
+    width: 100%;
+    position: relative;
+}
+.divColor{
+    height: 50%;
+    width: 100%;
+    position: relative;
+}
+.divButton {
+    height: 150px;
+    width: 100%;
+    background: blue;
+    position: relative
+}

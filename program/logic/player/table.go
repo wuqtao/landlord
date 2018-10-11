@@ -148,26 +148,42 @@ func (t *Table) callLoard(){
 	}
 }
 
-func (t *Table) callLoardEnd(){
+func (t *Table) userCallScore(player *Player,score int){
 	t.Lock()
-	defer t.Unlock()
-	for i,p := range t.Players{
-		if p.CallScore == 3{
-			t.CurrLoardScore = 3
+	t.CalledLoardNum++
+	var i int
+	var p *Player
+	for i,p = range t.Players{
+		if p == player {
 			t.CurrLoardIndex = i
 			break
+		}
+	}
+
+	if score == 3{
+		t.CurrLoardScore = score
+		t.CurrLoardIndex = i
+		t.Unlock()
+		t.callLoardEnd()
+	}else{
+		if t.CalledLoardNum >= t.Game.GetPlayerNum() {
+			t.Unlock()
+			t.callLoardEnd()
 		}else{
-			if i == 0{
+			if score > t.CurrLoardScore{
+				t.CurrLoardScore = score
 				t.CurrLoardIndex = i
-				t.CurrLoardScore = p.CallScore
+				t.Unlock()
+				t.nextCallLoard()
 			}else{
-				if p.CallScore > t.CurrLoardScore{
-					t.CurrLoardIndex = i
-					t.CurrLoardScore = p.CallScore
-				}
+				t.Unlock()
+				t.nextCallLoard()
 			}
 		}
 	}
+}
+
+func (t *Table) callLoardEnd(){
 	fmt.Println("叫地主结束"+strconv.Itoa(t.CurrLoardIndex)+"成为地主")
 	currPlayer := t.Players[t.CurrLoardIndex]
 	for _,card := range t.Game.GetBottomCards(){

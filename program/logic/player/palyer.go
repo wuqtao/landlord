@@ -24,7 +24,6 @@ type Player struct {
 	IsReady  bool			 //是否准备
 	IsAuto   bool            //是否托管
 	CallScore int            //用户叫地主分数
-	CanCallScore bool
 }
 
 func NewPlayer(id int, nickName string, conn *websocket.Conn, headPic string) *Player {
@@ -142,15 +141,5 @@ func (p *Player)callScore(score int){
 	p.Lock()
 	defer p.Unlock()
 	p.CallScore = score
-	p.CanCallScore = false
-	if p.CallScore == 3 {
-		p.Table.callLoardEnd()
-	}else{
-		//如果已经叫过地主，则不再叫地主，叫地主结束
-		if p.CanCallScore{
-			p.Table.callLoardEnd()
-		}else{
-			p.Table.nextCallLoard()
-		}
-	}
+	p.Table.userCallScore(p,score)
 }

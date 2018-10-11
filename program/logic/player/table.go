@@ -28,6 +28,7 @@ type Table struct {
 	IsPlaying    bool                       //是否正在游戏中
 	CurrLoardIndex int                     //当前叫地主或者地主的Index
 	CurrLoardScore int 						//当前地主分数
+	CalledLoardNum int                     //叫过地主的人数
 }
 //创建桌子
 func newTable(player *Player, gameName string) *Table {

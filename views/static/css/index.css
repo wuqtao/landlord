@@ -1,26 +1,32 @@
 .container {
     height: 100%;
     width: 100%;
-    background: aqua;
+    background: beige;
     position: absolute
 }
 .divPlay {
     height:300px;
     width:100%;
-    background: red;
-    position: relative
+    background: beige;
+    position: relative;
+    border:3px solid orangered;
 }
 .divCards {
     height:250px;
     width:100%;
-    background: blueviolet;
-    position: relative
+    background: beige;
+    position: relative;
+    overflow: auto;
+    border:3px solid orangered;
 }
 .divCard {
     align-self:center;
-    height: 80%;
-    width: 40px;
-    background: beige;
+    height: 100%;
+    width: max-content;
+    background:burlywood;
+    position: relative;
+    display: inline-block;
+    border:1px solid aqua;
 }
 .divNum {
     height: 50%;
@@ -35,6 +41,7 @@
 .divButton {
     height: 150px;
     width: 100%;
-    background: blue;
-    position: relative
+    background: beige;
+    position: relative;
+    border:3px solid orangered;
 }

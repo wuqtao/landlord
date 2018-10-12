@@ -29,6 +29,7 @@ type Table struct {
 	CurrLoardIndex int                     //当前叫地主或者地主的Index
 	CurrLoardScore int 						//当前地主分数
 	CalledLoardNum int                     //叫过地主的人数
+	CurrCallLoardIndex int 					//当前叫地主index
 }
 //创建桌子
 func newTable(player *Player, gameName string) *Table {
@@ -137,7 +138,7 @@ func (t *Table) dealCards(){
 func (t *Table) callLoard(){
 	rand.Seed(time.Now().Unix())
 	currUserIndex := rand.Int31n(int32(t.Game.GetPlayerNum()-1))
-	t.CurrLoardIndex = int(currUserIndex)
+	t.CurrCallLoardIndex = int(currUserIndex)
 
 	callScoreMsg,err := newCallScoreMsg()
 	if err == nil{
@@ -155,7 +156,6 @@ func (t *Table) userCallScore(player *Player,score int){
 	var p *Player
 	for i,p = range t.Players{
 		if p == player {
-			t.CurrLoardIndex = i
 			break
 		}
 	}
@@ -184,6 +184,10 @@ func (t *Table) userCallScore(player *Player,score int){
 }
 
 func (t *Table) callLoardEnd(){
+	t.Lock()
+	t.CurrCallLoardIndex = 0
+	t.CalledLoardNum = 0
+	t.Unlock()
 	fmt.Println("叫地主结束"+strconv.Itoa(t.CurrLoardIndex)+"成为地主")
 	currPlayer := t.Players[t.CurrLoardIndex]
 	for _,card := range t.Game.GetBottomCards(){
@@ -213,7 +217,7 @@ func (t *Table) play(){
 func (t *Table) GetNextPlayer() *Player{
 	t.Lock()
 	defer t.Unlock()
-	if(t.CurrPalyerIndex >= t.Game.GetPlayerNum()-1){
+	if(t.CurrCallLoardIndex >= t.Game.GetPlayerNum()-1){
 		t.CurrPalyerIndex = 0
 	}else{
 		t.CurrPalyerIndex++
@@ -225,13 +229,13 @@ func (t *Table) GetNextPlayer() *Player{
 func (t *Table) GetNextLoard() *Player{
 	t.Lock()
 	defer t.Unlock()
-	if(t.CurrLoardIndex >= t.Game.GetPlayerNum()-1){
-		t.CurrLoardIndex = 0
+	if(t.CurrCallLoardIndex >= t.Game.GetPlayerNum()-1){
+		t.CurrCallLoardIndex = 0
 	}else{
-		t.CurrLoardIndex++
+		t.CurrCallLoardIndex++
 	}
 
-	return t.Players[t.CurrLoardIndex]
+	return t.Players[t.CurrCallLoardIndex]
 }
 
 

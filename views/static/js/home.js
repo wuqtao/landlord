@@ -1,40 +1,24 @@
-const 	TypeOfReady = 0;    //准备
-const   TypeOfUnReady =1;	 	  //取消准备
-const   TypeOfJoinTable	= 2;      //加入桌子
-const  TypeOfLeaveTable = 3;    //离开桌子
-const  TypeOfHint       =  4;     //提示
-const  TypeOfPlayCard   =  5;  //出牌
-const  TypeOfPass       =  6;  //过牌
-const  TypeOfAuto		= 7;  //托管
-const  TypeOfSendCard	= 8;  //发牌
-const  TypeOfCallScore   = 9;  //抢地主叫分
-const    TypeOfConfirm   = 10;   //客户端出牌等操作确认信息
+const TypeOfReady = 0;    //准备
+const TypeOfUnReady =1;	 	  //取消准备
+const TypeOfJoinTable	= 2;      //加入桌子
+const TypeOfLeaveTable = 3;    //离开桌子
+const TypeOfHint       =  4;     //提示
+const TypeOfPlayCard   =  5;  //出牌
+const TypeOfPass       =  6;  //过牌
+const TypeOfAuto		= 7;  //托管
+const TypeOfSendCard	= 8;  //发牌
+const TypeOfCallScore   = 9;  //抢地主叫分
+const TypeOfConfirm   = 10;   //客户端出牌等操作确认信息
 
+var ws;
 
-var print = function(message) {
+function print(message) {
     var d = document.createElement("div");
     d.innerHTML = message;
     $("#output").append(d);
 };
 
-
-var ws;
-
-function sendScore() {
-    msg = {};
-    msg.MsgType = TypeOfCallScore;
-    msg.Data = {
-        "Score":$("#score").val()
-    }
-    if(!ws){
-        return false
-    }
-    ws.send(JSON.stringify(msg));
-    $("#divScore").hide();
-}
-
-$(function(){
-    $("#open").bind('click',function(){
+function openConnection(){
         if (ws) {
             return false;
         }
@@ -69,7 +53,7 @@ $(function(){
                 case TypeOfSendCard:
                     $("#userCards").html('');
                     $.each(data.Cards,function(i,o){
-                        $("#userCards").append(String.format($("#tempCard").html(),o.Card.CardName,o.Card.CardSuit));
+                        $("#userCards").append(String.format($("#tempCard").html(),o.Card.CardName,o.Card.CardSuit,o.Index));
                     })
                     break;
                 case TypeOfCallScore:
@@ -85,45 +69,50 @@ $(function(){
         ws.onerror = function(evt) {
             print("ERROR: " + evt.data);
         }
+}
+
+
+function closeConnection() {
+    if (!ws) {
         return false;
-    });
-    $("#send").bind('click',function(evt) {
-        if (!ws) {
-            return false;
-        }
-        ws.send(input.value);
-
-        return false;
-    });
-    $("#close").bind('click',function(evt) {
-        if (!ws) {
-            return false;
-        }
-        ws.close();
-        return false;
-    });
-
-    $("#ready").bind('click',function () {
-        var readyMsg = {}
-        readyMsg.MsgType = TypeOfReady;
-        ws.send(JSON.stringify(readyMsg))
-        return false;
-    });
-
-    $("#unReady").bind('click',function () {
-        $("#userCards").append(String.format($("#tempCard").html(),111,22));
-    })
-})
-
-String.format = function () {
-    if (arguments.length == 0)
-        return null;
-
-    var str = arguments[0];
-    for (var i = 1; i < arguments.length; i++) {
-        var re = new RegExp('\\{' + (i - 1) + '\\}', 'gm');
-        str = str.replace(re, arguments[i]);
     }
+    ws.close();
+}
 
-    return str;
+function send(evt) {
+    if (!ws) {
+        return false;
+    }
+    ws.send(input.value);
+}
+
+function ready() {
+    var readyMsg = {}
+    readyMsg.MsgType = TypeOfReady;
+    ws.send(JSON.stringify(readyMsg));
+}
+
+function unReady(){
+    
+}
+
+function chooseCard(obj){
+    if($(obj).hasClass('chooseYes')){
+        $(obj).removeClass('chooseYes');
+    }else{
+        $(obj).addClass('chooseYes');
+    }
+}
+
+function sendScore() {
+    msg = {};
+    msg.MsgType = TypeOfCallScore;
+    msg.Data = {
+        "Score":$("#score").val()
+    }
+    if(!ws){
+        return false
+    }
+    ws.send(JSON.stringify(msg));
+    $("#divScore").hide();
 }

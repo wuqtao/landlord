@@ -5,9 +5,10 @@
     <link href="../static/css/index.css" type="text/css" rel="stylesheet">
     <script src="../static/js/jquery-3.3.1.min.js"></script>
     <script src="../static/js/home.js"></script>
+    <script src="../static/js/util.js"></script>
 </head>
 <body>
-    <div class="container" style="height: ">
+    <div class="container">
         <div>
             <div class="divPlay">
 
@@ -23,6 +24,9 @@
                     <div class="divColor">
                         {1}
                     </div>
+                    <div class="chooseCard" onclick="chooseCard(this)">
+                        <input type="hidden" value="{2}"/>
+                    </div>
                 </div>
             </template>
             <div class="divButton">
@@ -30,16 +34,21 @@
                     <tr>
                         <td valign="top" width="50%">
                             <form>
-                                <button id="open" type="button">Open</button>
-                                <button id="close" type="button">Close</button>
-                                <button id="ready" type="button">Ready</button>
-                                <button id="unReady" type="button">UnReady</button>
+                                <button onclick="openConnection()" type="button">Open</button>
+                                <button onclick="closeConnection()" type="button">Close</button>
+                                <button onclick="ready()" type="button">Ready</button>
+                                <button onclick="unReady()" type="button">UnReady</button>
                                 </br>
                                 <input id="input" type="text" value="Hello world!">
                                 <button id="send" type="button">Send</button>
                                 <div id="divScore" style="display:none">
                                     <input id="score" value="3" type="number">
                                     <button id="callScore" onclick="sendScore()" type="button">叫分</button>
+                                </div>
+                                <div id="divPlay" style="display:none">
+                                    <button  onclick="pass()" type="button">过牌</button>
+                                    <button  onclick="playCards()" type="button">出牌</button>
+                                    <button  onclick="cardHints()" type="button">提示</button>
                                 </div>
                             </form>
                         </td>

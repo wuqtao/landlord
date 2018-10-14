@@ -29,15 +29,29 @@
     border:1px solid aqua;
 }
 .divNum {
-    height: 50%;
+    height: 47%;
     width: 100%;
     position: relative;
 }
 .divColor{
-    height: 50%;
+    height: 47%;
     width: 100%;
+    align-self: center;
     position: relative;
 }
+.chooseCard{
+    height: 6%;
+    width: 50%;
+    position: relative;
+    margin-left: 25%;
+    margin-right: 25%;
+    border: 1px solid aqua;
+}
+
+.chooseYes{
+    background-color: aqua;
+}
+
 .divButton {
     height: 150px;
     width: 100%;

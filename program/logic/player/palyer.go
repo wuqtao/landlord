@@ -143,3 +143,16 @@ func (p *Player)callScore(score int){
 	p.CallScore = score
 	p.Table.userCallScore(p,score)
 }
+//出牌
+func (p *Player)playCards(cardIndexs []int){
+
+}
+//过牌
+func (p *Player)pass(){
+
+}
+//提示出牌
+func(p *Player) hintCards(){
+
+}
+

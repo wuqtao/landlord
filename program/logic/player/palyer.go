@@ -24,6 +24,7 @@ type Player struct {
 	IsReady  bool			 //是否准备
 	IsAuto   bool            //是否托管
 	CallScore int            //用户叫地主分数
+	CalledScore bool         //用户是否已经叫地主
 }
 
 func NewPlayer(id int, nickName string, conn *websocket.Conn, headPic string) *Player {
@@ -139,8 +140,9 @@ func (p *Player)unReady(){
 
 func (p *Player)callScore(score int){
 	p.Lock()
-	defer p.Unlock()
 	p.CallScore = score
+	p.CalledScore = true
+	p.Unlock()
 	p.Table.userCallScore(p,score)
 }
 //出牌

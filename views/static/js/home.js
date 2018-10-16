@@ -9,6 +9,7 @@ const TypeOfAuto		= 7;  //托管
 const TypeOfSendCard	= 8;  //发牌
 const TypeOfCallScore   = 9;  //抢地主叫分
 const TypeOfConfirm   = 10;   //客户端出牌等操作确认信息
+const TypeOfCallScoreTimeOut = 11; //叫地主超时
 
 var ws;
 
@@ -61,6 +62,9 @@ function openConnection(){
                     print("请叫分");
                     break;
                 case TypeOfConfirm:
+                    break;
+                case TypeOfCallScoreTimeOut:
+                    $("#divScore").hide();
                     break;
                 default:
                     console.log(evt.data)

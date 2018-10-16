@@ -120,10 +120,13 @@ func (t *Table) userReady(){
 	if userAllReady {
 		fmt.Println(t.Key+"的玩家都准备好了")
 		t.IsPlaying = true
+		t.Unlock()
 		t.Game.DealCards()
 		t.dealCards()
+	}else{
+		t.Unlock()
 	}
-	t.Unlock()
+
 }
 
 func (t *Table) dealCards(){
@@ -138,15 +141,7 @@ func (t *Table) dealCards(){
 func (t *Table) callLoard(){
 	rand.Seed(time.Now().Unix())
 	currUserIndex := rand.Int31n(int32(t.Game.GetPlayerNum()-1))
-	t.CurrCallLoardIndex = int(currUserIndex)
-
-	callScoreMsg,err := newCallScoreMsg()
-	if err == nil{
-		t.Players[currUserIndex].Conn.WriteMessage(websocket.TextMessage,callScoreMsg)
-		fmt.Println(strconv.Itoa(t.Players[currUserIndex].Id)+"开始叫地主")
-	}else{
-		log.Fatal(err.Error())
-	}
+	t.nextCallLoard(int(currUserIndex))
 }
 
 func (t *Table) userCallScore(player *Player,score int){
@@ -174,10 +169,10 @@ func (t *Table) userCallScore(player *Player,score int){
 				t.CurrLoardScore = score
 				t.CurrLoardIndex = i
 				t.Unlock()
-				t.nextCallLoard()
+				t.nextCallLoard(-1)
 			}else{
 				t.Unlock()
-				t.nextCallLoard()
+				t.nextCallLoard(-1)
 			}
 		}
 	}
@@ -199,8 +194,18 @@ func (t *Table) callLoardEnd(){
 	t.play()
 }
 
-func (t *Table) nextCallLoard(){
-	player := t.GetNextLoard()
+func (t *Table) nextCallLoard(index int){
+
+	var player *Player
+	if index >= 0{
+		t.Lock()
+		t.CurrCallLoardIndex = index
+		player = t.Players[t.CurrCallLoardIndex]
+		t.Unlock()
+	}else{
+		player = t.GetNextLoard()
+	}
+
 	callScoreMsg,err := newCallScoreMsg()
 	if err == nil{
 		player.Conn.WriteMessage(websocket.TextMessage,callScoreMsg)
@@ -208,6 +213,24 @@ func (t *Table) nextCallLoard(){
 	}else{
 		log.Fatal(err.Error())
 	}
+	//限制叫地主时间
+	go func(player *Player) {
+		time.Sleep(time.Second*10)
+		player.RLock()
+		if !player.CalledScore{
+			player.RUnlock()
+			callScoreTimeOutMsg,err := newCallScoreTimeOutMsg()
+			if err == nil{
+				player.Conn.WriteMessage(websocket.TextMessage,callScoreTimeOutMsg)
+				fmt.Println(strconv.Itoa(player.Id)+"叫地主超时")
+			}else{
+				log.Fatal(err.Error())
+			}
+			player.callScore(0)
+		}else{
+			player.RUnlock()
+		}
+	}(player)
 }
 
 func (t *Table) play(){

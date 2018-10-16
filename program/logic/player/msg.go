@@ -19,6 +19,7 @@ const(
 	TypeOfSendCard		  //发牌
 	TypeOfCallScore       //抢地主叫分
 	TypeOfConfirm         //客户端出牌等操作确认信息
+	TypeOfCallScoreTimeOut  //叫地主超时
 )
 type SendCard struct {
 	Index int          //标志当前牌在用户所有牌中的索引位置
@@ -51,6 +52,13 @@ type Msg struct {
 func newCallScoreMsg() ([]byte,error){
 	msg := Msg{
 		TypeOfCallScore,
+	}
+	return json.Marshal(msg)
+}
+
+func newCallScoreTimeOutMsg() ([]byte,error){
+	msg := Msg{
+		TypeOfCallScoreTimeOut,
 	}
 	return json.Marshal(msg)
 }

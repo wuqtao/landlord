@@ -102,7 +102,12 @@ func (p *Player)ResolveMsg(msgB []byte) error{
 		case TypeOfReady:
 			p.Ready()
 		case TypeOfPlayCard:
-
+			cardIndex := gjson.Get(string(msgB),"Data.CardIndex").Array()
+			cards := []int{}
+			for _,card := range cardIndex{
+				cards = append(cards,int(card.Int()))
+			}
+			p.playCards(cards)
 		case TypeOfPass:
 
 		case TypeOfLeaveTable:
@@ -146,8 +151,8 @@ func (p *Player)callScore(score int){
 	p.Table.userCallScore(p,score)
 }
 //出牌
-func (p *Player)playCards(cardIndexs []int){
-
+func (p *Player)playCards(cards []int){
+	p.Table.userPlayCard(p,cards)
 }
 //过牌
 func (p *Player)pass(){

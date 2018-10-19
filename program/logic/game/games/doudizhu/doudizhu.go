@@ -108,11 +108,50 @@ func (dou *Doudizhu)Hint() []*poker.PokerCard{
 func (dou *Doudizhu)CompareCards(cardsNow []poker.PokerDeck,lastCards []poker.PokerCard) bool{
 	return false
 }
-
-func (dou *Doudizhu)IsMatchRoles() bool{
-	return false
+//检查出牌是否符合规则
+func (dou *Doudizhu)IsMatchRoles(pokers []*poker.PokerCard) bool{
+	switch len(pokers) {
+	case 0:
+		return false
+	//单张
+	case 1:
+		return true
+	//对子或者王炸
+	case 2:
+		if poker.IsPair(pokers) || poker.IsJokerBomb(pokers) {
+			return true
+		}else {
+			return false
+		}
+	//三张
+	case 3:
+		if poker.IsThreePlus(pokers){
+			return true
+		}else {
+			return false
+		}
+	//炸弹或三带一
+	case 4:
+		if poker.IsCommonBomb(pokers) || poker.IsThreePlus(pokers){
+			return true
+		}else{
+			return false
+		}
+	case 5:
+		if poker.IsThreePlus(pokers) || poker.IsDragon(pokers){
+			return true
+		}else {
+			return false
+		}
+	default:
+		if poker.IsDragon(pokers){
+			return true
+		}else{
+			return false
+		}
+	}
 }
-
+//获取玩家的牌
 func (dou *Doudizhu)GetPlayerCards(index int) []*poker.PokerCard{
 	return dou.playerCards[index]
 }
@@ -122,7 +161,8 @@ func (dou *Doudizhu)sortPlayerCards(){
 		util.BubbleSortCards(cards,poker.CardCommonCompare)
 	}
 }
-
+//获取底牌
 func (dou *Doudizhu) GetBottomCards() []*poker.PokerCard{
 	return dou.bottomCards
 }
+

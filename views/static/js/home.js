@@ -46,6 +46,7 @@ function openConnection(){
                 case TypeOfHint:
                     break;
                 case TypeOfPlayCard:
+                    $("#divPlay").show();
                     break;
                 case TypeOfPass:
                     break;
@@ -119,4 +120,37 @@ function sendScore() {
     }
     ws.send(JSON.stringify(msg));
     $("#divScore").hide();
+}
+
+function pass(){
+    $("#divPlay").show();
+    msg = {};
+    msg.MsgType = TypeOfPass;
+    ws.send(JSON.stringify(msg));
+}
+
+function playCards(){
+    $("#divPlay").show();
+    msg = {};
+    msg.MsgType = TypeOfPlayCard;
+    cardIndex = [];
+    $("#userCards").find('div').each(function(i,o){
+        if($(o).hasClass('chooseYes')){
+             cardIndex.push($($(o).find('input')[0]).val());
+        }
+    })
+    if(cardIndex.length == 0){
+        alert('请选择牌，再点击出牌');
+    }
+    msg.Data = {
+        'CardIndex':cardIndex
+    }
+    ws.send(JSON.stringify(msg));
+}
+
+function cardHints(){
+    $("#divPlay").show();
+    msg = {};
+    msg.MsgType = TypeOfHint;
+    ws.send(JSON.stringify(msg));
 }

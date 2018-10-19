@@ -234,7 +234,26 @@ func (t *Table) nextCallLoard(index int){
 }
 
 func (t *Table) play(){
+	msg ,err := newPlayCardMsg()
+	if err != nil{
+		panic(err.Error())
+	}
+	t.Players[t.CurrLoardIndex].Conn.WriteMessage(websocket.TextMessage,msg)
+}
 
+func (t *Table) userPlayCard(p *Player,cardIndexs []int){
+	//符合出牌规则才允许出牌
+	cards := []*poker.PokerCard{}
+	p.RLock()
+	for _,index := range cardIndexs{
+		cards = append(cards,p.PokerCards[index])
+	}
+	p.RUnlock()
+	if t.Game.IsMatchRoles(cards){
+
+	}else{
+
+	}
 }
 
 func (t *Table) GetNextPlayer() *Player{

@@ -119,13 +119,7 @@ func CreateDeck() *PokerDeck{
 	return deck
 }
 
-func CardCommonCompare(card1 *PokerCard,card2 *PokerCard) bool{
-	if card1.CardValue > card2.CardValue{
-		return true
-	}
 
-	return false
-}
 
 
 

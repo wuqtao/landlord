@@ -62,6 +62,13 @@ func newCallScoreTimeOutMsg() ([]byte,error){
 	}
 	return json.Marshal(msg)
 }
+
+func newPlayCardMsg() ([]byte,error){
+	msg := Msg{
+		TypeOfPlayCard,
+	}
+	return json.Marshal(msg)
+}
 /*
 	确认消息
 	{

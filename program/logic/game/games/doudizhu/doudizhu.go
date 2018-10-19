@@ -137,14 +137,16 @@ func (dou *Doudizhu)IsMatchRoles(pokers []*poker.PokerCard) bool{
 		}else{
 			return false
 		}
+	//三带二或者一条龙
 	case 5:
 		if poker.IsThreePlus(pokers) || poker.IsDragon(pokers){
 			return true
 		}else {
 			return false
 		}
+	//一条龙，或者四带二，或者四带二对
 	default:
-		if poker.IsDragon(pokers){
+		if poker.IsDragon(pokers) || poker.IsFourPlus(pokers) || poker.IsMultiPairs(pokers) || poker.IsMultiFourPlus(pokers) || poker.IsMultiThreePlus(pokers){
 			return true
 		}else{
 			return false

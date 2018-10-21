@@ -30,6 +30,8 @@ type Table struct {
 	CurrLoardScore int 						//当前地主分数
 	CalledLoardNum int                     //叫过地主的人数
 	CurrCallLoardIndex int 					//当前叫地主index
+	LastCards *games.LastCardsType           //最后的出牌结构
+
 }
 //创建桌子
 func newTable(player *Player, gameName string) *Table {
@@ -249,10 +251,14 @@ func (t *Table) userPlayCard(p *Player,cardIndexs []int){
 		cards = append(cards,p.PokerCards[index])
 	}
 	p.RUnlock()
-	if t.Game.IsMatchRoles(cards){
 
+	lastCards,err := t.Game.MatchRoles(t.GetCurrPlayerIndex(p),cards)
+	if err == nil{
+		t.Lock()
+		t.LastCards = lastCards
+		t.Unlock()
 	}else{
-
+		//用户出牌错误提示
 	}
 }
 
@@ -278,6 +284,17 @@ func (t *Table) GetNextLoard() *Player{
 	}
 
 	return t.Players[t.CurrCallLoardIndex]
+}
+
+func (t *Table) GetCurrPlayerIndex(player *Player) int {
+	t.RLock()
+	defer t.RUnlock()
+	for i,p := range t.Players{
+		if(p == player){
+			return i
+		}
+	}
+	return -1
 }
 
 

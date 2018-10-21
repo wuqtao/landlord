@@ -1,0 +1,30 @@
+package doudizhu
+
+const(
+	POKERS_TYPE_SINGLE = iota   //"单牌"
+	POKERS_TYPE_PAIR            //"对牌"
+
+	POKERS_TYPE_JOKER_BOMB       // "王炸"
+	POKERS_TYPE_COMMON_BOMB 	 // "炸弹"
+
+
+	POKERS_TYPE_THREE            //三张不带牌
+	POKERS_TYPE_THREE_PLUS_ONE   //三带一
+	POKERS_TYPE_THREE_PLUS_TWO   //三带二
+
+	POKERS_TYPE_MULITY_THREE  //3顺子不带牌
+	POKERS_TYPE_MULITY_THREE_PLUS_ONE //3顺子带1个牌
+	POKERS_TYPE_MULITY_THREE_PLUS_TWO //3顺子带2个牌
+
+ 	POKERS_TYPE_FOUR_PLUS_TWO      //四带2张
+ 	POKERS_TYPE_FOUR_PLUS_FOUR     //四带2对
+
+	POKERS_TYPE_MULITY_FOUR        //四顺子不带牌
+	POKERS_TYPE_MULITY_FOUR_PLUS_TWO //四顺子带2张
+	POKERS_TYPE_MULITY_FOUR_PLUS_FOUR //四顺子带4张
+
+	POKERS_TYPE_DRAGON             //"单顺子(5个及以上)"
+
+	POKERS_TYPE_MULIT_PAIRS        //"双顺子(3个及以上)"
+)
+

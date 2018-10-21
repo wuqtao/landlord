@@ -262,11 +262,13 @@ func CheckThreePlus(pokers []*poker.PokerCard) (*CardsType,error){
 	if len(cardValue) == 0{
 		return nil,errors.New("不是三带牌")
 	}else{
-		if len(indexs) == 1 || len(indexs) == 0{
-			return newCardsType(POKERS_TYPE_MULITY_THREE,cardValue[0],cardValue[0]),nil
+		if len(indexs) == 1{
+			return newCardsType(POKERS_TYPE_THREE_PLUS_ONE,cardValue[0],cardValue[0]),nil
+		}else if len(indexs) == 0{
+			return newCardsType(POKERS_TYPE_THREE,cardValue[0],cardValue[0]),nil
 		}else{
 			if IsUnsameCardNumSame(pokers,indexs){
-				return newCardsType(POKERS_TYPE_MULITY_THREE,cardValue[0],cardValue[0]),nil
+				return newCardsType(POKERS_TYPE_THREE_PLUS_TWO,cardValue[0],cardValue[0]),nil
 			}else{
 				return nil,errors.New("不是三带牌")
 			}
@@ -282,16 +284,16 @@ func CheckFourPlus(pokers []*poker.PokerCard) (*CardsType,error){
 
 	pokers = poker.CommonSort(pokers)
 	cardValue,indexs := CheckFourSameValueCard(pokers)
-	if len(cardValue) == 0{
+	if len(cardValue) == 0 || len(indexs) == 0 {
 		return nil,errors.New("不是四带牌")
 	}else{
-		if len(indexs) == 2 || len(indexs) == 0{
-			return newCardsType(POKERS_TYPE_MULITY_THREE,cardValue[0],cardValue[0]),nil
+		if len(indexs) == 2{
+			return newCardsType(POKERS_TYPE_FOUR_PLUS_TWO,cardValue[0],cardValue[0]),nil
 		}else if len(indexs) == 3{
-				return nil,errors.New("不是四带牌")
+			return nil,errors.New("不是四带牌")
 		}else{
 			if IsUnsameCardNumSame(pokers,indexs){
-				return newCardsType(POKERS_TYPE_MULITY_THREE,cardValue[0],cardValue[0]),nil
+				return newCardsType(POKERS_TYPE_FOUR_PLUS_FOUR,cardValue[0],cardValue[0]),nil
 			}else{
 				return nil,errors.New("不是四带牌")
 			}
@@ -312,8 +314,10 @@ func CheckMultiThreePlus(pokers []*poker.PokerCard) (*CardsType,error){
 		return nil,errors.New("不是三顺")
 	}
 	//多连不带或者各带一个
-	if len(cardValues) == len(indexs) || len(indexs) == 0{
+	if len(indexs) == 0{
 		return newCardsType(POKERS_TYPE_MULITY_THREE,cardValues[0],cardValues[len(cardValues)-1]),nil
+	}else if len(cardValues) == len(indexs){
+		return newCardsType(POKERS_TYPE_MULITY_THREE_PLUS_ONE,cardValues[0],cardValues[len(cardValues)-1]),nil
 	}
 	//不可能符合多连
 	if len(indexs) != 2*len(cardValues) {
@@ -321,7 +325,7 @@ func CheckMultiThreePlus(pokers []*poker.PokerCard) (*CardsType,error){
 	}
 	//数量符合三代二，然后判断牌型是否符合
 	if IsUnsameCardNumSame(pokers,indexs){
-		return newCardsType(POKERS_TYPE_MULITY_THREE,cardValues[0],cardValues[len(cardValues)-1]),nil
+		return newCardsType(POKERS_TYPE_MULITY_THREE_PLUS_TWO,cardValues[0],cardValues[len(cardValues)-1]),nil
 	}else{
 		return nil,errors.New("不是三顺")
 	}
@@ -350,7 +354,11 @@ func CheckMultiFourPlus(pokers []*poker.PokerCard) (*CardsType,error){
 	}
 	//数量符合四代二，然后判断牌型是否是四代二
 	if IsUnsameCardNumSame(pokers,indexs){
-		return newCardsType(POKERS_TYPE_MULITY_FOUR,cardValues[0],cardValues[len(cardValues)-1]),nil
+		if len(indexs) != 2*len(cardValues){
+			return newCardsType(POKERS_TYPE_MULITY_FOUR_PLUS_TWO,cardValues[0],cardValues[len(cardValues)-1]),nil
+		}else{
+			return newCardsType(POKERS_TYPE_MULITY_FOUR_PLUS_FOUR,cardValues[0],cardValues[len(cardValues)-1]),nil
+		}
 	}else{
 		return nil,errors.New("不是四顺")
 	}

@@ -19,18 +19,18 @@ import (
 	定义游戏桌对象
 */
 type Table struct {
-	Key          string     				//桌子key,用于从room索引中查找桌子
-	Players      []*Player        			//玩家数组
-	Game         games.IGame 				//该桌玩的游戏
-	sync.RWMutex            				//操作playNum以及player时加锁
-	CurrPokerCards []*poker.PokerCard  		//当前出的牌
-	CurrPalyerIndex int 					//当前出牌的玩家数组index
-	IsPlaying    bool                       //是否正在游戏中
-	CurrLoardIndex int                     //当前叫地主或者地主的Index
-	CurrLoardScore int 						//当前地主分数
-	CalledLoardNum int                     //叫过地主的人数
-	CurrCallLoardIndex int 					//当前叫地主index
-	LastCards *games.LastCardsType           //最后的出牌结构
+	Key                string            //桌子key,用于从room索引中查找桌子
+	Players         []*Player            //玩家数组
+	Game            games.IGame          //该桌玩的游戏
+	sync.RWMutex                         //操作playNum以及player时加锁
+	CurrPokerCards  []*poker.PokerCard   //当前出的牌
+	CurrPalyerIndex int                  //当前出牌的玩家数组index
+	IsPlaying       bool                 //是否正在游戏中
+	LoardIndex      int                  //当前地主的Index
+	CurrLoardScore  int                  //当前地主分数
+	CalledLoardNum  int                  //叫过地主的人数
+	CurrPlayerIndex int                  //当前叫地主或者出牌人的index
+	LastCards       *games.LastCardsType //最后的出牌结构
 
 }
 //创建桌子
@@ -159,7 +159,7 @@ func (t *Table) userCallScore(player *Player,score int){
 
 	if score == 3{
 		t.CurrLoardScore = score
-		t.CurrLoardIndex = i
+		t.LoardIndex = i
 		t.Unlock()
 		t.callLoardEnd()
 	}else{
@@ -169,7 +169,7 @@ func (t *Table) userCallScore(player *Player,score int){
 		}else{
 			if score > t.CurrLoardScore{
 				t.CurrLoardScore = score
-				t.CurrLoardIndex = i
+				t.LoardIndex = i
 				t.Unlock()
 				t.nextCallLoard(-1)
 			}else{
@@ -182,18 +182,18 @@ func (t *Table) userCallScore(player *Player,score int){
 
 func (t *Table) callLoardEnd(){
 	t.Lock()
-	t.CurrCallLoardIndex = 0
+	t.CurrPlayerIndex = 0
 	t.CalledLoardNum = 0
 	t.Unlock()
-	fmt.Println("叫地主结束"+strconv.Itoa(t.CurrLoardIndex)+"成为地主")
-	currPlayer := t.Players[t.CurrLoardIndex]
+	fmt.Println("叫地主结束"+strconv.Itoa(t.LoardIndex)+"成为地主")
+	currPlayer := t.Players[t.LoardIndex]
 	for _,card := range t.Game.GetBottomCards(){
 		currPlayer.PokerCards = append(currPlayer.PokerCards,card)
 	}
-	util.BubbleSortCards(t.Players[t.CurrLoardIndex].PokerCards,poker.CardCommonCompare)
-	sendPlayerCards(t.Players[t.CurrLoardIndex])
+	util.BubbleSortCards(t.Players[t.LoardIndex].PokerCards,poker.CardCommonCompare)
+	sendPlayerCards(t.Players[t.LoardIndex])
 	fmt.Println("底牌发送完毕，开始游戏")
-	t.play()
+	t.play(nil)
 }
 
 func (t *Table) nextCallLoard(index int){
@@ -201,8 +201,8 @@ func (t *Table) nextCallLoard(index int){
 	var player *Player
 	if index >= 0{
 		t.Lock()
-		t.CurrCallLoardIndex = index
-		player = t.Players[t.CurrCallLoardIndex]
+		t.CurrPlayerIndex = index
+		player = t.Players[t.CurrPlayerIndex]
 		t.Unlock()
 	}else{
 		player = t.GetNextLoard()
@@ -235,12 +235,17 @@ func (t *Table) nextCallLoard(index int){
 	}(player)
 }
 
-func (t *Table) play(){
+func (t *Table) play(player *Player){
 	msg ,err := newPlayCardMsg()
 	if err != nil{
 		panic(err.Error())
 	}
-	t.Players[t.CurrLoardIndex].Conn.WriteMessage(websocket.TextMessage,msg)
+	if player == nil{
+		t.CurrPalyerIndex = t.LoardIndex
+		t.Players[t.LoardIndex].Conn.WriteMessage(websocket.TextMessage,msg)
+	}else{
+		player.Conn.WriteMessage(websocket.TextMessage,msg)
+	}
 }
 
 func (t *Table) userPlayCard(p *Player,cardIndexs []int){
@@ -254,10 +259,39 @@ func (t *Table) userPlayCard(p *Player,cardIndexs []int){
 
 	lastCards,err := t.Game.MatchRoles(t.GetCurrPlayerIndex(p),cards)
 	if err == nil{
-		t.Lock()
-		t.LastCards = lastCards
-		t.Unlock()
+
+		if (lastCards.PlayerIndex == t.LastCards.PlayerIndex) ||
+			(lastCards.CardsType == t.LastCards.CardsType &&
+			lastCards.CardMinAndMax["min"] > t.LastCards.CardMinAndMax["min"] &&
+			lastCards.CardMinAndMax["max"] > t.LastCards.CardMinAndMax["min"]){
+
+				//出牌成功，给前段提示
+				msg ,err := newPlayCardsErrorMsg("出牌必须大于上一家")
+				if err != nil{
+					panic(err.Error())
+				}
+				t.Players[t.LastCards.PlayerIndex].Conn.WriteMessage(websocket.TextMessage,msg)
+
+				t.Lock()
+				t.LastCards = lastCards
+				t.Unlock()
+
+				//下一个玩家出牌
+				t.play(t.GetNextPlayer())
+		}else{
+			msg ,err := newPlayCardsErrorMsg("出牌必须大于上一家")
+			if err != nil{
+				panic(err.Error())
+			}
+			t.Players[lastCards.PlayerIndex].Conn.WriteMessage(websocket.TextMessage,msg)
+		}
 	}else{
+		fmt.Println(err.Error())
+		msg ,err := newPlayCardsErrorMsg(err.Error())
+		if err != nil{
+			panic(err.Error())
+		}
+		t.Players[lastCards.PlayerIndex].Conn.WriteMessage(websocket.TextMessage,msg)
 		//用户出牌错误提示
 	}
 }
@@ -265,7 +299,7 @@ func (t *Table) userPlayCard(p *Player,cardIndexs []int){
 func (t *Table) GetNextPlayer() *Player{
 	t.Lock()
 	defer t.Unlock()
-	if(t.CurrCallLoardIndex >= t.Game.GetPlayerNum()-1){
+	if(t.CurrPlayerIndex >= t.Game.GetPlayerNum()-1){
 		t.CurrPalyerIndex = 0
 	}else{
 		t.CurrPalyerIndex++
@@ -277,13 +311,13 @@ func (t *Table) GetNextPlayer() *Player{
 func (t *Table) GetNextLoard() *Player{
 	t.Lock()
 	defer t.Unlock()
-	if(t.CurrCallLoardIndex >= t.Game.GetPlayerNum()-1){
-		t.CurrCallLoardIndex = 0
+	if(t.CurrPlayerIndex >= t.Game.GetPlayerNum()-1){
+		t.CurrPlayerIndex = 0
 	}else{
-		t.CurrCallLoardIndex++
+		t.CurrPlayerIndex++
 	}
 
-	return t.Players[t.CurrCallLoardIndex]
+	return t.Players[t.CurrPlayerIndex]
 }
 
 func (t *Table) GetCurrPlayerIndex(player *Player) int {

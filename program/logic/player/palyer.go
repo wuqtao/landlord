@@ -95,28 +95,28 @@ func (p *Player)ResolveMsg(msgB []byte) error{
 	}
 
 	switch msgType {
-		case TypeOfAuto:
+		case MSG_TYPE_OF_AUTO:
 
-		case TypeOfUnReady:
+		case MSG_TYPE_OF_UN_READY:
 			p.unReady()
-		case TypeOfReady:
+		case MSG_TYPE_OF_READY:
 			p.Ready()
-		case TypeOfPlayCard:
+		case MSG_TYPE_OF_PLAY_CARD:
 			cardIndex := gjson.Get(string(msgB),"Data.CardIndex").Array()
 			cards := []int{}
 			for _,card := range cardIndex{
 				cards = append(cards,int(card.Int()))
 			}
 			p.playCards(cards)
-		case TypeOfPass:
+		case MSG_TYPE_OF_PASS:
 
-		case TypeOfLeaveTable:
+		case MSG_TYPE_OF_LEAVE_TABLE:
 
-		case TypeOfJoinTable:
+		case MSG_TYPE_OF_JOIN_TABLE:
 
-		case TypeOfHint:
+		case MSG_TYPE_OF_HINT:
 
-		case TypeOfCallScore:
+		case MSG_TYPE_OF_CALL_SCORE:
 			score,_ := strconv.Atoi(gjson.Get(string(msgB),"Data.Score").String())
 			p.callScore(score)
 

@@ -91,6 +91,14 @@ func newPlayCardSuccessMsg() ([]byte,error){
 	}
 	return json.Marshal(msg)
 }
+
+func newBraodCastMsg()([]byte,error){
+	msg := Msg{
+		TYPE_OF_PLAY_CARD_SUCCESS,
+		"",
+	}
+	return json.Marshal(msg)
+}
 /*
 	确认消息
 	{

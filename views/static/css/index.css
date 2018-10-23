@@ -9,31 +9,48 @@
     width:100%;
     background: beige;
     position: relative;
-    border:3px solid orangered;
+    border:3px solid burlywood;
 }
-.prePlayer{
+.divPlayer{
     height: 100%;
-    width: 5%;
-    background: coral;
+    width: 15%;
+    background: oldlace;
     position: relative;
-    border:3px solid orangered;
-    display: inline-block;
-    align-self: center;
-}
-.playCards{
-    height: 100%;
-    width: 88%;
-    background: coral;
-    position: relative;
-    border:3px solid orangered;
+    border:3px solid burlywood;
     display: inline-block;
 }
-.nextPlayer{
+.divNickName{
     height: 100%;
-    width: 5%;
-    background: coral;
+    width: 50%;
+    display: inline-block;
     position: relative;
-    border:3px solid orangered;
+    border:1px solid burlywood;
+}
+.divCharacter{
+    height: 100%;
+    width: 50%;
+    display: inline-block;
+    position: relative;
+    border:1px solid burlywood;
+}
+.divPlayerInfo{
+    height: 25%;
+    width: 100%;
+    position: relative;
+    border:1px solid burlywood;
+}
+.divLoardCard{
+    height: 75%;
+    width: 100%;
+    position: relative;
+    border:1px solid burlywood;
+}
+.divPlayCards{
+    height: 100%;
+    width: 68%;
+    background: oldlace;
+    position: relative;
+    border:3px solid burlywood;
     display: inline-block;
 }
 .divCards {
@@ -42,7 +59,7 @@
     background: beige;
     position: relative;
     overflow: auto;
-    border:3px solid orangered;
+    border:3px solid burlywood;
 }
 .divCard {
     align-self:center;
@@ -82,5 +99,5 @@
     width: 100%;
     background: beige;
     position: relative;
-    border:3px solid orangered;
+    border:3px solid burlywood;
 }

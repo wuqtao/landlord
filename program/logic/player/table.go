@@ -328,9 +328,25 @@ func (t *Table) GetCurrPlayerIndex(player *Player) int {
 	}
 	return -1
 }
+/*
+	准备
+	取消准备
+    离开房间
+	进入房间
+	叫地主
+	出牌
 
-func (t *Table) BroadCastMsg(){
-
+ */
+func (t *Table) BroadCastMsg(msgType int,){
+	msg,err := newBraodCastMsg()
+	if err != nil{
+		panic(err.Error())
+	}
+	for _,player := range t.Players{
+		if player != nil{
+			player.Conn.WriteMessage(websocket.TextMessage,msg)
+		}
+	}
 }
 
 

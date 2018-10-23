@@ -22,6 +22,7 @@ const(
 	MSG_TYPE_OF_CALL_SCORE_TIME_OUT  //叫地主超时
 	MSG_TYPE_OF_PLAY_ERROR           //出牌错误
 	TYPE_OF_PLAY_CARD_SUCCESS        //出牌成功
+	TYPE_OF_TABLE_BRODCAST           //桌子广播消息
 )
 type SendCard struct {
 	Index int          //标志当前牌在用户所有牌中的索引位置
@@ -33,6 +34,10 @@ type SendCardMsg struct{
 	Cards []*SendCard
 }
 
+type Msg struct {
+	MsgType int
+	Msg string
+}
 func newSendCardMsg(cards []*poker.PokerCard) ([]byte,error){
 	cardMsg := SendCardMsg{
 		MSG_TYPE_OF_SEND_CARD,
@@ -45,11 +50,6 @@ func newSendCardMsg(cards []*poker.PokerCard) ([]byte,error){
 		cardMsg.Cards = append(cardMsg.Cards,&sendCard)
 	}
 	return json.Marshal(cardMsg)
-}
-
-type Msg struct {
-	MsgType int
-	Msg string
 }
 
 func newCallScoreMsg() ([]byte,error){

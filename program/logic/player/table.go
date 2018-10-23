@@ -19,19 +19,16 @@ import (
 	定义游戏桌对象
 */
 type Table struct {
-	Key                string            //桌子key,用于从room索引中查找桌子
+	Key             string               //桌子key,用于从room索引中查找桌子
 	Players         []*Player            //玩家数组
 	Game            games.IGame          //该桌玩的游戏
 	sync.RWMutex                         //操作playNum以及player时加锁
-	CurrPokerCards  []*poker.PokerCard   //当前出的牌
-	CurrPalyerIndex int                  //当前出牌的玩家数组index
-	IsPlaying       bool                 //是否正在游戏中
+ 	IsPlaying       bool                 //是否正在游戏中
 	LoardIndex      int                  //当前地主的Index
 	CurrLoardScore  int                  //当前地主分数
 	CalledLoardNum  int                  //叫过地主的人数
 	CurrPlayerIndex int                  //当前叫地主或者出牌人的index
 	LastCards       *games.LastCardsType //最后的出牌结构
-
 }
 //创建桌子
 func newTable(player *Player, gameName string) *Table {
@@ -128,7 +125,6 @@ func (t *Table) userReady(){
 	}else{
 		t.Unlock()
 	}
-
 }
 
 func (t *Table) dealCards(){
@@ -234,14 +230,17 @@ func (t *Table) nextCallLoard(index int){
 		}
 	}(player)
 }
-
+/*
+	player下一个出牌的玩家
+	isPass当前玩家是否是过牌
+ */
 func (t *Table) play(player *Player){
 	msg ,err := newPlayCardMsg()
 	if err != nil{
 		panic(err.Error())
 	}
 	if player == nil{
-		t.CurrPalyerIndex = t.LoardIndex
+		t.CurrPlayerIndex = t.LoardIndex
 		t.Players[t.LoardIndex].Conn.WriteMessage(websocket.TextMessage,msg)
 	}else{
 		player.Conn.WriteMessage(websocket.TextMessage,msg)
@@ -250,6 +249,11 @@ func (t *Table) play(player *Player){
 
 func (t *Table) userPlayCard(p *Player,cardIndexs []int){
 	//符合出牌规则才允许出牌
+	if t.GetCurrPlayerIndex(p) != t.CurrPlayerIndex{
+		p.playCardError("还没到您的出牌次序")
+		return
+	}
+
 	cards := []*poker.PokerCard{}
 	p.RLock()
 	for _,index := range cardIndexs{
@@ -260,17 +264,13 @@ func (t *Table) userPlayCard(p *Player,cardIndexs []int){
 	lastCards,err := t.Game.MatchRoles(t.GetCurrPlayerIndex(p),cards)
 	if err == nil{
 
-		if (lastCards.PlayerIndex == t.LastCards.PlayerIndex) ||
+		if  t.LastCards == nil || lastCards.PlayerIndex == t.LastCards.PlayerIndex ||
 			(lastCards.CardsType == t.LastCards.CardsType &&
 			lastCards.CardMinAndMax["min"] > t.LastCards.CardMinAndMax["min"] &&
 			lastCards.CardMinAndMax["max"] > t.LastCards.CardMinAndMax["min"]){
 
-				//出牌成功，给前段提示
-				msg ,err := newPlayCardsErrorMsg("出牌必须大于上一家")
-				if err != nil{
-					panic(err.Error())
-				}
-				t.Players[t.LastCards.PlayerIndex].Conn.WriteMessage(websocket.TextMessage,msg)
+				//出牌成功，给前端提示
+				p.playCardSuccess()
 
 				t.Lock()
 				t.LastCards = lastCards
@@ -279,33 +279,31 @@ func (t *Table) userPlayCard(p *Player,cardIndexs []int){
 				//下一个玩家出牌
 				t.play(t.GetNextPlayer())
 		}else{
-			msg ,err := newPlayCardsErrorMsg("出牌必须大于上一家")
-			if err != nil{
-				panic(err.Error())
-			}
-			t.Players[lastCards.PlayerIndex].Conn.WriteMessage(websocket.TextMessage,msg)
+			p.playCardError("出牌必须大于上一家")
 		}
 	}else{
-		fmt.Println(err.Error())
-		msg ,err := newPlayCardsErrorMsg(err.Error())
-		if err != nil{
-			panic(err.Error())
-		}
-		t.Players[lastCards.PlayerIndex].Conn.WriteMessage(websocket.TextMessage,msg)
-		//用户出牌错误提示
+		p.playCardError(err.Error())
 	}
 }
-
+func (t *Table) userPassCard(player *Player){
+	//之前出牌是当前玩家则不能过牌，第一个出牌玩家也不能过牌
+	if t.LastCards != nil && t.GetCurrPlayerIndex(player) != t.LastCards.PlayerIndex{
+		player.playCardSuccess()
+		t.play(t.GetNextPlayer())
+	}else{
+		player.playCardError("第一个出牌的玩家不能过牌")
+	}
+}
 func (t *Table) GetNextPlayer() *Player{
 	t.Lock()
 	defer t.Unlock()
 	if(t.CurrPlayerIndex >= t.Game.GetPlayerNum()-1){
-		t.CurrPalyerIndex = 0
+		t.CurrPlayerIndex = 0
 	}else{
-		t.CurrPalyerIndex++
+		t.CurrPlayerIndex++
 	}
 
-	return t.Players[t.CurrPalyerIndex]
+	return t.Players[t.CurrPlayerIndex]
 }
 
 func (t *Table) GetNextLoard() *Player{
@@ -331,6 +329,9 @@ func (t *Table) GetCurrPlayerIndex(player *Player) int {
 	return -1
 }
 
+func (t *Table) BroadCastMsg(){
+
+}
 
 
 

@@ -109,7 +109,7 @@ func (p *Player)ResolveMsg(msgB []byte) error{
 			}
 			p.playCards(cards)
 		case MSG_TYPE_OF_PASS:
-
+			p.pass()
 		case MSG_TYPE_OF_LEAVE_TABLE:
 
 		case MSG_TYPE_OF_JOIN_TABLE:
@@ -156,7 +156,24 @@ func (p *Player)playCards(cards []int){
 }
 //过牌
 func (p *Player)pass(){
+	p.Table.userPassCard(p)
+}
+//出牌成功
+func (p *Player)playCardSuccess(){
+	msg,err := newPlayCardSuccessMsg()
+	if err != nil{
+		panic(err.Error())
+	}
+	p.Conn.WriteMessage(websocket.TextMessage,msg)
+}
 
+//出牌出错
+func (p *Player)playCardError(error string){
+	msg,err := newPlayCardsErrorMsg(error)
+	if err != nil{
+		panic(err.Error())
+	}
+	p.Conn.WriteMessage(websocket.TextMessage,msg)
 }
 //提示出牌
 func(p *Player) hintCards(){

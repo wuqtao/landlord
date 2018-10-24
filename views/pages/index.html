@@ -9,40 +9,26 @@
 </head>
 <body>
     <div class="container">
-        <div>
-            <div class="divPlay">
-                <div class="divPlayer">
-                    <div class="divPlayerInfo">
-                        <div class="divNickName" style="display: none">
-
-                        </div>
-                        <div class="divCharacter" style="display: none">
-
-                        </div>
+        <div class="divPlay">
+            <div class="divPlayer">
+                <div class="divPlayerInfo">
+                    <div class="divNickName">
+                        玩家1
                     </div>
-                    <div class="divLoardCard">
-
+                    <div class="divCharacter">
+                        地主
                     </div>
                 </div>
-                <div class="divPlayCards">
-
-                </div>
-                <div class="divPlayer">
-                    <div class="divPlayerInfo">
-                        <div class="divNickName" style="display: none">
-
+                <div class="divLoardCard">
+                    <div class="divCard">
+                        <div class="divNum">
+                            {0}
                         </div>
-                        <div class="divCharacter" style="display: none">
-
+                        <div class="divColor">
+                            {1}
                         </div>
                     </div>
-                    <div class="divLoardCard">
-
-                    </div>
                 </div>
-            </div>
-            <div class="divCards" id="userCards">
-
             </div>
             <template id="tempCard">
                 <div class="divCard">
@@ -52,40 +38,69 @@
                     <div class="divColor">
                         {1}
                     </div>
-                    <div class="chooseCard" onclick="chooseCard(this)">
-                        <input type="hidden" value="{2}"/>
-                    </div>
                 </div>
             </template>
-            <div class="divButton">
-                <table>
-                    <tr>
-                        <td valign="top" width="50%">
-                            <form>
-                                <button onclick="openConnection()" type="button">Open</button>
-                                <button onclick="closeConnection()" type="button">Close</button>
-                                <button onclick="ready()" type="button">Ready</button>
-                                <button onclick="unReady()" type="button">UnReady</button>
-                                </br>
-                                <input id="input" type="text" value="Hello world!">
-                                <button id="send" type="button">Send</button>
-                                <div id="divScore" style="display:none">
-                                    <input id="score" value="3" type="number">
-                                    <button id="callScore" onclick="sendScore()" type="button">叫分</button>
-                                </div>
-                                <div id="divPlay" style="display:none">
-                                    <button  onclick="pass()" type="button">过牌</button>
-                                    <button  onclick="playCards()" type="button">出牌</button>
-                                    <button  onclick="cardHints()" type="button">提示</button>
-                                </div>
-                            </form>
-                        </td>
-                        <td valign="top" width="50%" style="background: burlywood">
-                            <div id="output"></div>
-                        </td>
-                    </tr>
-                </table>
+            <div class="divPlayCards">
+
             </div>
+            <div class="divPlayer">
+                <div class="divPlayerInfo">
+                    <div class="divNickName">
+
+                    </div>
+                    <div class="divCharacter">
+
+                    </div>
+                </div>
+                <div class="divLoardCard">
+
+                </div>
+            </div>
+        </div>
+        <div class="divCards" id="userCards">
+
+        </div>
+        <template id="tempPlayCard">
+            <div class="divCard">
+                <div class="divNum">
+                    {0}
+                </div>
+                <div class="divColor">
+                    {1}
+                </div>
+                <div class="chooseCard" onclick="chooseCard(this)">
+                    <input type="hidden" value="{2}"/>
+                </div>
+            </div>
+        </template>
+        <div class="divButton">
+            <table>
+                <tr>
+                    <td valign="top" width="50%">
+                        <form>
+                            <button onclick="openConnection()" type="button">Open</button>
+                            <button onclick="closeConnection()" type="button">Close</button>
+                            <button onclick="ready()" type="button">Ready</button>
+                            <button onclick="unReady()" type="button">UnReady</button>
+                            </br>
+                            <input id="input" type="text" value="Hello world!">
+                            <button id="send" type="button">Send</button>
+                            <div id="divScore" style="display:none">
+                                <input id="score" value="3" type="number">
+                                <button id="callScore" onclick="sendScore()" type="button">叫分</button>
+                            </div>
+                            <div id="divPlay" style="display:none">
+                                <button  onclick="pass()" type="button">过牌</button>
+                                <button  onclick="playCards()" type="button">出牌</button>
+                                <button  onclick="cardHints()" type="button">提示</button>
+                            </div>
+                        </form>
+                    </td>
+                    <td valign="top" width="50%" style="background: burlywood">
+                        <div id="output"></div>
+                    </td>
+                </tr>
+            </table>
         </div>
     </div>
 </body>

@@ -15,43 +15,39 @@
     height: 100%;
     width: 15%;
     background: oldlace;
-    position: relative;
     border:3px solid burlywood;
-    display: inline-block;
+    float: left;
 }
 .divNickName{
     height: 100%;
-    width: 50%;
-    display: inline-block;
-    position: relative;
+    width: 49%;
     border:1px solid burlywood;
+    float: left;
+    text-align: center;
 }
 .divCharacter{
     height: 100%;
-    width: 50%;
-    display: inline-block;
-    position: relative;
+    width: 49%;
     border:1px solid burlywood;
+    float: left;
+    text-align: center;
 }
 .divPlayerInfo{
     height: 25%;
     width: 100%;
-    position: relative;
     border:1px solid burlywood;
 }
 .divLoardCard{
     height: 75%;
     width: 100%;
-    position: relative;
     border:1px solid burlywood;
 }
 .divPlayCards{
     height: 100%;
     width: 68%;
     background: oldlace;
-    position: relative;
     border:3px solid burlywood;
-    display: inline-block;
+    float: left;
 }
 .divCards {
     height:250px;

@@ -23,6 +23,8 @@ const(
 	MSG_TYPE_OF_PLAY_ERROR           //出牌错误
 	TYPE_OF_PLAY_CARD_SUCCESS        //出牌成功
 	TYPE_OF_TABLE_BRODCAST           //桌子广播消息
+	MSG_TYPE_OF_SCORE_CHANGE         //牌局分数变化
+	MSG_TYPE_OF_SETTLE_SCORE         //结算玩家分数
 )
 type SendCard struct {
 	Index int          //标志当前牌在用户所有牌中的索引位置

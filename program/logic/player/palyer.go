@@ -135,12 +135,14 @@ func (p *Player)Ready(){
 		p.Table.userReady()
 	}
 	p.Unlock()
+	p.Table.BroadCastMsg(p,MSG_TYPE_OF_READY,"玩家准备")
 }
 
 func (p *Player)unReady(){
 	p.Lock()
 	p.IsReady = false
 	p.Unlock()
+	p.Table.BroadCastMsg(p,MSG_TYPE_OF_UN_READY,"玩家取消准备")
 }
 
 func (p *Player)callScore(score int){

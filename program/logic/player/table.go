@@ -13,6 +13,7 @@ import (
 	"github.com/gorilla/websocket"
 	"log"
 	"chessSever/program/util"
+	"chessSever/program/logic/game/games/doudizhu"
 )
 
 /*
@@ -74,6 +75,7 @@ func (t *Table) addPlayer(player *Player) error {
 				player.Lock()
 				player.Table = t
 				player.Unlock()
+				t.BroadCastMsg(player,MSG_TYPE_OF_JOIN_TABLE,"玩家加入桌子")
 				fmt.Println(t.Key+"有新玩家加入")
 				return nil
 			}else{
@@ -88,6 +90,7 @@ func (t *Table) addPlayer(player *Player) error {
 		player.Lock()
 		player.Table = t
 		player.Unlock()
+		t.BroadCastMsg(player,MSG_TYPE_OF_JOIN_TABLE,"玩家加入桌子")
 		fmt.Println(t.Key+"有新玩家加入")
 		return nil
 	}
@@ -101,6 +104,7 @@ func (t *Table) removePlayer(player *Player) {
 			break
 		}
 	}
+	t.BroadCastMsg(player,MSG_TYPE_OF_LEAVE_TABLE,"玩家离开桌子")
 	fmt.Println("桌子"+t.Key+"移除玩家"+strconv.Itoa(player.Id))
 	t.Unlock()
 }
@@ -174,6 +178,7 @@ func (t *Table) userCallScore(player *Player,score int){
 			}
 		}
 	}
+	t.BroadCastMsg(player,MSG_TYPE_OF_CALL_SCORE,"用户叫地主")
 }
 
 func (t *Table) callLoardEnd(){
@@ -271,16 +276,27 @@ func (t *Table) userPlayCard(p *Player,cardIndexs []int){
 
 				//出牌成功，给前端提示
 				p.playCardSuccess()
-
+				isBomb := false
 				t.Lock()
 				t.LastCards = lastCards
+				if t.LastCards.CardsType == doudizhu.POKERS_TYPE_COMMON_BOMB ||
+					t.LastCards.CardsType == doudizhu.POKERS_TYPE_JOKER_BOMB{
+					isBomb = true
+					t.CurrLoardScore = t.CurrLoardScore*2
+				}
 				t.Unlock()
 
+				t.BroadCastMsg(p,MSG_TYPE_OF_PLAY_CARD,"玩家出牌")
+				if(isBomb){
+					t.BroadCastMsg(p,MSG_TYPE_OF_SCORE_CHANGE,"分数加倍")
+				}
 				//下一个玩家出牌
 				t.play(t.GetNextPlayer())
+
 		}else{
 			p.playCardError("出牌必须大于上一家")
 		}
+
 	}else{
 		p.playCardError(err.Error())
 	}
@@ -289,6 +305,7 @@ func (t *Table) userPassCard(player *Player){
 	//之前出牌是当前玩家则不能过牌，第一个出牌玩家也不能过牌
 	if t.LastCards != nil && t.GetCurrPlayerIndex(player) != t.LastCards.PlayerIndex{
 		player.playCardSuccess()
+		t.BroadCastMsg(player,MSG_TYPE_OF_PASS,"用户过牌")
 		t.play(t.GetNextPlayer())
 	}else{
 		player.playCardError("第一个出牌的玩家不能过牌")
@@ -335,9 +352,11 @@ func (t *Table) GetCurrPlayerIndex(player *Player) int {
 	进入房间
 	叫地主
 	出牌
-
+	过牌
+	分数变化
+	结算
  */
-func (t *Table) BroadCastMsg(msgType int,){
+func (t *Table) BroadCastMsg(plaer *Player,msgType int,hints string){
 	msg,err := newBraodCastMsg()
 	if err != nil{
 		panic(err.Error())

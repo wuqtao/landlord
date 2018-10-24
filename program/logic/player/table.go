@@ -30,6 +30,7 @@ type Table struct {
 	CalledLoardNum  int                  //叫过地主的人数
 	CurrPlayerIndex int                  //当前叫地主或者出牌人的index
 	LastCards       *games.LastCardsType //最后的出牌结构
+	OutCardIndexs   []int                //出完牌的用户index
 }
 //创建桌子
 func newTable(player *Player, gameName string) *Table {
@@ -262,6 +263,16 @@ func (t *Table) userPlayCard(p *Player,cardIndexs []int){
 	cards := []*poker.PokerCard{}
 	p.RLock()
 	for _,index := range cardIndexs{
+		//判断是否是之前出过的牌
+		if p.PlayedCardIndexs != nil {
+			for _,playedIndex := range p.PlayedCardIndexs{
+				if index == playedIndex {
+					p.playCardError("出牌中包含已出的牌")
+					p.RUnlock()
+					return
+				}
+			}
+		}
 		cards = append(cards,p.PokerCards[index])
 	}
 	p.RUnlock()
@@ -274,8 +285,18 @@ func (t *Table) userPlayCard(p *Player,cardIndexs []int){
 			lastCards.CardMinAndMax["min"] > t.LastCards.CardMinAndMax["min"] &&
 			lastCards.CardMinAndMax["max"] > t.LastCards.CardMinAndMax["min"]){
 
-				//出牌成功，给前端提示
-				p.playCardSuccess()
+				if lastCards.PlayerCardIndexs == nil{
+					lastCards.PlayerCardIndexs = []int{}
+				}
+
+				if lastCards.PlayerCardIndexs == nil{
+					lastCards.PlayerCardIndexs = []int{}
+				}
+
+				for _,index := range cardIndexs{
+					lastCards.PlayerCardIndexs = append(lastCards.PlayerCardIndexs,index)
+				}
+
 				isBomb := false
 				t.Lock()
 				t.LastCards = lastCards
@@ -285,10 +306,31 @@ func (t *Table) userPlayCard(p *Player,cardIndexs []int){
 					t.CurrLoardScore = t.CurrLoardScore*2
 				}
 				t.Unlock()
-
-				t.BroadCastMsg(p,MSG_TYPE_OF_PLAY_CARD,"玩家出牌")
 				if(isBomb){
 					t.BroadCastMsg(p,MSG_TYPE_OF_SCORE_CHANGE,"分数加倍")
+				}
+				//出牌成功，给前端提示
+				p.playCardSuccess()
+
+				t.BroadCastMsg(p,MSG_TYPE_OF_PLAY_CARD,"玩家出牌")
+				//玩家的的全部出完了
+				if len(p.PlayedCardIndexs) == len(p.PokerCards) {
+					if t.OutCardIndexs == nil{
+						t.OutCardIndexs = []int{}
+					}
+
+					currIndex := t.GetCurrPlayerIndex(p)
+					t.OutCardIndexs = append(t.OutCardIndexs,currIndex)
+
+					if currIndex == t.LoardIndex{
+						t.gameOver()
+						return
+					}else{
+						if len(t.OutCardIndexs) == 2{
+							t.gameOver()
+							return
+						}
+					}
 				}
 				//下一个玩家出牌
 				t.play(t.GetNextPlayer())
@@ -301,6 +343,19 @@ func (t *Table) userPlayCard(p *Player,cardIndexs []int){
 		p.playCardError(err.Error())
 	}
 }
+
+func (t *Table) gameOver(){
+	if len(t.OutCardIndexs) == 1 {
+		t.BroadCastMsg(nil,MSG_TYPE_OF_GAME_OVER,"游戏结束,地主胜利")
+	}else{
+		if t.OutCardIndexs[1] == t.LoardIndex{
+			t.BroadCastMsg(nil,MSG_TYPE_OF_GAME_OVER,"游戏结束,地主胜利")
+		}else{
+			t.BroadCastMsg(nil,MSG_TYPE_OF_GAME_OVER,"游戏结束,农民胜利")
+		}
+	}
+}
+
 func (t *Table) userPassCard(player *Player){
 	//之前出牌是当前玩家则不能过牌，第一个出牌玩家也不能过牌
 	if t.LastCards != nil && t.GetCurrPlayerIndex(player) != t.LastCards.PlayerIndex{
@@ -356,7 +411,12 @@ func (t *Table) GetCurrPlayerIndex(player *Player) int {
 	分数变化
 	结算
  */
-func (t *Table) BroadCastMsg(plaer *Player,msgType int,hints string){
+func (t *Table) BroadCastMsg(player *Player,msgType int,hints string){
+
+	switch msgType{
+
+	}
+
 	msg,err := newBraodCastMsg()
 	if err != nil{
 		panic(err.Error())

@@ -19,12 +19,13 @@ type Player struct {
 	HeadPic  string          //用户头像
 	Table    *Table          //桌子
 	sync.RWMutex
-	PokerCards []*poker.PokerCard //玩家手里的扑克牌
-	Index    int             //在桌子上的索引
-	IsReady  bool			 //是否准备
-	IsAuto   bool            //是否托管
-	CallScore int            //用户叫地主分数
-	CalledScore bool         //用户是否已经叫地主
+	PokerCards       []*poker.PokerCard //玩家手里的扑克牌
+	Index            int                //在桌子上的索引
+	IsReady          bool               //是否准备
+	IsAuto           bool               //是否托管
+	CallScore        int                //用户叫地主分数
+	CalledScore      bool               //用户是否已经叫地主
+	PlayedCardIndexs []int              //已经出牌的ID
 }
 
 func NewPlayer(id int, nickName string, conn *websocket.Conn, headPic string) *Player {

@@ -25,6 +25,7 @@ const(
 	TYPE_OF_TABLE_BRODCAST           //桌子广播消息
 	MSG_TYPE_OF_SCORE_CHANGE         //牌局分数变化
 	MSG_TYPE_OF_SETTLE_SCORE         //结算玩家分数
+	MSG_TYPE_OF_GAME_OVER            //游戏结束
 )
 type SendCard struct {
 	Index int          //标志当前牌在用户所有牌中的索引位置

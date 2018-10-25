@@ -14,6 +14,7 @@ import (
 	"log"
 	"chessSever/program/util"
 	"chessSever/program/logic/game/games/doudizhu"
+	"encoding/json"
 )
 
 /*
@@ -413,17 +414,50 @@ func (t *Table) GetCurrPlayerIndex(player *Player) int {
  */
 func (t *Table) BroadCastMsg(player *Player,msgType int,hints string){
 
+	msg := newBraodCastMsg()
 	switch msgType{
+		case MSG_TYPE_OF_READY:
+			msg.Msg = strconv.Itoa(player.Id)+"已准备"
+			msg.PlayerID = player.Id
+		case MSG_TYPE_OF_UN_READY:
+			msg.Msg = strconv.Itoa(player.Id)+"取消准备"
+			msg.PlayerID = player.Id
+		case MSG_TYPE_OF_JOIN_TABLE:
+			msg.Msg = strconv.Itoa(player.Id)+"加入游戏"
+			msg.PlayerID = player.Id
+		case MSG_TYPE_OF_LEAVE_TABLE:
+			msg.Msg = strconv.Itoa(player.Id)+"离开游戏"
+			msg.PlayerID = player.Id
+		case MSG_TYPE_OF_PLAY_CARD:
+			msg.Msg = strconv.Itoa(player.Id)+"出牌"
+			msg.PlayerID = player.Id
+			for _,card := range t.LastCards.Cards{
+				msg.Cards = append(msg.Cards,card)
+			}
+		case MSG_TYPE_OF_PASS:
+			msg.Msg = strconv.Itoa(player.Id)+"过牌"
+			msg.PlayerID = player.Id
+		case MSG_TYPE_OF_CALL_SCORE:
+			msg.Msg = strconv.Itoa(player.Id)+"叫地主"
+			msg.PlayerID = player.Id
+			msg.Score = player.CallScore
+		case MSG_TYPE_OF_SCORE_CHANGE:
+			msg.Msg = "基础变动"
+			msg.Score = t.CurrLoardScore
+		case MSG_TYPE_OF_GAME_OVER:
+			msg.Msg = "游戏结束，结算积分"
+			msg.Score = t.CurrLoardScore
 
 	}
 
-	msg,err := newBraodCastMsg()
-	if err != nil{
+	msgJson,err := json.Marshal(msg)
+	if err != nil {
 		panic(err.Error())
 	}
+
 	for _,player := range t.Players{
 		if player != nil{
-			player.Conn.WriteMessage(websocket.TextMessage,msg)
+			player.Conn.WriteMessage(websocket.TextMessage,msgJson)
 		}
 	}
 }

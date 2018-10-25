@@ -40,6 +40,9 @@ type SendCardMsg struct{
 type Msg struct {
 	MsgType int
 	Msg string
+	Cards []*poker.PokerCard
+	Score int
+	PlayerID int
 }
 func newSendCardMsg(cards []*poker.PokerCard) ([]byte,error){
 	cardMsg := SendCardMsg{
@@ -59,6 +62,9 @@ func newCallScoreMsg() ([]byte,error){
 	msg := Msg{
 		MSG_TYPE_OF_CALL_SCORE,
 		"",
+		[]*poker.PokerCard{},
+		0,
+		0,
 	}
 	return json.Marshal(msg)
 }
@@ -67,6 +73,9 @@ func newCallScoreTimeOutMsg() ([]byte,error){
 	msg := Msg{
 		MSG_TYPE_OF_CALL_SCORE_TIME_OUT,
 		"",
+		[]*poker.PokerCard{},
+		0,
+		0,
 	}
 	return json.Marshal(msg)
 }
@@ -75,6 +84,10 @@ func newPlayCardMsg() ([]byte,error){
 	msg := Msg{
 		MSG_TYPE_OF_PLAY_CARD,
 		"",
+		[]*poker.PokerCard{},
+		0,
+		0,
+
 	}
 	return json.Marshal(msg)
 }
@@ -83,6 +96,9 @@ func newPlayCardsErrorMsg(error string) ([]byte,error){
 	msg := Msg{
 		MSG_TYPE_OF_PLAY_ERROR,
 		error,
+		[]*poker.PokerCard{},
+		0,
+		0,
 	}
 	return json.Marshal(msg)
 }
@@ -91,16 +107,22 @@ func newPlayCardSuccessMsg() ([]byte,error){
 	msg := Msg{
 		TYPE_OF_PLAY_CARD_SUCCESS,
 		"",
+		[]*poker.PokerCard{},
+		0,
+		0,
 	}
 	return json.Marshal(msg)
 }
 
-func newBraodCastMsg()([]byte,error){
+func newBraodCastMsg() Msg{
 	msg := Msg{
 		TYPE_OF_PLAY_CARD_SUCCESS,
 		"",
+		[]*poker.PokerCard{},
+		0,
+		0,
 	}
-	return json.Marshal(msg)
+	return msg
 }
 /*
 	确认消息

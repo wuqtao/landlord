@@ -51,6 +51,9 @@ func (p *Player) JoinTable(table *Table){
 	if err != nil{
 		fmt.Println(err.Error())
 	}
+	p.Lock()
+	p.Table = table
+	p.Unlock()
 }
 //开牌桌
 func (p *Player) CreateTable(gameName string){
@@ -133,10 +136,12 @@ func (p *Player)Ready(){
 	if(p.Table != nil){
 		p.IsReady = true
 		fmt.Println(strconv.Itoa(p.Id)+"is ready")
+		p.Unlock()
 		p.Table.userReady()
+		p.Table.BroadCastMsg(p,MSG_TYPE_OF_READY,"玩家准备")
+	}else{
+		p.Unlock()
 	}
-	p.Unlock()
-	p.Table.BroadCastMsg(p,MSG_TYPE_OF_READY,"玩家准备")
 }
 
 func (p *Player)unReady(){

@@ -10,18 +10,8 @@
 <body>
     <div class="container">
         <div class="divPlay">
-            <div class="divPlayer">
-                <div class="divPlayerInfo">
-                    <div class="divNickName" id="prePlayerName">
+            <div class="divPlayer" id="leftPlayer">
 
-                    </div>
-                    <div class="divCharacter" id="prePlayerCharacter">
-
-                    </div>
-                </div>
-                <div class="divLoardCard">
-
-                </div>
             </div>
             <template id="tempCard">
                 <div class="divCard">
@@ -36,23 +26,29 @@
             <div class="divPlayCards">
 
             </div>
-            <div class="divPlayer">
-                <div class="divPlayerInfo">
-                    <div class="divNickName" id="afterPlayerName">
+            <div class="divPlayer" id="rightPlayer">
 
-                    </div>
-                    <div class="divCharacter" id="afterPlayerCharacter">
-
-                    </div>
-                </div>
-                <div class="divLoardCard">
-
-                </div>
             </div>
         </div>
         <div class="divCards" id="userCards">
 
         </div>
+        <template id="tempDivPlayerInfo">
+            <div class="divPlayerInfo">
+                <div class="divNickName" id="PlayerName{0}">
+
+                </div>
+                <div class="divCharacter" id="PlayerCharacter{0}">
+
+                </div>
+            </div>
+            <div class="divPlayerMsg" id="PlayerMsg{0}">
+
+            </div>
+            <div class="divLoardCard" id="LoardCards{0}">
+
+            </div>
+        </template>
         <template id="tempPlayCard">
             <div class="divCard" id="cardDiv{2}">
                 <div class="divNum">

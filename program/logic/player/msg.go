@@ -22,8 +22,8 @@ const(
 	MSG_TYPE_OF_CONFIRM              //客户端出牌等操作确认信息
 	MSG_TYPE_OF_CALL_SCORE_TIME_OUT  //叫地主超时
 	MSG_TYPE_OF_PLAY_ERROR           //出牌错误
-	TYPE_OF_PLAY_CARD_SUCCESS        //出牌成功
-	TYPE_OF_TABLE_BRODCAST           //桌子广播消息
+	MSG_TYPE_OF_PLAY_CARD_SUCCESS    //出牌成功
+	MSG_TYPE_OF_TABLE_BRODCAST       //桌子广播消息
 	MSG_TYPE_OF_SCORE_CHANGE         //牌局分数变化
 	MSG_TYPE_OF_SETTLE_SCORE         //结算玩家分数
 	MSG_TYPE_OF_GAME_OVER            //游戏结束
@@ -93,7 +93,7 @@ func newPlayCardsErrorMsg(error string) ([]byte,error){
 
 func newPlayCardSuccessMsg() ([]byte,error){
 	msg := Msg{
-		TYPE_OF_PLAY_CARD_SUCCESS,
+		MSG_TYPE_OF_PLAY_CARD_SUCCESS,
 		"",
 	}
 	return json.Marshal(msg)
@@ -120,19 +120,19 @@ type BroadCastMsg struct{
 	Cards            []*poker.PokerCard
 	Score            int
 	PlayerId         int
-	SettleInfoDic    map[int]string
-	PlayerIndexIdDic map[int]int
+	SettleInfoDic    map[string]string
+	PlayerIndexIdDic map[string]int
 }
 func newBraodCastMsg() BroadCastMsg{
 	msg := BroadCastMsg{
-		TYPE_OF_PLAY_CARD_SUCCESS,
+		MSG_TYPE_OF_TABLE_BRODCAST,
 		-1,
 		"",
 		[]*poker.PokerCard{},
 		-1,
 		-1,
-		make(map[int]string),
-		make(map[int]int),
+		make(map[string]string),
+		make(map[string]int),
 		}
 	return msg
 }

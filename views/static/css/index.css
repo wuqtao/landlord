@@ -37,6 +37,13 @@
     width: 100%;
     border:1px solid burlywood;
 }
+.divPlayerMsg{
+    height: 20px;
+    width: 100%;
+    border:1px solid burlywood;
+    text-align: center;
+    overflow: hidden;
+}
 .divLoardCard{
     height: 75%;
     width: 100%;

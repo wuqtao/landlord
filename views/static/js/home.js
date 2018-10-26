@@ -20,6 +20,7 @@ const MSG_TYPE_OF_LOGIN = 18           //玩家登陆成功
 var ws;
 var lastPlayCardIndex = [];
 var currPlayerId = -1;
+var currPlayerIndex = -1;
 function print(message) {
     var d = document.createElement("div");
     d.innerHTML = message;
@@ -68,40 +69,95 @@ function openConnection(){
                     break;
                 case TYPE_OF_PLAY_CARD_SUCCESS:
                     $("#divPlay").hide()
+                    alert();
                     for (i=0;i<lastPlayCardIndex.length;i++){
-                        $("#cardDiv"+i).hide();
+                        $("#cardDiv"+lastPlayCardIndex[i]).remove();
                     }
                     break;
                 case TYPE_OF_TABLE_BRODCAST:
                     switch(data.SubMsgType){
                         case MSG_TYPE_OF_READY:
-                            cosole.log(data);
+                            // console.log(data);
+                            if(data.PlayerId == currPlayerId){
+                                print("已准备");
+                            }
+
+                            $("PlayerMsg"+data.PlayerId).html("已准备");
+                            console.log(data);
                             break;
                         case MSG_TYPE_OF_UN_READY:
-                            cosole.log(data);
-                            break;
-                        case MSG_TYPE_OF_JOIN_TABLE:
-                            cosole.log(data);
+                            if(data.PlayerId == currPlayerId){
+                                print("取消准备");
+                            }
+                            $("PlayerMsg"+data.PlayerId).html("取消准备");
+                            console.log(data);
                             break;
                         case MSG_TYPE_OF_LEAVE_TABLE:
-                            cosole.log(data);
+                        case MSG_TYPE_OF_JOIN_TABLE:
+                            $("#rightPlayer").html('');
+                            $("#leftPlayer").html('');
+                            for (x in data.PlayerIndexIdDic){
+                                if(x == "id"+currPlayerId){
+                                    currPlayerIndex = data.PlayerIndexIdDic[x];
+                                    break;
+                                }
+                            }
+                            for (x in data.PlayerIndexIdDic){
+                                if(data.PlayerIndexIdDic[x] == currPlayerIndex){
+                                    continue;
+                                }
+                                id = x.replace("id",'');
+                                if (data.PlayerIndexIdDic[x] > currPlayerIndex){
+                                    if(data.PlayerIndexIdDic[x] == currPlayerIndex+1){
+                                        $("#rightPlayer").html(String.format($("#tempDivPlayerInfo").html(),id));
+                                        $("#PlayerName"+id).html("玩家"+x);
+                                        $("#PlayerMsg"+id).html("玩家"+x+"加入游戏");
+                                    }else{
+                                        $("#leftPlayer").html(String.format($("#tempDivPlayerInfo").html(),id));
+                                        $("#PlayerName"+id).html("玩家"+x);
+                                        $("#PlayerMsg"+id).html("玩家"+x+"加入游戏");
+                                    }
+
+                                }else{
+                                    if(data.PlayerIndexIdDic[x] == currPlayerIndex-1){
+                                        $("#leftPlayer").html(String.format($("#tempDivPlayerInfo").html(),id));
+                                        $("#PlayerName"+id).html("玩家"+x);
+                                        $("#PlayerMsg"+id).html("玩家"+x+"加入游戏");
+                                    }else{
+                                        $("#rightPlayer").html(String.format($("#tempDivPlayerInfo").html(),id));
+                                        $("#PlayerName"+id).html("玩家"+x);
+                                        $("#PlayerMsg"+id).html("玩家"+x+"加入游戏");
+                                    }
+                                }
+                            }
+                            console.log(data);
                             break;
                         case MSG_TYPE_OF_PLAY_CARD:
-                            cosole.log(data);
+                            $("PlayerMsg"+data.PlayerId).html("玩家"+data.PlayerId+"出牌");
+                            $("#divPlayCards").html('');
+                            $.each(data.Cards,function(i,o){
+                                $("#divPlayCards").append(String.format($("#tempCard").html(),o.Card.CardName,o.Card.CardSuit));
+                            })
+                            console.log(data);
                             break;
                         case MSG_TYPE_OF_PASS:
-                            cosole.log(data);
+                            $("PlayerMsg"+data.PlayerId).html("玩家"+data.PlayerId+"过牌");
+                            console.log(data);
                             break;
                         case MSG_TYPE_OF_CALL_SCORE:
-                            cosole.log(data);
+                            $("PlayerMsg"+data.PlayerId).html("玩家"+data.PlayerId+"叫地主"+data.Score+"分");
+                            console.log(data);
                             break;
                         case MSG_TYPE_OF_SCORE_CHANGE:
-                            cosole.log(data);
+                            print("底分变为"+data.Score)
+                            console.log(data);
                             break;
                         case MSG_TYPE_OF_GAME_OVER:
-                            cosole.log(data);
+                            print("游戏结束")
+                            console.log(data);
                         default:
-
+                            print("未知消息子类型");
+                            console.log(data);
                     }
                     break;
                 default:
@@ -160,14 +216,14 @@ function sendScore() {
 }
 
 function pass(){
-    $("#divPlay").show();
     msg = {};
+    cardIndex = [];
+    lastPlayCardIndex = [];
     msg.MsgType = MSG_TYPE_OF_PASS;
     ws.send(JSON.stringify(msg));
 }
 
 function playCards(){
-    $("#divPlay").show();
     msg = {};
     msg.MsgType = MSG_TYPE_OF_PLAY_CARD;
     cardIndex = [];
@@ -188,6 +244,8 @@ function playCards(){
 }
 
 function cardHints(){
+    cardIndex = [];
+    lastPlayCardIndex = [];
     $("#divPlay").show();
     msg = {};
     msg.MsgType = MSG_TYPE_OF_HINT;

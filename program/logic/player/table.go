@@ -56,7 +56,7 @@ func (t *Table) joinRoom() {
 }
 //销毁桌子
 func (t *Table) destory() {
-	t.Lock()
+	t.RLock()
 	if len(t.Players) >= 0 {
 		for _, p := range t.Players {
 			p.LeaveTable()
@@ -64,36 +64,33 @@ func (t *Table) destory() {
 	}
 	GetRoom().removeTable(t.Key)
 	fmt.Println("桌子"+t.Key+"销毁")
-	t.Unlock()
+	t.RUnlock()
 }
 //增加玩家
 func (t *Table) addPlayer(player *Player) error {
 	t.Lock()
-	defer t.Unlock()
 	if(len(t.Players) >= t.Game.GetPlayerNum()){
 		for i,p := range t.Players{
 			if p == nil{
 				t.Players[i] = player
-				player.Lock()
-				player.Table = t
-				player.Unlock()
-				t.BroadCastMsg(player,MSG_TYPE_OF_JOIN_TABLE,"玩家加入桌子")
 				fmt.Println(t.Key+"有新玩家加入")
+				t.Unlock()
+				t.BroadCastMsg(player,MSG_TYPE_OF_JOIN_TABLE,"玩家加入桌子")
 				return nil
 			}else{
 				if(i == len(t.Players)){
+					t.Unlock()
 					return errors.New("该桌玩家已满")
 				}
 			}
 		}
+		t.Unlock()
 		return errors.New("该桌玩家已满")
 	}else{
 		t.Players = append(t.Players,player)
-		player.Lock()
-		player.Table = t
-		player.Unlock()
-		t.BroadCastMsg(player,MSG_TYPE_OF_JOIN_TABLE,"玩家加入桌子")
 		fmt.Println(t.Key+"有新玩家加入")
+		t.Unlock()
+		t.BroadCastMsg(player,MSG_TYPE_OF_JOIN_TABLE,"玩家加入桌子")
 		return nil
 	}
 }
@@ -106,9 +103,10 @@ func (t *Table) removePlayer(player *Player) {
 			break
 		}
 	}
+	t.Unlock()
 	t.BroadCastMsg(player,MSG_TYPE_OF_LEAVE_TABLE,"玩家离开桌子")
 	fmt.Println("桌子"+t.Key+"移除玩家"+strconv.Itoa(player.Id))
-	t.Unlock()
+
 }
 
 func (t *Table) userReady(){
@@ -423,7 +421,9 @@ func (t *Table) BroadCastMsg(player *Player,msgType int,hints string){
 	if player != nil{
 		msg.PlayerId = player.Id
 		for i,p := range t.Players{
-			msg.PlayerIndexIdDic[p.Id] = i
+			if p != nil{
+				msg.PlayerIndexIdDic["id"+strconv.Itoa(p.Id)] = i
+			}
 		}
 	}
 
@@ -454,19 +454,19 @@ func (t *Table) BroadCastMsg(player *Player,msgType int,hints string){
 			msg.Score = t.CurrLoardScore
 			for _,index := range t.OutCardIndexs{
 				if index == t.LoardIndex{
-					msg.SettleInfoDic[t.Players[index].Id] = "+"+strconv.Itoa(t.CurrLoardScore*2)
+					msg.SettleInfoDic["id"+strconv.Itoa(t.Players[index].Id)] = "+"+strconv.Itoa(t.CurrLoardScore*2)
 				}else{
-					msg.SettleInfoDic[t.Players[index].Id] = "+"+strconv.Itoa(t.CurrLoardScore)
+					msg.SettleInfoDic["id"+strconv.Itoa(t.Players[index].Id)] = "+"+strconv.Itoa(t.CurrLoardScore)
 				}
 			}
 
 			for i,player := range t.Players{
-				_,ok := msg.SettleInfoDic[player.Id]
+				_,ok := msg.SettleInfoDic["id"+strconv.Itoa(player.Id)]
 				if !ok{
 					if i == t.LoardIndex{
-						msg.SettleInfoDic[t.Players[i].Id] = "-"+strconv.Itoa(t.CurrLoardScore*2)
+						msg.SettleInfoDic["id"+strconv.Itoa(t.Players[i].Id)] = "-"+strconv.Itoa(t.CurrLoardScore*2)
 					}else{
-						msg.SettleInfoDic[t.Players[i].Id] = "-"+strconv.Itoa(t.CurrLoardScore)
+						msg.SettleInfoDic["id"+strconv.Itoa(t.Players[i].Id)] = "-"+strconv.Itoa(t.CurrLoardScore)
 					}
 				}
 			}

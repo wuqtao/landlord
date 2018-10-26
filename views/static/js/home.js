@@ -13,8 +13,13 @@ const MSG_TYPE_OF_CALL_SCORE_TIME_OUT = 11; //叫地主超时
 const MSG_TYPE_OF_PLAY_ERROR = 12          //出牌错误
 const TYPE_OF_PLAY_CARD_SUCCESS  = 13      //出牌成功
 const TYPE_OF_TABLE_BRODCAST = 14          //游戏桌子广播消息
+const MSG_TYPE_OF_SCORE_CHANGE = 15        //牌局分数变化
+const MSG_TYPE_OF_SETTLE_SCORE = 16    //结算玩家分数
+const MSG_TYPE_OF_GAME_OVER = 17           //游戏结束
+const MSG_TYPE_OF_LOGIN = 18           //玩家登陆成功
 var ws;
-
+var lastPlayCardIndex = [];
+var currPlayerId = -1;
 function print(message) {
     var d = document.createElement("div");
     d.innerHTML = message;
@@ -37,22 +42,13 @@ function openConnection(){
 
             data = JSON.parse(evt.data)
             switch(data.MsgType){
-                case MSG_TYPE_OF_READY:
-                    break;
-                case MSG_TYPE_OF_UN_READY:
-                    break;
-                case MSG_TYPE_OF_JOIN_TABLE:
-                    break;
-                case MSG_TYPE_OF_LEAVE_TABLE:
+                case MSG_TYPE_OF_LOGIN:
+                    currPlayerId = data.ID
                     break;
                 case MSG_TYPE_OF_HINT:
                     break;
                 case MSG_TYPE_OF_PLAY_CARD:
                     $("#divPlay").show();
-                    break;
-                case MSG_TYPE_OF_PASS:
-                    break;
-                case MSG_TYPE_OF_AUTO:
                     break;
                 case MSG_TYPE_OF_SEND_CARD:
                     $("#userCards").html('');
@@ -64,8 +60,6 @@ function openConnection(){
                     $("#divScore").show()
                     print("请叫分");
                     break;
-                case MSG_TYPE_OF_CONFIRM:
-                    break;
                 case MSG_TYPE_OF_CALL_SCORE_TIME_OUT:
                     $("#divScore").hide();
                     break;
@@ -74,8 +68,41 @@ function openConnection(){
                     break;
                 case TYPE_OF_PLAY_CARD_SUCCESS:
                     $("#divPlay").hide()
+                    for (i=0;i<lastPlayCardIndex.length;i++){
+                        $("#cardDiv"+i).hide();
+                    }
                     break;
                 case TYPE_OF_TABLE_BRODCAST:
+                    switch(data.SubMsgType){
+                        case MSG_TYPE_OF_READY:
+                            cosole.log(data);
+                            break;
+                        case MSG_TYPE_OF_UN_READY:
+                            cosole.log(data);
+                            break;
+                        case MSG_TYPE_OF_JOIN_TABLE:
+                            cosole.log(data);
+                            break;
+                        case MSG_TYPE_OF_LEAVE_TABLE:
+                            cosole.log(data);
+                            break;
+                        case MSG_TYPE_OF_PLAY_CARD:
+                            cosole.log(data);
+                            break;
+                        case MSG_TYPE_OF_PASS:
+                            cosole.log(data);
+                            break;
+                        case MSG_TYPE_OF_CALL_SCORE:
+                            cosole.log(data);
+                            break;
+                        case MSG_TYPE_OF_SCORE_CHANGE:
+                            cosole.log(data);
+                            break;
+                        case MSG_TYPE_OF_GAME_OVER:
+                            cosole.log(data);
+                        default:
+
+                    }
                     break;
                 default:
                     console.log(evt.data)
@@ -144,9 +171,11 @@ function playCards(){
     msg = {};
     msg.MsgType = MSG_TYPE_OF_PLAY_CARD;
     cardIndex = [];
+    lastPlayCardIndex = []
     $("#userCards").find('div').each(function(i,o){
         if($(o).hasClass('chooseYes')){
              cardIndex.push($($(o).find('input')[0]).val());
+             lastPlayCardIndex.push($($(o).find('input')[0]).val());
         }
     })
     if(cardIndex.length == 0){

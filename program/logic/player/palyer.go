@@ -53,7 +53,7 @@ func (p *Player) JoinTable(table *Table){
 	}
 }
 //开牌桌
-func (p *Player) CreateTable(gameName string) {
+func (p *Player) CreateTable(gameName string){
 	table := newTable(p, gameName)
 	p.Lock()
 	p.Table = table

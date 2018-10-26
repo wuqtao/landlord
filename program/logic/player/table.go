@@ -415,31 +415,36 @@ func (t *Table) GetCurrPlayerIndex(player *Player) int {
 func (t *Table) BroadCastMsg(player *Player,msgType int,hints string){
 
 	msg := newBraodCastMsg()
+	msg.SubMsgType = msgType
+
+	t.RLock()
+	defer t.RUnlock()
+
+	if player != nil{
+		msg.PlayerId = player.Id
+		for i,p := range t.Players{
+			msg.PlayerIndexIdDic[p.Id] = i
+		}
+	}
+
 	switch msgType{
 		case MSG_TYPE_OF_READY:
 			msg.Msg = strconv.Itoa(player.Id)+"已准备"
-			msg.PlayerID = player.Id
 		case MSG_TYPE_OF_UN_READY:
 			msg.Msg = strconv.Itoa(player.Id)+"取消准备"
-			msg.PlayerID = player.Id
 		case MSG_TYPE_OF_JOIN_TABLE:
 			msg.Msg = strconv.Itoa(player.Id)+"加入游戏"
-			msg.PlayerID = player.Id
 		case MSG_TYPE_OF_LEAVE_TABLE:
 			msg.Msg = strconv.Itoa(player.Id)+"离开游戏"
-			msg.PlayerID = player.Id
 		case MSG_TYPE_OF_PLAY_CARD:
 			msg.Msg = strconv.Itoa(player.Id)+"出牌"
-			msg.PlayerID = player.Id
 			for _,card := range t.LastCards.Cards{
 				msg.Cards = append(msg.Cards,card)
 			}
 		case MSG_TYPE_OF_PASS:
 			msg.Msg = strconv.Itoa(player.Id)+"过牌"
-			msg.PlayerID = player.Id
 		case MSG_TYPE_OF_CALL_SCORE:
 			msg.Msg = strconv.Itoa(player.Id)+"叫地主"
-			msg.PlayerID = player.Id
 			msg.Score = player.CallScore
 		case MSG_TYPE_OF_SCORE_CHANGE:
 			msg.Msg = "基础变动"
@@ -447,7 +452,24 @@ func (t *Table) BroadCastMsg(player *Player,msgType int,hints string){
 		case MSG_TYPE_OF_GAME_OVER:
 			msg.Msg = "游戏结束，结算积分"
 			msg.Score = t.CurrLoardScore
+			for _,index := range t.OutCardIndexs{
+				if index == t.LoardIndex{
+					msg.SettleInfoDic[t.Players[index].Id] = "+"+strconv.Itoa(t.CurrLoardScore*2)
+				}else{
+					msg.SettleInfoDic[t.Players[index].Id] = "+"+strconv.Itoa(t.CurrLoardScore)
+				}
+			}
 
+			for i,player := range t.Players{
+				_,ok := msg.SettleInfoDic[player.Id]
+				if !ok{
+					if i == t.LoardIndex{
+						msg.SettleInfoDic[t.Players[i].Id] = "-"+strconv.Itoa(t.CurrLoardScore*2)
+					}else{
+						msg.SettleInfoDic[t.Players[i].Id] = "-"+strconv.Itoa(t.CurrLoardScore)
+					}
+				}
+			}
 	}
 
 	msgJson,err := json.Marshal(msg)

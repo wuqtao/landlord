@@ -12,22 +12,15 @@
         <div class="divPlay">
             <div class="divPlayer">
                 <div class="divPlayerInfo">
-                    <div class="divNickName">
-                        玩家1
+                    <div class="divNickName" id="prePlayerName">
+
                     </div>
-                    <div class="divCharacter">
-                        地主
+                    <div class="divCharacter" id="prePlayerCharacter">
+
                     </div>
                 </div>
                 <div class="divLoardCard">
-                    <div class="divCard">
-                        <div class="divNum">
-                            {0}
-                        </div>
-                        <div class="divColor">
-                            {1}
-                        </div>
-                    </div>
+
                 </div>
             </div>
             <template id="tempCard">
@@ -45,10 +38,10 @@
             </div>
             <div class="divPlayer">
                 <div class="divPlayerInfo">
-                    <div class="divNickName">
+                    <div class="divNickName" id="afterPlayerName">
 
                     </div>
-                    <div class="divCharacter">
+                    <div class="divCharacter" id="afterPlayerCharacter">
 
                     </div>
                 </div>
@@ -61,7 +54,7 @@
 
         </div>
         <template id="tempPlayCard">
-            <div class="divCard">
+            <div class="divCard" id="cardDiv{2}">
                 <div class="divNum">
                     {0}
                 </div>

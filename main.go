@@ -9,6 +9,7 @@ import (
 	"sync"
 	"chessSever/program/logic/player"
 	"chessSever/program/logic/game/games"
+	"encoding/json"
 )
 
 var addr = flag.String("addr", "localhost:8888", "http service address")
@@ -37,11 +38,20 @@ func echo(w http.ResponseWriter, r *http.Request) {
 	m.Unlock()
 
 	currPlayer := player.NewPlayer(nowId,strconv.Itoa(nowId),con,"1headPic")
+
 	if currPlayer.Id == 1{
 		currPlayer.CreateTable(games.DouDiZhu)
 	}else{
 		currPlayer.JoinTable(player.GetRoom().GetAllTable()[0])
 	}
+
+	loginMsg := player.NewLoginMsg("登陆成功")
+	loginMsg.ID = nowId
+	msg,err := json.Marshal(loginMsg)
+	if err == nil{
+		currPlayer.Conn.WriteMessage(websocket.TextMessage,msg)
+	}
+
 	//启动一个goroutine监听该客户端发来的消息
 	go player.HandlerUserMsg(&wg,con,currPlayer)
 

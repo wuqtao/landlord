@@ -3,6 +3,7 @@ package player
 import (
 	"chessSever/program/logic/game/poker"
 	"encoding/json"
+	"chessSever/program/data"
 )
 
 const(
@@ -26,6 +27,7 @@ const(
 	MSG_TYPE_OF_SCORE_CHANGE         //牌局分数变化
 	MSG_TYPE_OF_SETTLE_SCORE         //结算玩家分数
 	MSG_TYPE_OF_GAME_OVER            //游戏结束
+	MSG_TYPE_OF_LOGIN                //登陆消息
 )
 type SendCard struct {
 	Index int          //标志当前牌在用户所有牌中的索引位置
@@ -40,10 +42,9 @@ type SendCardMsg struct{
 type Msg struct {
 	MsgType int
 	Msg string
-	Cards []*poker.PokerCard
-	Score int
-	PlayerID int
 }
+
+
 func newSendCardMsg(cards []*poker.PokerCard) ([]byte,error){
 	cardMsg := SendCardMsg{
 		MSG_TYPE_OF_SEND_CARD,
@@ -62,9 +63,6 @@ func newCallScoreMsg() ([]byte,error){
 	msg := Msg{
 		MSG_TYPE_OF_CALL_SCORE,
 		"",
-		[]*poker.PokerCard{},
-		0,
-		0,
 	}
 	return json.Marshal(msg)
 }
@@ -73,9 +71,6 @@ func newCallScoreTimeOutMsg() ([]byte,error){
 	msg := Msg{
 		MSG_TYPE_OF_CALL_SCORE_TIME_OUT,
 		"",
-		[]*poker.PokerCard{},
-		0,
-		0,
 	}
 	return json.Marshal(msg)
 }
@@ -84,10 +79,6 @@ func newPlayCardMsg() ([]byte,error){
 	msg := Msg{
 		MSG_TYPE_OF_PLAY_CARD,
 		"",
-		[]*poker.PokerCard{},
-		0,
-		0,
-
 	}
 	return json.Marshal(msg)
 }
@@ -96,9 +87,6 @@ func newPlayCardsErrorMsg(error string) ([]byte,error){
 	msg := Msg{
 		MSG_TYPE_OF_PLAY_ERROR,
 		error,
-		[]*poker.PokerCard{},
-		0,
-		0,
 	}
 	return json.Marshal(msg)
 }
@@ -107,21 +95,45 @@ func newPlayCardSuccessMsg() ([]byte,error){
 	msg := Msg{
 		TYPE_OF_PLAY_CARD_SUCCESS,
 		"",
-		[]*poker.PokerCard{},
-		0,
-		0,
 	}
 	return json.Marshal(msg)
 }
 
-func newBraodCastMsg() Msg{
-	msg := Msg{
+type LoginMsg struct{
+	MsgType int
+	Msg string
+	*data.User
+}
+
+func NewLoginMsg(loginMsg string) LoginMsg{
+	return LoginMsg{
+		MSG_TYPE_OF_LOGIN,
+		loginMsg,
+		&data.User{},
+	}
+}
+
+type BroadCastMsg struct{
+	MsgType          int
+	SubMsgType       int
+	Msg              string
+	Cards            []*poker.PokerCard
+	Score            int
+	PlayerId         int
+	SettleInfoDic    map[int]string
+	PlayerIndexIdDic map[int]int
+}
+func newBraodCastMsg() BroadCastMsg{
+	msg := BroadCastMsg{
 		TYPE_OF_PLAY_CARD_SUCCESS,
+		-1,
 		"",
 		[]*poker.PokerCard{},
-		0,
-		0,
-	}
+		-1,
+		-1,
+		make(map[int]string),
+		make(map[int]int),
+		}
 	return msg
 }
 /*

@@ -17,6 +17,7 @@ const MSG_TYPE_OF_SCORE_CHANGE = 15        //牌局分数变化
 const MSG_TYPE_OF_SETTLE_SCORE = 16    //结算玩家分数
 const MSG_TYPE_OF_GAME_OVER = 17           //游戏结束
 const MSG_TYPE_OF_LOGIN = 18           //玩家登陆成功
+const MSG_TYPE_OF_SEND_BOTTOM_CARDS = 19 //发底牌
 var ws;
 var lastPlayCardIndex = [];
 var currPlayerId = -1;
@@ -82,14 +83,14 @@ function openConnection(){
                                 print("已准备");
                             }
 
-                            $("PlayerMsg"+data.PlayerId).html("已准备");
+                            $("#PlayerMsg"+data.PlayerId).html("已准备");
                             console.log(data);
                             break;
                         case MSG_TYPE_OF_UN_READY:
                             if(data.PlayerId == currPlayerId){
                                 print("取消准备");
                             }
-                            $("PlayerMsg"+data.PlayerId).html("取消准备");
+                            $("#PlayerMsg"+data.PlayerId).html("取消准备");
                             console.log(data);
                             break;
                         case MSG_TYPE_OF_LEAVE_TABLE:
@@ -132,20 +133,25 @@ function openConnection(){
                             }
                             console.log(data);
                             break;
+                        case MSG_TYPE_OF_SEND_BOTTOM_CARDS:
+                            $.each(data.Cards,function(i,o){
+                                $("#LoardCards"+data.PlayerId).append(String.format($("#tempCard").html(),o.CardName,o.CardSuit));
+                            })
+                            break;
                         case MSG_TYPE_OF_PLAY_CARD:
-                            $("PlayerMsg"+data.PlayerId).html("玩家"+data.PlayerId+"出牌");
+                            $("#PlayerMsg"+data.PlayerId).html("玩家"+data.PlayerId+"出牌");
                             $("#divPlayCards").html('');
                             $.each(data.Cards,function(i,o){
-                                $("#divPlayCards").append(String.format($("#tempCard").html(),o.Card.CardName,o.Card.CardSuit));
+                                $("#divPlayCards").append(String.format($("#tempCard").html(),o.CardName,o.CardSuit));
                             })
                             console.log(data);
                             break;
                         case MSG_TYPE_OF_PASS:
-                            $("PlayerMsg"+data.PlayerId).html("玩家"+data.PlayerId+"过牌");
+                            $("#PlayerMsg"+data.PlayerId).html("玩家"+data.PlayerId+"过牌");
                             console.log(data);
                             break;
                         case MSG_TYPE_OF_CALL_SCORE:
-                            $("PlayerMsg"+data.PlayerId).html("玩家"+data.PlayerId+"叫地主"+data.Score+"分");
+                            $("#PlayerMsg"+data.PlayerId).html("玩家"+data.PlayerId+"叫地主"+data.Score+"分");
                             console.log(data);
                             break;
                         case MSG_TYPE_OF_SCORE_CHANGE:

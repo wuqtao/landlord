@@ -188,11 +188,14 @@ func (t *Table) callLoardEnd(){
 	t.Unlock()
 	fmt.Println("叫地主结束"+strconv.Itoa(t.LoardIndex)+"成为地主")
 	currPlayer := t.Players[t.LoardIndex]
+
 	for _,card := range t.Game.GetBottomCards(){
 		currPlayer.PokerCards = append(currPlayer.PokerCards,card)
 	}
 	util.BubbleSortCards(t.Players[t.LoardIndex].PokerCards,poker.CardCommonCompare)
 	sendPlayerCards(t.Players[t.LoardIndex])
+
+	t.BroadCastMsg(t.Players[t.LoardIndex],MSG_TYPE_OF_SEND_BOTTOM_CARDS,"发放底牌")
 	fmt.Println("底牌发送完毕，开始游戏")
 	t.play(nil)
 }
@@ -449,6 +452,10 @@ func (t *Table) BroadCastMsg(player *Player,msgType int,hints string){
 		case MSG_TYPE_OF_SCORE_CHANGE:
 			msg.Msg = "基础变动"
 			msg.Score = t.CurrLoardScore
+		case MSG_TYPE_OF_SEND_BOTTOM_CARDS:
+			msg.Msg = "发放底牌"
+			msg.Cards = t.Game.GetBottomCards()
+			msg.PlayerId = player.Id
 		case MSG_TYPE_OF_GAME_OVER:
 			msg.Msg = "游戏结束，结算积分"
 			msg.Score = t.CurrLoardScore

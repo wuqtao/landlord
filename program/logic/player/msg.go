@@ -3,7 +3,6 @@ package player
 import (
 	"chessSever/program/logic/game/poker"
 	"encoding/json"
-	"chessSever/program/data"
 )
 
 const(
@@ -103,14 +102,14 @@ func newPlayCardSuccessMsg() ([]byte,error){
 type LoginMsg struct{
 	MsgType int
 	Msg string
-	*data.User
+	ID int
 }
 
 func NewLoginMsg(loginMsg string) LoginMsg{
 	return LoginMsg{
 		MSG_TYPE_OF_LOGIN,
 		loginMsg,
-		&data.User{},
+		-1,
 	}
 }
 
@@ -141,14 +140,14 @@ func newBraodCastMsg() BroadCastMsg{
 	确认消息
 	{
 		"msgType":MSG_TYPE_OF_CONFIRM
-		"data"{
+		"model"{
 
 		}
 	}
 	发牌消息形式
 	{
 		"msgType":MSG_TYPE_OF_SEND_CARD,
-		"data":{
+		"model":{
 			pokerCars[{
 				"carIndex":,    //当前玩家手中的index
 				"carNum":,      //牌的数字
@@ -161,7 +160,7 @@ func newBraodCastMsg() BroadCastMsg{
 	出牌消息
 	{
 		"msgType":MSG_TYPE_OF_SEND_CARD,
-		"data":{
+		"model":{
 			pokerCars[{
 				"carIndex":,    //当前玩家手中的index
 			},]

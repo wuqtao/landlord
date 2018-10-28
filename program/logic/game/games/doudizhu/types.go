@@ -2,10 +2,10 @@ package doudizhu
 
 const(
 	POKERS_TYPE_SINGLE = iota   //"单牌"
-	POKERS_TYPE_DRAGON             //"单顺子(5个及以上)"
+	POKERS_TYPE_DRAGON          //"单顺子(5个及以上)"
 
 	POKERS_TYPE_PAIR            //"对牌"
-	POKERS_TYPE_MULIT_PAIRS        //"双顺子(3个及以上)"
+	POKERS_TYPE_MULIT_PAIRS     //"双顺子(3个及以上)"
 
 	POKERS_TYPE_THREE            //三张不带牌
 	POKERS_TYPE_THREE_PLUS_ONE   //三带一

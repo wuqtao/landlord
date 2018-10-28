@@ -8,8 +8,8 @@ import (
 	"strconv"
 	"sync"
 	"chessSever/program/logic/player"
-	"chessSever/program/logic/game/games"
 	"encoding/json"
+	"chessSever/program/logic/game"
 )
 
 var addr = flag.String("addr", "localhost:8888", "http service address")
@@ -49,7 +49,7 @@ func echo(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if currPlayer.Id == 1{
-		currPlayer.CreateTable(games.DouDiZhu)
+		currPlayer.CreateTable(game.DouDiZhu)
 	}else{
 		currPlayer.JoinTable(player.GetRoom().GetAllTable()[0])
 	}
@@ -67,6 +67,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 func main() {
 	flag.Parse()
 	log.SetFlags(0)
+
 	http.HandleFunc("/echo", echo)
 	http.HandleFunc("/", home)
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./views/static"))))

@@ -1,7 +1,7 @@
-package data
+package model
 
 type User struct {
-	ID int
+	UserId int
 	NickName string
 	HeadPic string
 	RegisterTime string

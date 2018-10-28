@@ -1,7 +1,6 @@
 package player
 
 import (
-	"chessSever/program/logic/game/games"
 	"sync"
 	"chessSever/program/logic/game/poker"
 	"chessSever/program/logic/game"
@@ -12,9 +11,9 @@ import (
 	"math/rand"
 	"github.com/gorilla/websocket"
 	"log"
-	"chessSever/program/util"
 	"chessSever/program/logic/game/games/doudizhu"
 	"encoding/json"
+	"chessSever/program/logic/game/games"
 )
 
 /*
@@ -23,20 +22,20 @@ import (
 type Table struct {
 	Key             string               //桌子key,用于从room索引中查找桌子
 	Players         []*Player            //玩家数组
-	Game            games.IGame          //该桌玩的游戏
+	Game            game.IGame          //该桌玩的游戏
 	sync.RWMutex                         //操作playNum以及player时加锁
  	IsPlaying       bool                 //是否正在游戏中
 	LoardIndex      int                  //当前地主的Index
 	CurrLoardScore  int                  //当前地主分数
 	CalledLoardNum  int                  //叫过地主的人数
 	CurrPlayerIndex int                  //当前叫地主或者出牌人的index
-	LastCards       *games.LastCardsType //最后的出牌结构
+	LastCards       *game.LastCardsType //最后的出牌结构
 	OutCardIndexs   []int                //出完牌的用户index
 }
 //创建桌子
 func newTable(player *Player, gameName string) *Table {
 
-	currGame := game.GetGame(gameName)
+	currGame := games.GetGame(gameName)
 	table := Table{
 		Game: currGame,
 		Key:  "table" + strconv.Itoa(time.Now().Nanosecond()),//桌子的key要保证唯一且好找，所以用时间戳，
@@ -192,7 +191,7 @@ func (t *Table) callLoardEnd(){
 	for _,card := range t.Game.GetBottomCards(){
 		currPlayer.PokerCards = append(currPlayer.PokerCards,card)
 	}
-	util.BubbleSortCards(t.Players[t.LoardIndex].PokerCards,poker.CardCommonCompare)
+	poker.CommonSort(t.Players[t.LoardIndex].PokerCards)
 	sendPlayerCards(t.Players[t.LoardIndex])
 
 	t.BroadCastMsg(t.Players[t.LoardIndex],MSG_TYPE_OF_SEND_BOTTOM_CARDS,"发放底牌")

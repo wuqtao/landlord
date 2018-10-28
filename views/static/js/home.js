@@ -78,7 +78,7 @@ function openConnection(){
                 case TYPE_OF_TABLE_BRODCAST:
                     switch(data.SubMsgType){
                         case MSG_TYPE_OF_READY:
-                            // console.log(data);
+                            // console.log(model);
                             if(data.PlayerId == currPlayerId){
                                 print("已准备");
                             }

@@ -4,8 +4,7 @@ import (
 	"math/rand"
 	"time"
 	"chessSever/program/logic/game/poker"
-	"chessSever/program/logic/game/games"
-	"chessSever/program/util"
+	"chessSever/program/logic/game"
 )
 
 type Doudizhu struct {
@@ -22,7 +21,7 @@ type Doudizhu struct {
 	bottomCards []*poker.PokerCard        //底牌
 }
 
-func GetDoudizhu() games.IGame{
+func GetDoudizhu() game.IGame{
 	dou := Doudizhu{
 		id:1,
 		name:"斗地主",
@@ -65,7 +64,7 @@ func (dou *Doudizhu)InitCards(){
 	for i:=0;i<dou.deckNum;i++{
 		deck := poker.CreateDeck()
 		for _,card := range deck.Cards{
-			dou.pokerCards = append(dou.pokerCards,card)
+			dou.pokerCards = append(dou.pokerCards,&card)
 		}
 	}
 }
@@ -109,7 +108,7 @@ func (dou *Doudizhu)CompareCards(cardsNow []poker.PokerDeck,lastCards []poker.Po
 	return false
 }
 //检查出牌是否符合规则
-func (dou *Doudizhu) MatchRoles(currPlayerIndex int,pokers []*poker.PokerCard) (*games.LastCardsType,error){
+func (dou *Doudizhu) MatchRoles(currPlayerIndex int,pokers []*poker.PokerCard) (*game.LastCardsType,error){
 	return CheckRules(currPlayerIndex,pokers)
 }
 //获取玩家的牌
@@ -119,7 +118,7 @@ func (dou *Doudizhu)GetPlayerCards(index int) []*poker.PokerCard{
 //对玩家手中扑克牌，按照从小到大排序
 func (dou *Doudizhu)sortPlayerCards(){
 	for _,cards := range dou.playerCards{
-		util.BubbleSortCards(cards,poker.CardCommonCompare)
+		poker.CommonSort(cards)
 	}
 }
 //获取底牌

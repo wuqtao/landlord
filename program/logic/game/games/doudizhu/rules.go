@@ -2,8 +2,8 @@ package doudizhu
 
 import (
 	"chessSever/program/logic/game/poker"
-	"chessSever/program/logic/game/games"
 	"errors"
+	"chessSever/program/logic/game"
 )
 
 type CardsType struct {
@@ -20,19 +20,19 @@ func newCardsType(cardsType int,minValue int,maxValue int) *CardsType{
 	return &cards
 }
 //检查给定的扑克牌的类型
-func CheckRules(currPlayerIndex int,pokers []*poker.PokerCard) (*games.LastCardsType,error){
+func CheckRules(currPlayerIndex int,pokers []*poker.PokerCard) (*game.LastCardsType,error){
 	switch len(pokers) {
 	case 0:
 		return nil,errors.New("玩家出牌为空")
 		//单张
 	case 1:
-		return games.NewLastCards(currPlayerIndex,POKERS_TYPE_SINGLE,pokers,pokers[0].CardValue,pokers[0].CardValue),nil
+		return game.NewLastCards(currPlayerIndex,POKERS_TYPE_SINGLE,pokers,pokers[0].CardValue,pokers[0].CardValue),nil
 		//对子或者王炸
 	case 2:
 		if cardsType,err := CheckPair(pokers);err == nil{
-			return games.NewLastCards(currPlayerIndex,cardsType.cardsType,pokers,cardsType.cardMinAndMax["min"],cardsType.cardMinAndMax["max"]),nil
+			return game.NewLastCards(currPlayerIndex,cardsType.cardsType,pokers,cardsType.cardMinAndMax["min"],cardsType.cardMinAndMax["max"]),nil
 		}else if cardsType,err := CheckJokerBomb(pokers);err == nil{
-			return games.NewLastCards(currPlayerIndex,cardsType.cardsType,pokers,cardsType.cardMinAndMax["min"],cardsType.cardMinAndMax["max"]),nil
+			return game.NewLastCards(currPlayerIndex,cardsType.cardsType,pokers,cardsType.cardMinAndMax["min"],cardsType.cardMinAndMax["max"]),nil
 		}else{
 			return nil,errors.New("牌型不符合规则")
 		}
@@ -40,40 +40,40 @@ func CheckRules(currPlayerIndex int,pokers []*poker.PokerCard) (*games.LastCards
 	case 3:
 		cardsType,err := CheckThreePlus(pokers)
 		if err == nil{
-			return games.NewLastCards(currPlayerIndex,cardsType.cardsType,pokers,cardsType.cardMinAndMax["min"],cardsType.cardMinAndMax["max"]),nil
+			return game.NewLastCards(currPlayerIndex,cardsType.cardsType,pokers,cardsType.cardMinAndMax["min"],cardsType.cardMinAndMax["max"]),nil
 		}else{
 			return nil,errors.New("牌型不符合规则")
 		}
 		//炸弹或三带一
 	case 4:
 		if cardsType,err := CheckCommonBomb(pokers);err == nil{
-			return games.NewLastCards(currPlayerIndex,cardsType.cardsType,pokers,cardsType.cardMinAndMax["min"],cardsType.cardMinAndMax["max"]),nil
+			return game.NewLastCards(currPlayerIndex,cardsType.cardsType,pokers,cardsType.cardMinAndMax["min"],cardsType.cardMinAndMax["max"]),nil
 		}else if cardsType,err := CheckThreePlus(pokers);err == nil{
-			return games.NewLastCards(currPlayerIndex,cardsType.cardsType,pokers,cardsType.cardMinAndMax["min"],cardsType.cardMinAndMax["max"]),nil
+			return game.NewLastCards(currPlayerIndex,cardsType.cardsType,pokers,cardsType.cardMinAndMax["min"],cardsType.cardMinAndMax["max"]),nil
 		}else{
 			return nil,errors.New("牌型不符合规则")
 		}
 		//三带二或者一条龙
 	case 5:
 		if cardsType,err := CheckThreePlus(pokers);err == nil{
-			return games.NewLastCards(currPlayerIndex,cardsType.cardsType,pokers,cardsType.cardMinAndMax["min"],cardsType.cardMinAndMax["max"]),nil
+			return game.NewLastCards(currPlayerIndex,cardsType.cardsType,pokers,cardsType.cardMinAndMax["min"],cardsType.cardMinAndMax["max"]),nil
 		}else if cardsType,err := CheckDragon(pokers);err == nil{
-			return games.NewLastCards(currPlayerIndex,cardsType.cardsType,pokers,cardsType.cardMinAndMax["min"],cardsType.cardMinAndMax["max"]),nil
+			return game.NewLastCards(currPlayerIndex,cardsType.cardsType,pokers,cardsType.cardMinAndMax["min"],cardsType.cardMinAndMax["max"]),nil
 		}else{
 			return nil,errors.New("牌型不符合规则")
 		}
 		//一条龙，或者四带二，或者四带二对
 	default:
 		if cardsType,err := CheckDragon(pokers);err == nil{
-			return games.NewLastCards(currPlayerIndex,cardsType.cardsType,pokers,cardsType.cardMinAndMax["min"],cardsType.cardMinAndMax["max"]),nil
+			return game.NewLastCards(currPlayerIndex,cardsType.cardsType,pokers,cardsType.cardMinAndMax["min"],cardsType.cardMinAndMax["max"]),nil
 		}else if cardsType,err := CheckFourPlus(pokers);err == nil{
-			return games.NewLastCards(currPlayerIndex,cardsType.cardsType,pokers,cardsType.cardMinAndMax["min"],cardsType.cardMinAndMax["max"]),nil
+			return game.NewLastCards(currPlayerIndex,cardsType.cardsType,pokers,cardsType.cardMinAndMax["min"],cardsType.cardMinAndMax["max"]),nil
 		}else if cardsType,err := CheckMultiPairs(pokers);err == nil{
-			return games.NewLastCards(currPlayerIndex,cardsType.cardsType,pokers,cardsType.cardMinAndMax["min"],cardsType.cardMinAndMax["max"]),nil
+			return game.NewLastCards(currPlayerIndex,cardsType.cardsType,pokers,cardsType.cardMinAndMax["min"],cardsType.cardMinAndMax["max"]),nil
 		}else if cardsType,err := CheckMultiFourPlus(pokers);err == nil{
-			return games.NewLastCards(currPlayerIndex,cardsType.cardsType,pokers,cardsType.cardMinAndMax["min"],cardsType.cardMinAndMax["max"]),nil
+			return game.NewLastCards(currPlayerIndex,cardsType.cardsType,pokers,cardsType.cardMinAndMax["min"],cardsType.cardMinAndMax["max"]),nil
 		}else if cardsType,err := CheckMultiThreePlus(pokers);err == nil{
-			return games.NewLastCards(currPlayerIndex,cardsType.cardsType,pokers,cardsType.cardMinAndMax["min"],cardsType.cardMinAndMax["max"]),nil
+			return game.NewLastCards(currPlayerIndex,cardsType.cardsType,pokers,cardsType.cardMinAndMax["min"],cardsType.cardMinAndMax["max"]),nil
 		}else{
 			return nil,errors.New("牌型不符合规则")
 		}
@@ -101,7 +101,7 @@ func CheckMultiPairs(pokers []*poker.PokerCard) (*CardsType,error){
 		return nil,errors.New("不是连对")
 	}
 
-	pokers = poker.CommonSort(pokers)
+	poker.CommonSort(pokers)
 
 	currValue := -1
 
@@ -130,7 +130,7 @@ func CheckJokerBomb(pokers []*poker.PokerCard) (*CardsType,error){
 	if len(pokers) != 2{
 		return nil,errors.New("不是王炸")
 	}
-	pokers = poker.CommonSort(pokers)
+	poker.CommonSort(pokers)
 	if(pokers[0].CardValue == poker.PokerBlackJoker && pokers[1].CardValue == poker.PokerRedJoker){
 		return newCardsType(POKERS_TYPE_JOKER_BOMB,pokers[0].CardValue,pokers[1].CardValue),nil
 	}else{
@@ -257,7 +257,7 @@ func CheckThreePlus(pokers []*poker.PokerCard) (*CardsType,error){
 		return nil,errors.New("不是三带牌")
 	}
 
-	pokers = poker.CommonSort(pokers)
+	poker.CommonSort(pokers)
 	cardValue,indexs := CheckThreeSameValueCard(pokers)
 	if len(cardValue) == 0{
 		return nil,errors.New("不是三带牌")
@@ -282,7 +282,7 @@ func CheckFourPlus(pokers []*poker.PokerCard) (*CardsType,error){
 		return nil,errors.New("不是四带牌")
 	}
 
-	pokers = poker.CommonSort(pokers)
+	poker.CommonSort(pokers)
 	cardValue,indexs := CheckFourSameValueCard(pokers)
 	if len(cardValue) == 0 || len(indexs) == 0 {
 		return nil,errors.New("不是四带牌")
@@ -307,7 +307,7 @@ func CheckMultiThreePlus(pokers []*poker.PokerCard) (*CardsType,error){
 		return nil,errors.New("不是三顺")
 	}
 
-	pokers = poker.CommonSort(pokers)
+	poker.CommonSort(pokers)
 	cardValues,indexs := CheckThreeSameValueCard(pokers)
 	//不可能是多连
 	if len(cardValues) < 2{
@@ -338,7 +338,7 @@ func CheckMultiFourPlus(pokers []*poker.PokerCard) (*CardsType,error){
 		return nil,errors.New("不是四顺")
 	}
 
-	pokers = poker.CommonSort(pokers)
+	poker.CommonSort(pokers)
 	cardValues,indexs := CheckFourSameValueCard(pokers)
 	//四个相同牌的数量小于二的话可能是四代几，但不是多个
 	if len(cardValues) < 2{
@@ -369,7 +369,7 @@ func CheckDragon(pokers []*poker.PokerCard) (*CardsType,error){
 		return nil,errors.New("不是顺子")
 	}
 
-	pokers = poker.CommonSort(pokers)
+	poker.CommonSort(pokers)
 	//2和大小王不能参与顺子牌
 	if pokers[len(pokers)-1].CardValue == poker.PokerRedJoker ||
 		pokers[len(pokers)-1].CardValue == poker.PokerRedJoker ||

@@ -24,7 +24,7 @@ type Doudizhu struct {
 func GetDoudizhu() game.IGame{
 	dou := Doudizhu{
 		id:1,
-		name:"斗地主",
+		name:game.GetGameName(game.GAME_ID_OF_DOUDOZHU),
 		playerNum:3,
 		deckNum:1,
 		pokerCards:[]*poker.PokerCard{},

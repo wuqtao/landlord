@@ -5,11 +5,30 @@ import (
 )
 
 const (
-	DouDiZhu="doudizhu"
-	ShengJi = "shengji"
-	BaoHuang ="baohuang"
-	Zhajinhua = "zhajinhua"
+	GAME_ID_OF_DOUDOZHU = iota
+	GAME_ID_OF_SHENGJI
+	GAME_ID_OF_BAOHUANG
+	GAME_ID_OF_ZHAJINHUA
 )
+
+var gameIDNameDic map[int]string
+
+func init(){
+	gameIDNameDic = make(map[int]string)
+	gameIDNameDic[GAME_ID_OF_DOUDOZHU] = "斗地主"
+	gameIDNameDic[GAME_ID_OF_SHENGJI] = "升级"
+	gameIDNameDic[GAME_ID_OF_BAOHUANG] = "保皇"
+	gameIDNameDic[GAME_ID_OF_ZHAJINHUA] = "斗地主"
+}
+
+func GetGameName(gameID int) string{
+	name,ok := gameIDNameDic[gameID]
+	if ok{
+		return name
+	}else{
+		return "未定义游戏名称"
+	}
+}
 
 //游戏使用接口类型，便于实现多态
 type IGame interface {
@@ -30,11 +49,11 @@ type IGame interface {
 }
 
 type LastCardsType struct{
-	PlayerCardIndexs []int		 	//扑克牌在出牌玩家中的index
+	PlayerCardIndexs []int		 	//扑克牌在出牌玩家所有牌中的index
 	PlayerIndex int              	//出牌的玩家ID
 	CardsType int				 	//牌的类型
-	Cards []*poker.PokerCard	     //出的牌
-	CardMinAndMax map[string]int		     //出的牌的map,min为主体牌的最小值，max为有主体牌的最大值，比如三第一，三为主体牌，带一为辅助牌
+	Cards []*poker.PokerCard	    //出的牌
+	CardMinAndMax map[string]int    //出的牌的map,min为主体牌的最小值，max为有主体牌的最大值，比如三带一，三为主体牌，带一为辅助牌
 }
 
 func NewLastCards(playerIndex int,cardsType int,cards []*poker.PokerCard,minValue int,maxValue int) *LastCardsType {

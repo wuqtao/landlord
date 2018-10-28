@@ -19,7 +19,8 @@ type Player struct {
 	HeadPic  string          //用户头像
 	Table    *Table          //桌子
 	sync.RWMutex
-	PokerCards       []*poker.PokerCard //玩家手里的扑克牌
+	PokerCards       []*poker.PokerCard //玩家手里的扑克牌0
+
 	Index            int                //在桌子上的索引
 	IsReady          bool               //是否准备
 	IsAuto           bool               //是否托管
@@ -56,8 +57,8 @@ func (p *Player) JoinTable(table *Table){
 	p.Unlock()
 }
 //开牌桌
-func (p *Player) CreateTable(gameName string){
-	table := newTable(p, gameName)
+func (p *Player) CreateTable(gameID int){
+	table := newTable(p, gameID)
 	p.Lock()
 	p.Table = table
 	p.Unlock()

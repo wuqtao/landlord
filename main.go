@@ -49,7 +49,7 @@ func echo(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if currPlayer.Id == 1{
-		currPlayer.CreateTable(game.DouDiZhu)
+		currPlayer.CreateTable(game.GAME_ID_OF_DOUDOZHU)
 	}else{
 		currPlayer.JoinTable(player.GetRoom().GetAllTable()[0])
 	}

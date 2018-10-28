@@ -8,15 +8,15 @@ import (
 /**
 *该包用于解决game和doudizhu包循环依赖问题
  */
-func GetGame(name string) game.IGame {
-	switch name {
-	case game.DouDiZhu:
+func GetGame(gameID int) game.IGame {
+	switch gameID {
+	case game.GAME_ID_OF_DOUDOZHU:
 		return doudizhu.GetDoudizhu()
-	case game.ShengJi:
+	case game.GAME_ID_OF_SHENGJI:
 		return nil
-	case game.BaoHuang:
+	case game.GAME_ID_OF_BAOHUANG:
 		return nil
-	case game.Zhajinhua:
+	case game.GAME_ID_OF_ZHAJINHUA:
 		return nil
 	default:
 		return nil

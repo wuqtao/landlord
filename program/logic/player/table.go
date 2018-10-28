@@ -33,9 +33,9 @@ type Table struct {
 	OutCardIndexs   []int                //出完牌的用户index
 }
 //创建桌子
-func newTable(player *Player, gameName string) *Table {
+func newTable(player *Player, gameID int) *Table {
 
-	currGame := games.GetGame(gameName)
+	currGame := games.GetGame(gameID)
 	table := Table{
 		Game: currGame,
 		Key:  "table" + strconv.Itoa(time.Now().Nanosecond()),//桌子的key要保证唯一且好找，所以用时间戳，

@@ -70,7 +70,6 @@ function openConnection(){
                     break;
                 case TYPE_OF_PLAY_CARD_SUCCESS:
                     $("#divPlay").hide()
-                    alert();
                     for (i=0;i<lastPlayCardIndex.length;i++){
                         $("#cardDiv"+lastPlayCardIndex[i]).remove();
                     }

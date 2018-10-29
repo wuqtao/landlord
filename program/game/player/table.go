@@ -2,8 +2,7 @@ package player
 
 import (
 	"sync"
-	"chessSever/program/logic/game/poker"
-	"chessSever/program/logic/game"
+	"chessSever/program/game"
 	"strconv"
 	"fmt"
 	"errors"
@@ -11,9 +10,10 @@ import (
 	"math/rand"
 	"github.com/gorilla/websocket"
 	"log"
-	"chessSever/program/logic/game/games/doudizhu"
+	"chessSever/program/game/games/doudizhu"
 	"encoding/json"
-	"chessSever/program/logic/game/games"
+	"chessSever/program/game/games"
+	"chessSever/program/game/poker"
 )
 
 /*
@@ -290,12 +290,13 @@ func (t *Table) userPlayCard(p *Player,cardIndexs []int){
 					lastCards.PlayerCardIndexs = []int{}
 				}
 
-				if lastCards.PlayerCardIndexs == nil{
-					lastCards.PlayerCardIndexs = []int{}
+				if p.PlayedCardIndexs == nil{
+					p.PlayedCardIndexs = []int{}
 				}
 
 				for _,index := range cardIndexs{
 					lastCards.PlayerCardIndexs = append(lastCards.PlayerCardIndexs,index)
+					p.PlayedCardIndexs = append(p.PlayedCardIndexs,index)
 				}
 
 				isBomb := false
@@ -314,7 +315,7 @@ func (t *Table) userPlayCard(p *Player,cardIndexs []int){
 				p.playCardSuccess()
 
 				t.BroadCastMsg(p,MSG_TYPE_OF_PLAY_CARD,"玩家出牌")
-				//玩家的的全部出完了
+				//玩家的牌全部出完了
 				if len(p.PlayedCardIndexs) == len(p.PokerCards) {
 					if t.OutCardIndexs == nil{
 						t.OutCardIndexs = []int{}

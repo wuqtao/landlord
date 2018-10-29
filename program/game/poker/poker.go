@@ -127,9 +127,9 @@ func CreateOriginDeck() PokerDeck{
 }
 
 //每个游戏桌子都有单独的扑克牌，防止洗牌等冲突
-func CreateDeck() *PokerDeck{
+func CreateDeck() PokerDeck{
 	copyDeck := originDeck
-	return &copyDeck
+	return copyDeck
 }
 
 

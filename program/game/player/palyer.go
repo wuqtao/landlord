@@ -3,10 +3,10 @@ package player
 import (
 	"github.com/gorilla/websocket"
 	"sync"
-	"chessSever/program/logic/game/poker"
 	"strconv"
 	"github.com/tidwall/gjson"
 	"fmt"
+	"chessSever/program/game/poker"
 )
 
 /**

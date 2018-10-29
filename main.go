@@ -7,9 +7,9 @@ import (
 	"net/http"
 	"strconv"
 	"sync"
-	"chessSever/program/logic/player"
+	"chessSever/program/game/player"
 	"encoding/json"
-	"chessSever/program/logic/game"
+	"chessSever/program/game"
 )
 
 var addr = flag.String("addr", "localhost:8888", "http service address")
@@ -48,7 +48,7 @@ func echo(w http.ResponseWriter, r *http.Request) {
 		currPlayer.Conn.WriteMessage(websocket.TextMessage,msg)
 	}
 
-	if currPlayer.Id == 1{
+	if currPlayer.Id%3 == 1{
 		currPlayer.CreateTable(game.GAME_ID_OF_DOUDOZHU)
 	}else{
 		currPlayer.JoinTable(player.GetRoom().GetAllTable()[0])

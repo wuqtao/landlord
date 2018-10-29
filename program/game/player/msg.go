@@ -1,8 +1,8 @@
 package player
 
 import (
-	"chessSever/program/logic/game/poker"
 	"encoding/json"
+	"chessSever/program/game/poker"
 )
 
 const(

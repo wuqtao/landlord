@@ -3,8 +3,8 @@ package doudizhu
 import (
 	"math/rand"
 	"time"
-	"chessSever/program/logic/game/poker"
-	"chessSever/program/logic/game"
+	"chessSever/program/game"
+	"chessSever/program/game/poker"
 )
 
 type Doudizhu struct {
@@ -63,8 +63,8 @@ func (dou Doudizhu)GetLastCards() []*poker.PokerCard{
 func (dou *Doudizhu)InitCards(){
 	for i:=0;i<dou.deckNum;i++{
 		deck := poker.CreateDeck()
-		for _,card := range deck.Cards{
-			dou.pokerCards = append(dou.pokerCards,&card)
+		for i,_ := range deck.Cards{
+			dou.pokerCards = append(dou.pokerCards,&deck.Cards[i])
 		}
 	}
 }

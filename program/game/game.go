@@ -1,7 +1,7 @@
 package game
 
 import (
-	"chessSever/program/logic/game/poker"
+	"chessSever/program/game/poker"
 )
 
 const (
@@ -50,7 +50,7 @@ type IGame interface {
 
 type LastCardsType struct{
 	PlayerCardIndexs []int		 	//扑克牌在出牌玩家所有牌中的index
-	PlayerIndex int              	//出牌的玩家ID
+	PlayerIndex int              	//出牌的玩家index
 	CardsType int				 	//牌的类型
 	Cards []*poker.PokerCard	    //出的牌
 	CardMinAndMax map[string]int    //出的牌的map,min为主体牌的最小值，max为有主体牌的最大值，比如三带一，三为主体牌，带一为辅助牌

@@ -1,9 +1,9 @@
 package doudizhu
 
 import (
-	"chessSever/program/logic/game/poker"
+	"chessSever/program/game"
 	"errors"
-	"chessSever/program/logic/game"
+	"chessSever/program/game/poker"
 )
 
 type CardsType struct {

@@ -5,13 +5,13 @@ import (
 	"errors"
 	"chessSever/program/game/poker"
 )
-
-type CardsType struct {
+//临时类型，便于函数返回类型
+type subCardsType struct {
 	cardsType int
 	cardMinAndMax map[string]int
 }
-func newCardsType(cardsType int,minValue int,maxValue int) *CardsType{
-	cards := CardsType{
+func newCardsType(cardsType int,minValue int,maxValue int) *subCardsType {
+	cards := subCardsType{
 		cardsType,
 		make(map[string]int),
 	}
@@ -83,7 +83,7 @@ func CheckRules(currPlayerIndex int,pokers []*poker.PokerCard) (*game.LastCardsT
 }
 
 //是否是对子
-func CheckPair(pokers []*poker.PokerCard) (*CardsType,error){
+func CheckPair(pokers []*poker.PokerCard) (*subCardsType,error){
 	if len(pokers) != 2 {
 		return nil,errors.New("不是对牌")
 	}
@@ -95,7 +95,7 @@ func CheckPair(pokers []*poker.PokerCard) (*CardsType,error){
 	}
 }
 //是否是连对
-func CheckMultiPairs(pokers []*poker.PokerCard) (*CardsType,error){
+func CheckMultiPairs(pokers []*poker.PokerCard) (*subCardsType,error){
 
 	if len(pokers)%2 != 0 || len(pokers) < 6 {
 		return nil,errors.New("不是连对")
@@ -125,7 +125,7 @@ func CheckMultiPairs(pokers []*poker.PokerCard) (*CardsType,error){
 	return newCardsType(POKERS_TYPE_MULIT_PAIRS,pokers[0].CardValue,pokers[len(pokers)-1].CardValue),nil
 }
 //是否是王炸
-func CheckJokerBomb(pokers []*poker.PokerCard) (*CardsType,error){
+func CheckJokerBomb(pokers []*poker.PokerCard) (*subCardsType,error){
 
 	if len(pokers) != 2{
 		return nil,errors.New("不是王炸")
@@ -138,7 +138,7 @@ func CheckJokerBomb(pokers []*poker.PokerCard) (*CardsType,error){
 	}
 }
 //是否是炸弹
-func CheckCommonBomb(pokers []*poker.PokerCard) (*CardsType,error){
+func CheckCommonBomb(pokers []*poker.PokerCard) (*subCardsType,error){
 
 	if len(pokers) != 4{
 		return nil,errors.New("不是普通炸弹")
@@ -152,7 +152,7 @@ func CheckCommonBomb(pokers []*poker.PokerCard) (*CardsType,error){
 }
 
 //是否是三代一或三代二或者不带
-func CheckThreePlus(pokers []*poker.PokerCard) (*CardsType,error){
+func CheckThreePlus(pokers []*poker.PokerCard) (*subCardsType,error){
 	if len(pokers) < 3 || len(pokers) >5{
 		return nil,errors.New("不是三带牌")
 	}
@@ -176,7 +176,7 @@ func CheckThreePlus(pokers []*poker.PokerCard) (*CardsType,error){
 	}
 }
 //是否是四代一或者四代二
-func CheckFourPlus(pokers []*poker.PokerCard) (*CardsType,error){
+func CheckFourPlus(pokers []*poker.PokerCard) (*subCardsType,error){
 
 	if len(pokers) !=4 && len(pokers) != 6 && len(pokers) != 8{
 		return nil,errors.New("不是四带牌")
@@ -201,7 +201,7 @@ func CheckFourPlus(pokers []*poker.PokerCard) (*CardsType,error){
 	}
 }
 //是否多个三带一，或三代二，或不带
-func CheckMultiThreePlus(pokers []*poker.PokerCard) (*CardsType,error){
+func CheckMultiThreePlus(pokers []*poker.PokerCard) (*subCardsType,error){
 
 	if len(pokers) < 6 {
 		return nil,errors.New("不是三顺")
@@ -232,7 +232,7 @@ func CheckMultiThreePlus(pokers []*poker.PokerCard) (*CardsType,error){
 }
 
 //是否多个四带一或四代二，或不带
-func CheckMultiFourPlus(pokers []*poker.PokerCard) (*CardsType,error){
+func CheckMultiFourPlus(pokers []*poker.PokerCard) (*subCardsType,error){
 
 	if len(pokers) < 8 {
 		return nil,errors.New("不是四顺")
@@ -264,7 +264,7 @@ func CheckMultiFourPlus(pokers []*poker.PokerCard) (*CardsType,error){
 	}
 }
 //是否是一条龙
-func CheckDragon(pokers []*poker.PokerCard) (*CardsType,error){
+func CheckDragon(pokers []*poker.PokerCard) (*subCardsType,error){
 	if len(pokers) < 5 {
 		return nil,errors.New("不是顺子")
 	}

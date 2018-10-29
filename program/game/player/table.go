@@ -42,7 +42,7 @@ func newTable(player *Player, gameID int) *Table {
 		Players:make([]*Player,currGame.GetPlayerNum()),
 		IsPlaying:false,
 	}
-	fmt.Println("创建新桌子"+"table" + strconv.Itoa(player.Id))
+	fmt.Println("创建新桌子"+"table" + strconv.Itoa(player.User.Id))
 	//桌子加入房间
 	table.joinRoom()
 	//将创建者加入桌子
@@ -104,7 +104,7 @@ func (t *Table) removePlayer(player *Player) {
 	}
 	t.Unlock()
 	t.BroadCastMsg(player,MSG_TYPE_OF_LEAVE_TABLE,"玩家离开桌子")
-	fmt.Println("桌子"+t.Key+"移除玩家"+strconv.Itoa(player.Id))
+	fmt.Println("桌子"+t.Key+"移除玩家"+strconv.Itoa(player.User.Id))
 
 }
 
@@ -214,7 +214,7 @@ func (t *Table) nextCallLoard(index int){
 	callScoreMsg,err := newCallScoreMsg()
 	if err == nil{
 		player.Conn.WriteMessage(websocket.TextMessage,callScoreMsg)
-		fmt.Println(strconv.Itoa(player.Id)+"开始叫地主")
+		fmt.Println(strconv.Itoa(player.User.Id)+"开始叫地主")
 	}else{
 		log.Fatal(err.Error())
 	}
@@ -227,7 +227,7 @@ func (t *Table) nextCallLoard(index int){
 			callScoreTimeOutMsg,err := newCallScoreTimeOutMsg()
 			if err == nil{
 				player.Conn.WriteMessage(websocket.TextMessage,callScoreTimeOutMsg)
-				fmt.Println(strconv.Itoa(player.Id)+"叫地主超时")
+				fmt.Println(strconv.Itoa(player.User.Id)+"叫地主超时")
 			}else{
 				log.Fatal(err.Error())
 			}
@@ -422,32 +422,32 @@ func (t *Table) BroadCastMsg(player *Player,msgType int,hints string){
 	defer t.RUnlock()
 
 	if player != nil{
-		msg.PlayerId = player.Id
+		msg.PlayerId = player.User.Id
 		for i,p := range t.Players{
 			if p != nil{
-				msg.PlayerIndexIdDic["id"+strconv.Itoa(p.Id)] = i
+				msg.PlayerIndexIdDic["id"+strconv.Itoa(p.User.Id)] = i
 			}
 		}
 	}
 
 	switch msgType{
 		case MSG_TYPE_OF_READY:
-			msg.Msg = strconv.Itoa(player.Id)+"已准备"
+			msg.Msg = strconv.Itoa(player.User.Id)+"已准备"
 		case MSG_TYPE_OF_UN_READY:
-			msg.Msg = strconv.Itoa(player.Id)+"取消准备"
+			msg.Msg = strconv.Itoa(player.User.Id)+"取消准备"
 		case MSG_TYPE_OF_JOIN_TABLE:
-			msg.Msg = strconv.Itoa(player.Id)+"加入游戏"
+			msg.Msg = strconv.Itoa(player.User.Id)+"加入游戏"
 		case MSG_TYPE_OF_LEAVE_TABLE:
-			msg.Msg = strconv.Itoa(player.Id)+"离开游戏"
+			msg.Msg = strconv.Itoa(player.User.Id)+"离开游戏"
 		case MSG_TYPE_OF_PLAY_CARD:
-			msg.Msg = strconv.Itoa(player.Id)+"出牌"
+			msg.Msg = strconv.Itoa(player.User.Id)+"出牌"
 			for _,card := range t.LastCards.Cards{
 				msg.Cards = append(msg.Cards,card)
 			}
 		case MSG_TYPE_OF_PASS:
-			msg.Msg = strconv.Itoa(player.Id)+"过牌"
+			msg.Msg = strconv.Itoa(player.User.Id)+"过牌"
 		case MSG_TYPE_OF_CALL_SCORE:
-			msg.Msg = strconv.Itoa(player.Id)+"叫地主"
+			msg.Msg = strconv.Itoa(player.User.Id)+"叫地主"
 			msg.Score = player.CallScore
 		case MSG_TYPE_OF_SCORE_CHANGE:
 			msg.Msg = "基础变动"
@@ -455,25 +455,25 @@ func (t *Table) BroadCastMsg(player *Player,msgType int,hints string){
 		case MSG_TYPE_OF_SEND_BOTTOM_CARDS:
 			msg.Msg = "发放底牌"
 			msg.Cards = t.Game.GetBottomCards()
-			msg.PlayerId = player.Id
+			msg.PlayerId = player.User.Id
 		case MSG_TYPE_OF_GAME_OVER:
 			msg.Msg = "游戏结束，结算积分"
 			msg.Score = t.CurrLoardScore
 			for _,index := range t.OutCardIndexs{
 				if index == t.LoardIndex{
-					msg.SettleInfoDic["id"+strconv.Itoa(t.Players[index].Id)] = "+"+strconv.Itoa(t.CurrLoardScore*2)
+					msg.SettleInfoDic["id"+strconv.Itoa(t.Players[index].User.Id)] = "+"+strconv.Itoa(t.CurrLoardScore*2)
 				}else{
-					msg.SettleInfoDic["id"+strconv.Itoa(t.Players[index].Id)] = "+"+strconv.Itoa(t.CurrLoardScore)
+					msg.SettleInfoDic["id"+strconv.Itoa(t.Players[index].User.Id)] = "+"+strconv.Itoa(t.CurrLoardScore)
 				}
 			}
 
 			for i,player := range t.Players{
-				_,ok := msg.SettleInfoDic["id"+strconv.Itoa(player.Id)]
+				_,ok := msg.SettleInfoDic["id"+strconv.Itoa(player.User.Id)]
 				if !ok{
 					if i == t.LoardIndex{
-						msg.SettleInfoDic["id"+strconv.Itoa(t.Players[i].Id)] = "-"+strconv.Itoa(t.CurrLoardScore*2)
+						msg.SettleInfoDic["id"+strconv.Itoa(t.Players[i].User.Id)] = "-"+strconv.Itoa(t.CurrLoardScore*2)
 					}else{
-						msg.SettleInfoDic["id"+strconv.Itoa(t.Players[i].Id)] = "-"+strconv.Itoa(t.CurrLoardScore)
+						msg.SettleInfoDic["id"+strconv.Itoa(t.Players[i].User.Id)] = "-"+strconv.Itoa(t.CurrLoardScore)
 					}
 				}
 			}

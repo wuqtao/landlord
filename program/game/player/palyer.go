@@ -7,16 +7,15 @@ import (
 	"github.com/tidwall/gjson"
 	"fmt"
 	"chessSever/program/game/poker"
+	"chessSever/program/model"
 )
 
 /**
 定义游戏玩家对象
 */
 type Player struct {
-	Id       int             //注册用户id
-	NickName string          //用户昵称
+	User *model.User
 	Conn     *websocket.Conn //用户socket链接
-	HeadPic  string          //用户头像
 	Table    *Table          //桌子
 	sync.RWMutex
 	PokerCards       []*poker.PokerCard //玩家手里的扑克牌0
@@ -29,12 +28,10 @@ type Player struct {
 	PlayedCardIndexs []int              //已经出牌的ID
 }
 
-func NewPlayer(id int, nickName string, conn *websocket.Conn, headPic string) *Player {
+func NewPlayer(user *model.User,conn *websocket.Conn) *Player {
 	player := Player{
-		Id:       id,
-		NickName: nickName,
-		HeadPic:  headPic,
-		Conn:     conn,
+		User:user,
+		Conn:conn,
 	}
 	return &player
 }
@@ -84,7 +81,7 @@ func (p *Player) SayToTable(msg []byte){
 func (p *Player) SayToAnother(id int,msgB []byte){
 	p.Table.RLock()
 	for _,po := range p.Table.Players{
-		if po.Id == id {
+		if po.User.Id == id {
 			po.Conn.WriteMessage(websocket.TextMessage,msgB)
 		}
 	}
@@ -136,7 +133,7 @@ func (p *Player)Ready(){
 	p.Lock()
 	if(p.Table != nil){
 		p.IsReady = true
-		fmt.Println(strconv.Itoa(p.Id)+"is ready")
+		fmt.Println(strconv.Itoa(p.User.Id)+"is ready")
 		p.Unlock()
 		p.Table.userReady()
 		p.Table.BroadCastMsg(p,MSG_TYPE_OF_READY,"玩家准备")

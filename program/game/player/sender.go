@@ -12,7 +12,7 @@ func sendPlayerCards(curPlayer *Player){
 		fmt.Println(err.Error())
 		return
 	}
-	fmt.Println("给玩家"+strconv.Itoa(curPlayer.Id)+"发牌")
+	fmt.Println("给玩家"+strconv.Itoa(curPlayer.User.Id)+"发牌")
 	curPlayer.Conn.WriteMessage(websocket.TextMessage,json)
 }
 

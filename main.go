@@ -10,6 +10,9 @@ import (
 	"chessSever/program/game/player"
 	"encoding/json"
 	"chessSever/program/game"
+ 	_ "github.com/jinzhu/gorm/dialects/mysql"
+	"github.com/jinzhu/gorm"
+	"chessSever/program/model"
 )
 
 var addr = flag.String("addr", "localhost:8888", "http service address")
@@ -39,7 +42,12 @@ func echo(w http.ResponseWriter, r *http.Request) {
 	nowId := user.userID
 	user.Unlock()
 
-	currPlayer := player.NewPlayer(nowId,strconv.Itoa(nowId),con,"1headPic")
+	currUser := &model.User{
+		Id:nowId,
+		NickName:"玩家"+strconv.Itoa(nowId),
+		Avatar:"no_avatar",
+	}
+	currPlayer := player.NewPlayer(currUser,con)
 
 	loginMsg := player.NewLoginMsg("登陆成功")
 	loginMsg.ID = nowId
@@ -48,7 +56,7 @@ func echo(w http.ResponseWriter, r *http.Request) {
 		currPlayer.Conn.WriteMessage(websocket.TextMessage,msg)
 	}
 
-	if currPlayer.Id%3 == 1{
+	if currPlayer.User.Id%3 == 1{
 		currPlayer.CreateTable(game.GAME_ID_OF_DOUDOZHU)
 	}else{
 		currPlayer.JoinTable(player.GetRoom().GetAllTable()[0])
@@ -67,6 +75,12 @@ func home(w http.ResponseWriter, r *http.Request) {
 func main() {
 	flag.Parse()
 	log.SetFlags(0)
+
+	db,err := gorm.Open("mysql", "root:root@/chessgame?charset=utf8&parseTime=True&loc=Local")
+	if err != nil{
+		panic(err.Error())
+	}
+	db.AutoMigrate(&model.User{})
 
 	http.HandleFunc("/echo", echo)
 	http.HandleFunc("/", home)

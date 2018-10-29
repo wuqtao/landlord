@@ -9,11 +9,11 @@ import (
 	"time"
 	"math/rand"
 	"github.com/gorilla/websocket"
-	"log"
 	"chessSever/program/game/games/doudizhu"
 	"encoding/json"
 	"chessSever/program/game/games"
 	"chessSever/program/game/poker"
+	"chessSever/program/game/msg"
 )
 
 /*
@@ -74,7 +74,7 @@ func (t *Table) addPlayer(player *Player) error {
 				t.Players[i] = player
 				fmt.Println(t.Key+"有新玩家加入")
 				t.Unlock()
-				t.BroadCastMsg(player,MSG_TYPE_OF_JOIN_TABLE,"玩家加入桌子")
+				t.BroadCastMsg(player,msg.MSG_TYPE_OF_JOIN_TABLE,"玩家加入桌子")
 				return nil
 			}else{
 				if(i == len(t.Players)){
@@ -89,7 +89,7 @@ func (t *Table) addPlayer(player *Player) error {
 		t.Players = append(t.Players,player)
 		fmt.Println(t.Key+"有新玩家加入")
 		t.Unlock()
-		t.BroadCastMsg(player,MSG_TYPE_OF_JOIN_TABLE,"玩家加入桌子")
+		t.BroadCastMsg(player,msg.MSG_TYPE_OF_JOIN_TABLE,"玩家加入桌子")
 		return nil
 	}
 }
@@ -103,7 +103,7 @@ func (t *Table) removePlayer(player *Player) {
 		}
 	}
 	t.Unlock()
-	t.BroadCastMsg(player,MSG_TYPE_OF_LEAVE_TABLE,"玩家离开桌子")
+	t.BroadCastMsg(player,msg.MSG_TYPE_OF_LEAVE_TABLE,"玩家离开桌子")
 	fmt.Println("桌子"+t.Key+"移除玩家"+strconv.Itoa(player.User.Id))
 
 }
@@ -177,7 +177,7 @@ func (t *Table) userCallScore(player *Player,score int){
 			}
 		}
 	}
-	t.BroadCastMsg(player,MSG_TYPE_OF_CALL_SCORE,"用户叫地主")
+	t.BroadCastMsg(player,msg.MSG_TYPE_OF_CALL_SCORE,"用户叫地主")
 }
 
 func (t *Table) callLoardEnd(){
@@ -194,7 +194,7 @@ func (t *Table) callLoardEnd(){
 	poker.CommonSort(t.Players[t.LoardIndex].PokerCards)
 	sendPlayerCards(t.Players[t.LoardIndex])
 
-	t.BroadCastMsg(t.Players[t.LoardIndex],MSG_TYPE_OF_SEND_BOTTOM_CARDS,"发放底牌")
+	t.BroadCastMsg(t.Players[t.LoardIndex],msg.MSG_TYPE_OF_SEND_BOTTOM_CARDS,"发放底牌")
 	fmt.Println("底牌发送完毕，开始游戏")
 	t.play(nil)
 }
@@ -211,47 +211,30 @@ func (t *Table) nextCallLoard(index int){
 		player = t.GetNextLoard()
 	}
 
-	callScoreMsg,err := newCallScoreMsg()
-	if err == nil{
-		player.Conn.WriteMessage(websocket.TextMessage,callScoreMsg)
-		fmt.Println(strconv.Itoa(player.User.Id)+"开始叫地主")
-	}else{
-		log.Fatal(err.Error())
-	}
+	SendMsgToPlayer(player,msg.MSG_TYPE_OF_CALL_SCORE,"叫地主")
 	//限制叫地主时间
-	go func(player *Player) {
+	go func(){
 		time.Sleep(time.Second*10)
 		player.RLock()
 		if !player.CalledScore{
 			player.RUnlock()
-			callScoreTimeOutMsg,err := newCallScoreTimeOutMsg()
-			if err == nil{
-				player.Conn.WriteMessage(websocket.TextMessage,callScoreTimeOutMsg)
-				fmt.Println(strconv.Itoa(player.User.Id)+"叫地主超时")
-			}else{
-				log.Fatal(err.Error())
-			}
+			SendMsgToPlayer(player,msg.MSG_TYPE_OF_CALL_SCORE_TIME_OUT,"叫地主")
 			player.callScore(0)
 		}else{
 			player.RUnlock()
 		}
-	}(player)
+	}()
 }
 /*
 	player下一个出牌的玩家
 	isPass当前玩家是否是过牌
  */
 func (t *Table) play(player *Player){
-	msg ,err := newPlayCardMsg()
-	if err != nil{
-		panic(err.Error())
-	}
 	if player == nil{
 		t.CurrPlayerIndex = t.LoardIndex
-		t.Players[t.LoardIndex].Conn.WriteMessage(websocket.TextMessage,msg)
-	}else{
-		player.Conn.WriteMessage(websocket.TextMessage,msg)
+		player = t.Players[t.LoardIndex]
 	}
+	SendMsgToPlayer(player,msg.MSG_TYPE_OF_PLAY_CARD,"玩家出牌")
 }
 
 func (t *Table) userPlayCard(p *Player,cardIndexs []int){
@@ -309,12 +292,12 @@ func (t *Table) userPlayCard(p *Player,cardIndexs []int){
 				}
 				t.Unlock()
 				if(isBomb){
-					t.BroadCastMsg(p,MSG_TYPE_OF_SCORE_CHANGE,"分数加倍")
+					t.BroadCastMsg(p,msg.MSG_TYPE_OF_SCORE_CHANGE,"分数加倍")
 				}
 				//出牌成功，给前端提示
 				p.playCardSuccess()
 
-				t.BroadCastMsg(p,MSG_TYPE_OF_PLAY_CARD,"玩家出牌")
+				t.BroadCastMsg(p,msg.MSG_TYPE_OF_PLAY_CARD,"玩家出牌")
 				//玩家的牌全部出完了
 				if len(p.PlayedCardIndexs) == len(p.PokerCards) {
 					if t.OutCardIndexs == nil{
@@ -348,12 +331,12 @@ func (t *Table) userPlayCard(p *Player,cardIndexs []int){
 
 func (t *Table) gameOver(){
 	if len(t.OutCardIndexs) == 1 {
-		t.BroadCastMsg(nil,MSG_TYPE_OF_GAME_OVER,"游戏结束,地主胜利")
+		t.BroadCastMsg(nil,msg.MSG_TYPE_OF_GAME_OVER,"游戏结束,地主胜利")
 	}else{
 		if t.OutCardIndexs[1] == t.LoardIndex{
-			t.BroadCastMsg(nil,MSG_TYPE_OF_GAME_OVER,"游戏结束,地主胜利")
+			t.BroadCastMsg(nil,msg.MSG_TYPE_OF_GAME_OVER,"游戏结束,地主胜利")
 		}else{
-			t.BroadCastMsg(nil,MSG_TYPE_OF_GAME_OVER,"游戏结束,农民胜利")
+			t.BroadCastMsg(nil,msg.MSG_TYPE_OF_GAME_OVER,"游戏结束,农民胜利")
 		}
 	}
 }
@@ -362,7 +345,7 @@ func (t *Table) userPassCard(player *Player){
 	//之前出牌是当前玩家则不能过牌，第一个出牌玩家也不能过牌
 	if t.LastCards != nil && t.GetCurrPlayerIndex(player) != t.LastCards.PlayerIndex{
 		player.playCardSuccess()
-		t.BroadCastMsg(player,MSG_TYPE_OF_PASS,"用户过牌")
+		t.BroadCastMsg(player,msg.MSG_TYPE_OF_PASS,"用户过牌")
 		t.play(t.GetNextPlayer())
 	}else{
 		player.playCardError("第一个出牌的玩家不能过牌")
@@ -415,71 +398,71 @@ func (t *Table) GetCurrPlayerIndex(player *Player) int {
  */
 func (t *Table) BroadCastMsg(player *Player,msgType int,hints string){
 
-	msg := newBraodCastMsg()
-	msg.SubMsgType = msgType
+	newMsg := msg.NewBraodCastMsg()
+	newMsg.SubMsgType = msgType
 
 	t.RLock()
 	defer t.RUnlock()
 
 	if player != nil{
-		msg.PlayerId = player.User.Id
+		newMsg.PlayerId = player.User.Id
 		for i,p := range t.Players{
 			if p != nil{
-				msg.PlayerIndexIdDic["id"+strconv.Itoa(p.User.Id)] = i
+				newMsg.PlayerIndexIdDic["id"+strconv.Itoa(p.User.Id)] = i
 			}
 		}
 	}
 
 	switch msgType{
-		case MSG_TYPE_OF_READY:
-			msg.Msg = strconv.Itoa(player.User.Id)+"已准备"
-		case MSG_TYPE_OF_UN_READY:
-			msg.Msg = strconv.Itoa(player.User.Id)+"取消准备"
-		case MSG_TYPE_OF_JOIN_TABLE:
-			msg.Msg = strconv.Itoa(player.User.Id)+"加入游戏"
-		case MSG_TYPE_OF_LEAVE_TABLE:
-			msg.Msg = strconv.Itoa(player.User.Id)+"离开游戏"
-		case MSG_TYPE_OF_PLAY_CARD:
-			msg.Msg = strconv.Itoa(player.User.Id)+"出牌"
+		case msg.MSG_TYPE_OF_READY:
+			newMsg.Msg = strconv.Itoa(player.User.Id)+"已准备"
+		case msg.MSG_TYPE_OF_UN_READY:
+			newMsg.Msg = strconv.Itoa(player.User.Id)+"取消准备"
+		case msg.MSG_TYPE_OF_JOIN_TABLE:
+			newMsg.Msg = strconv.Itoa(player.User.Id)+"加入游戏"
+		case msg.MSG_TYPE_OF_LEAVE_TABLE:
+			newMsg.Msg = strconv.Itoa(player.User.Id)+"离开游戏"
+		case msg.MSG_TYPE_OF_PLAY_CARD:
+			newMsg.Msg = strconv.Itoa(player.User.Id)+"出牌"
 			for _,card := range t.LastCards.Cards{
-				msg.Cards = append(msg.Cards,card)
+				newMsg.Cards = append(newMsg.Cards,card)
 			}
-		case MSG_TYPE_OF_PASS:
-			msg.Msg = strconv.Itoa(player.User.Id)+"过牌"
-		case MSG_TYPE_OF_CALL_SCORE:
-			msg.Msg = strconv.Itoa(player.User.Id)+"叫地主"
-			msg.Score = player.CallScore
-		case MSG_TYPE_OF_SCORE_CHANGE:
-			msg.Msg = "基础变动"
-			msg.Score = t.CurrLoardScore
-		case MSG_TYPE_OF_SEND_BOTTOM_CARDS:
-			msg.Msg = "发放底牌"
-			msg.Cards = t.Game.GetBottomCards()
-			msg.PlayerId = player.User.Id
-		case MSG_TYPE_OF_GAME_OVER:
-			msg.Msg = "游戏结束，结算积分"
-			msg.Score = t.CurrLoardScore
+		case msg.MSG_TYPE_OF_PASS:
+			newMsg.Msg = strconv.Itoa(player.User.Id)+"过牌"
+		case msg.MSG_TYPE_OF_CALL_SCORE:
+			newMsg.Msg = strconv.Itoa(player.User.Id)+"叫地主"
+			newMsg.Score = player.CallScore
+		case msg.MSG_TYPE_OF_SCORE_CHANGE:
+			newMsg.Msg = "基础变动"
+			newMsg.Score = t.CurrLoardScore
+		case msg.MSG_TYPE_OF_SEND_BOTTOM_CARDS:
+			newMsg.Msg = "发放底牌"
+			newMsg.Cards = t.Game.GetBottomCards()
+			newMsg.PlayerId = player.User.Id
+		case msg.MSG_TYPE_OF_GAME_OVER:
+			newMsg.Msg = "游戏结束，结算积分"
+			newMsg.Score = t.CurrLoardScore
 			for _,index := range t.OutCardIndexs{
 				if index == t.LoardIndex{
-					msg.SettleInfoDic["id"+strconv.Itoa(t.Players[index].User.Id)] = "+"+strconv.Itoa(t.CurrLoardScore*2)
+					newMsg.SettleInfoDic["id"+strconv.Itoa(t.Players[index].User.Id)] = "+"+strconv.Itoa(t.CurrLoardScore*2)
 				}else{
-					msg.SettleInfoDic["id"+strconv.Itoa(t.Players[index].User.Id)] = "+"+strconv.Itoa(t.CurrLoardScore)
+					newMsg.SettleInfoDic["id"+strconv.Itoa(t.Players[index].User.Id)] = "+"+strconv.Itoa(t.CurrLoardScore)
 				}
 			}
 
 			for i,player := range t.Players{
-				_,ok := msg.SettleInfoDic["id"+strconv.Itoa(player.User.Id)]
+				_,ok := newMsg.SettleInfoDic["id"+strconv.Itoa(player.User.Id)]
 				if !ok{
 					if i == t.LoardIndex{
-						msg.SettleInfoDic["id"+strconv.Itoa(t.Players[i].User.Id)] = "-"+strconv.Itoa(t.CurrLoardScore*2)
+						newMsg.SettleInfoDic["id"+strconv.Itoa(t.Players[i].User.Id)] = "-"+strconv.Itoa(t.CurrLoardScore*2)
 					}else{
-						msg.SettleInfoDic["id"+strconv.Itoa(t.Players[i].User.Id)] = "-"+strconv.Itoa(t.CurrLoardScore)
+						newMsg.SettleInfoDic["id"+strconv.Itoa(t.Players[i].User.Id)] = "-"+strconv.Itoa(t.CurrLoardScore)
 					}
 				}
 			}
 	}
 
-	msgJson,err := json.Marshal(msg)
+	msgJson,err := json.Marshal(newMsg)
 	if err != nil {
 		panic(err.Error())
 	}

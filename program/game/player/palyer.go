@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"chessSever/program/game/poker"
 	"chessSever/program/model"
+	"chessSever/program/game/msg"
 )
 
 /**
@@ -97,28 +98,28 @@ func (p *Player)ResolveMsg(msgB []byte) error{
 	}
 
 	switch msgType {
-		case MSG_TYPE_OF_AUTO:
+		case msg.MSG_TYPE_OF_AUTO:
 
-		case MSG_TYPE_OF_UN_READY:
+		case msg.MSG_TYPE_OF_UN_READY:
 			p.unReady()
-		case MSG_TYPE_OF_READY:
+		case msg.MSG_TYPE_OF_READY:
 			p.Ready()
-		case MSG_TYPE_OF_PLAY_CARD:
+		case msg.MSG_TYPE_OF_PLAY_CARD:
 			cardIndex := gjson.Get(string(msgB),"Data.CardIndex").Array()
 			cards := []int{}
 			for _,card := range cardIndex{
 				cards = append(cards,int(card.Int()))
 			}
 			p.playCards(cards)
-		case MSG_TYPE_OF_PASS:
+		case msg.MSG_TYPE_OF_PASS:
 			p.pass()
-		case MSG_TYPE_OF_LEAVE_TABLE:
+		case msg.MSG_TYPE_OF_LEAVE_TABLE:
 
-		case MSG_TYPE_OF_JOIN_TABLE:
+		case msg.MSG_TYPE_OF_JOIN_TABLE:
 
-		case MSG_TYPE_OF_HINT:
+		case msg.MSG_TYPE_OF_HINT:
 
-		case MSG_TYPE_OF_CALL_SCORE:
+		case msg.MSG_TYPE_OF_CALL_SCORE:
 			score,_ := strconv.Atoi(gjson.Get(string(msgB),"Data.Score").String())
 			p.callScore(score)
 
@@ -136,7 +137,7 @@ func (p *Player)Ready(){
 		fmt.Println(strconv.Itoa(p.User.Id)+"is ready")
 		p.Unlock()
 		p.Table.userReady()
-		p.Table.BroadCastMsg(p,MSG_TYPE_OF_READY,"玩家准备")
+		p.Table.BroadCastMsg(p,msg.MSG_TYPE_OF_READY,"玩家准备")
 	}else{
 		p.Unlock()
 	}
@@ -146,7 +147,7 @@ func (p *Player)unReady(){
 	p.Lock()
 	p.IsReady = false
 	p.Unlock()
-	p.Table.BroadCastMsg(p,MSG_TYPE_OF_UN_READY,"玩家取消准备")
+	p.Table.BroadCastMsg(p,msg.MSG_TYPE_OF_UN_READY,"玩家取消准备")
 }
 
 func (p *Player)callScore(score int){
@@ -166,20 +167,12 @@ func (p *Player)pass(){
 }
 //出牌成功
 func (p *Player)playCardSuccess(){
-	msg,err := newPlayCardSuccessMsg()
-	if err != nil{
-		panic(err.Error())
-	}
-	p.Conn.WriteMessage(websocket.TextMessage,msg)
+	SendMsgToPlayer(p,msg.MSG_TYPE_OF_PLAY_CARD_SUCCESS,"用户出牌成功")
 }
 
 //出牌出错
 func (p *Player)playCardError(error string){
-	msg,err := newPlayCardsErrorMsg(error)
-	if err != nil{
-		panic(err.Error())
-	}
-	p.Conn.WriteMessage(websocket.TextMessage,msg)
+	SendMsgToPlayer(p,msg.MSG_TYPE_OF_PLAY_ERROR,error)
 }
 //提示出牌
 func(p *Player) hintCards(){

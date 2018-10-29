@@ -1,4 +1,4 @@
-package player
+package msg
 
 import (
 	"encoding/json"
@@ -45,7 +45,7 @@ type Msg struct {
 }
 
 
-func newSendCardMsg(cards []*poker.PokerCard) ([]byte,error){
+func NewSendCardMsg(cards []*poker.PokerCard) ([]byte,error){
 	cardMsg := SendCardMsg{
 		MSG_TYPE_OF_SEND_CARD,
 		[]*SendCard{},
@@ -59,7 +59,7 @@ func newSendCardMsg(cards []*poker.PokerCard) ([]byte,error){
 	return json.Marshal(cardMsg)
 }
 
-func newCallScoreMsg() ([]byte,error){
+func NewCallScoreMsg() ([]byte,error){
 	msg := Msg{
 		MSG_TYPE_OF_CALL_SCORE,
 		"",
@@ -67,7 +67,7 @@ func newCallScoreMsg() ([]byte,error){
 	return json.Marshal(msg)
 }
 
-func newCallScoreTimeOutMsg() ([]byte,error){
+func NewCallScoreTimeOutMsg() ([]byte,error){
 	msg := Msg{
 		MSG_TYPE_OF_CALL_SCORE_TIME_OUT,
 		"",
@@ -75,7 +75,7 @@ func newCallScoreTimeOutMsg() ([]byte,error){
 	return json.Marshal(msg)
 }
 
-func newPlayCardMsg() ([]byte,error){
+func NewPlayCardMsg() ([]byte,error){
 	msg := Msg{
 		MSG_TYPE_OF_PLAY_CARD,
 		"",
@@ -83,7 +83,7 @@ func newPlayCardMsg() ([]byte,error){
 	return json.Marshal(msg)
 }
 
-func newPlayCardsErrorMsg(error string) ([]byte,error){
+func NewPlayCardsErrorMsg(error string) ([]byte,error){
 	msg := Msg{
 		MSG_TYPE_OF_PLAY_ERROR,
 		error,
@@ -91,7 +91,7 @@ func newPlayCardsErrorMsg(error string) ([]byte,error){
 	return json.Marshal(msg)
 }
 
-func newPlayCardSuccessMsg() ([]byte,error){
+func NewPlayCardSuccessMsg() ([]byte,error){
 	msg := Msg{
 		MSG_TYPE_OF_PLAY_CARD_SUCCESS,
 		"",
@@ -105,12 +105,14 @@ type LoginMsg struct{
 	ID int
 }
 
-func NewLoginMsg(loginMsg string) LoginMsg{
-	return LoginMsg{
+func NewLoginMsg(userID int,loginMsg string) ([]byte,error){
+	newMsg :=LoginMsg{
 		MSG_TYPE_OF_LOGIN,
 		loginMsg,
 		-1,
 	}
+	newMsg.ID = userID
+	return json.Marshal(newMsg)
 }
 
 type BroadCastMsg struct{
@@ -123,7 +125,7 @@ type BroadCastMsg struct{
 	SettleInfoDic    map[string]string
 	PlayerIndexIdDic map[string]int
 }
-func newBraodCastMsg() BroadCastMsg{
+func NewBraodCastMsg() BroadCastMsg{
 	msg := BroadCastMsg{
 		MSG_TYPE_OF_TABLE_BRODCAST,
 		-1,

@@ -8,11 +8,11 @@ import (
 	"strconv"
 	"sync"
 	"chessSever/program/game/player"
-	"encoding/json"
 	"chessSever/program/game"
- 	_ "github.com/jinzhu/gorm/dialects/mysql"
+	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"github.com/jinzhu/gorm"
 	"chessSever/program/model"
+	"chessSever/program/game/msg"
 )
 
 var addr = flag.String("addr", "localhost:8888", "http service address")
@@ -49,19 +49,15 @@ func echo(w http.ResponseWriter, r *http.Request) {
 	}
 	currPlayer := player.NewPlayer(currUser,con)
 
-	loginMsg := player.NewLoginMsg("登陆成功")
-	loginMsg.ID = nowId
-	msg,err := json.Marshal(loginMsg)
-	if err == nil{
-		currPlayer.Conn.WriteMessage(websocket.TextMessage,msg)
-	}
+	player.SendMsgToPlayer(currPlayer,msg.MSG_TYPE_OF_LOGIN,"用户登陆")
 
 	if currPlayer.User.Id%3 == 1{
 		currPlayer.CreateTable(game.GAME_ID_OF_DOUDOZHU)
 	}else{
-		currPlayer.JoinTable(player.GetRoom().GetAllTable()[0])
+		currPlayer.JoinTable(player.GetRoom().GetAllTable()[len(player.GetRoom().GetAllTable())-1])
 	}
 
+	wg.Add(1)
 	//启动一个goroutine监听该客户端发来的消息
 	go player.HandlerUserMsg(&wg,con,currPlayer)
 

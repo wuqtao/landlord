@@ -2,7 +2,7 @@ package game
 
 import (
 	"sync"
-	"iris/core/errors"
+	"errors"
 )
 
 type GameList struct {

@@ -5,7 +5,7 @@ import (
 	"time"
 	"chessSever/program/game"
 	"chessSever/program/game/poker"
-	"chessSever/program/game/player"
+	"chessSever/program/player"
 	"sync"
 	"fmt"
 	"chessSever/program/game/msg"
@@ -13,6 +13,7 @@ import (
 	"errors"
 	"encoding/json"
 	"github.com/gorilla/websocket"
+	"chessSever/program/game/bind"
 )
 
 type Doudizhu struct {
@@ -53,7 +54,7 @@ func init(){
 	}
 }
 
-func GetDoudizhu(baseScore int,p *player.Player) game.IGame{
+func GetDoudizhu(baseScore int) game.IGame{
 
 	newDou := originDoudizhu
 
@@ -67,13 +68,11 @@ func GetDoudizhu(baseScore int,p *player.Player) game.IGame{
 	newDou.Unlock()
 
 	newDou.InitCards()
-
-	newDou.addPlayer(p)
 	return &newDou
 }
 
 //增加玩家
-func (dou *Doudizhu) addPlayer(player *player.Player) error {
+func (dou *Doudizhu) AddPlayer(player *player.Player) error {
 
 	if dou.IsPlaying{
 		return errors.New("游戏进行中，无法加入游戏")
@@ -89,6 +88,7 @@ func (dou *Doudizhu) addPlayer(player *player.Player) error {
 				dou.Players[i] = player
 				fmt.Println("有新玩家加入桌子"+strconv.Itoa(dou.id))
 				dou.Unlock()
+				bind.BindPlayerGame(player,dou)
 				dou.BroadCastMsg(player,msg.MSG_TYPE_OF_JOIN_TABLE,"玩家加入桌子")
 				return nil
 			}else{
@@ -108,7 +108,7 @@ func (dou *Doudizhu) addPlayer(player *player.Player) error {
 	return nil
 }
 //移除玩家
-func (dou *Doudizhu) removePlayer(player *player.Player) error{
+func (dou *Doudizhu) RemovePlayer(player *player.Player) error{
 	if dou.IsPlaying{
 		return errors.New("游戏进行中，无法移除玩家")
 	}
@@ -125,7 +125,15 @@ func (dou *Doudizhu) removePlayer(player *player.Player) error{
 	return nil
 }
 
-func (dou *Doudizhu) userReady(){
+func (dou *Doudizhu)SayToOthers(p *player.Player,msg []byte){
+	//todo
+}
+
+func (dou *Doudizhu)SayToAnother(p *player.Player,otherIndex int,msg []byte){
+	//todo
+}
+
+func (dou *Doudizhu) PlayerReady(p *player.Player){
 
 	userAllReady := false
 	for _,p := range dou.Players{
@@ -149,6 +157,10 @@ func (dou *Doudizhu) userReady(){
 	}
 }
 
+func (dou *Doudizhu)PlayerUnReady(p *player.Player){
+	//todo
+}
+
 func (dou *Doudizhu) dealCards(){
 	fmt.Println("开始发牌")
 	dou.RLock()
@@ -166,7 +178,7 @@ func (dou *Doudizhu) callLoard(){
 	dou.nextCallLoard(int(currUserIndex))
 }
 
-func (dou *Doudizhu) userCallScore(currPlayer *player.Player,score int){
+func (dou *Doudizhu) PlayerCallScore(currPlayer *player.Player,score int){
 	dou.Lock()
 	dou.CalledLoardNum++
 	var i int
@@ -230,13 +242,14 @@ func (dou *Doudizhu) nextCallLoard(index int){
 	go func(){
 		time.Sleep(time.Second*10)
 		currPlayer.RLock()
-		if !currPlayer.CalledScore{
-			currPlayer.RUnlock()
-			player.SendMsgToPlayer(currPlayer,msg.MSG_TYPE_OF_CALL_SCORE_TIME_OUT,"叫地主")
-			currPlayer.CallScore(0)
-		}else{
-			currPlayer.RUnlock()
-		}
+		//todo
+		//if !currPlayer.CalledScore{
+		//	currPlayer.RUnlock()
+		//	player.SendMsgToPlayer(currPlayer,msg.MSG_TYPE_OF_CALL_SCORE_TIME_OUT,"叫地主")
+		//	currPlayer.CallScore(0)
+		//}else{
+		//	currPlayer.RUnlock()
+		//}
 	}()
 }
 
@@ -248,7 +261,7 @@ func (dou *Doudizhu) play(currPlayer *player.Player){
 	player.SendMsgToPlayer(currPlayer,msg.MSG_TYPE_OF_PLAY_CARD,"玩家出牌")
 }
 
-func (dou *Doudizhu) userPlayCard(p *player.Player,cardIndexs []int){
+func (dou *Doudizhu) PlayerPlayCards(p *player.Player,cardIndexs []int){
 	//符合出牌规则才允许出牌
 	if dou.GetCurrPlayerIndex(p) != dou.CurrPlayerIndex{
 		p.PlayCardError("还没到您的出牌次序")
@@ -352,7 +365,7 @@ func (dou *Doudizhu) gameOver(){
 	}
 }
 
-func (dou *Doudizhu) userPassCard(currPlayer *player.Player){
+func (dou *Doudizhu) PlayerPassCard(currPlayer *player.Player){
 	//之前出牌是当前玩家则不能过牌，第一个出牌玩家也不能过牌
 	if dou.lastCards != nil && dou.GetCurrPlayerIndex(currPlayer) != dou.lastCards.PlayerIndex{
 		currPlayer.PlayCardSuccess()
@@ -475,15 +488,6 @@ func (dou *Doudizhu) BroadCastMsg(player *player.Player,msgType int,hints string
 		}
 	}
 }
-
-func (dou *Doudizhu)GetPlayerNum() int{
-	return dou.playerNum
-}
-
-func (dou *Doudizhu)GetPokerCards() []*poker.PokerCard{
-	return dou.pokerCards
-}
-
 func (dou *Doudizhu)GetGameName() string{
 	return dou.name
 }
@@ -492,12 +496,8 @@ func (dou *Doudizhu)GetGameID() int{
 	return dou.id
 }
 
-func (dou *Doudizhu)GetDeckNum() int{
-	return dou.deckNum
-}
-
-func (dou Doudizhu)GetLastCards() *game.LastCardsType{
-	return dou.lastCards
+func (dou *Doudizhu)GetGameType() int{
+	return game.GAME_ID_OF_DOUDOZHU
 }
 
 //初始化游戏中的牌
@@ -540,11 +540,13 @@ func (dou *Doudizhu)DealCards(){
 	dou.sortPlayerCards()
 }
 
-func (dou *Doudizhu)Hint() []*poker.PokerCard{
-	return []*poker.PokerCard{}
+func (dou *Doudizhu)HintCards(p *player.Player) []int{
+	//todo
+	return []int{}
 }
 
 func (dou *Doudizhu)CompareCards(cardsNow []poker.PokerDeck,lastCards []poker.PokerCard) bool{
+	//todo
 	return false
 }
 //检查出牌是否符合规则
@@ -563,8 +565,3 @@ func (dou *Doudizhu)sortPlayerCards(){
 		poker.CommonSort(cards)
 	}
 }
-//获取底牌
-func (dou *Doudizhu) GetBottomCards() []*poker.PokerCard{
-	return dou.bottomCards
-}
-

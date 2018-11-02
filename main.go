@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"strconv"
 	"sync"
-	"chessSever/program/game/player"
+	"chessSever/program/player"
 	"chessSever/program/game"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"github.com/jinzhu/gorm"

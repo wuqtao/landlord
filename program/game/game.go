@@ -37,7 +37,7 @@ type IGame interface {
 	GetGameName() string                                                            //获取游戏名称
 	GetGameID() int                                                                 //获取游戏id
 	GetDeckNum() int                                                                //获取游戏牌的付数
-	GetLastCards() []*poker.PokerCard                                               //获取上一次出牌
+	GetLastCards() *LastCardsType                                                  //获取上一次出牌
 	InitCards()                                                                     //初始化游戏中的牌
 	ShuffleCards()                                                                  //洗牌
 	Hint()	[]*poker.PokerCard                                                    //提示有效的出牌

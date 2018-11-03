@@ -8,7 +8,6 @@ import (
 	"strconv"
 	"sync"
 	"chessSever/program/player"
-	"chessSever/program/game"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"github.com/jinzhu/gorm"
 	"chessSever/program/model"
@@ -52,9 +51,9 @@ func echo(w http.ResponseWriter, r *http.Request) {
 	player.SendMsgToPlayer(currPlayer,msg.MSG_TYPE_OF_LOGIN,"用户登陆")
 
 	if currPlayer.User.Id%3 == 1{
-		currPlayer.CreateTable(game.GAME_ID_OF_DOUDOZHU)
+		//currPlayer.CreateTable(game.GAME_ID_OF_DOUDOZHU)
 	}else{
-		currPlayer.JoinTable(player.GetRoom().GetAllTable()[len(player.GetRoom().GetAllTable())-1])
+		//currPlayer.JoinTable(player.GetRoom().GetAllTable()[len(player.GetRoom().GetAllTable())-1])
 	}
 
 	wg.Add(1)

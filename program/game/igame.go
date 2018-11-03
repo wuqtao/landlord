@@ -2,24 +2,23 @@ package game
 
 import (
 	"chessSever/program/game/poker"
-	"chessSever/program/player"
 )
 
 const (
-	GAME_ID_OF_DOUDOZHU = iota
-	GAME_ID_OF_SHENGJI
-	GAME_ID_OF_BAOHUANG
-	GAME_ID_OF_ZHAJINHUA
+	GAME_TYPE_OF_DOUDOZHU = iota
+	GAME_TYPE_OF_SHENGJI
+	GAME_TYPE_OF_BAOHUANG
+	GAME_TYPE_OF_ZHAJINHUA
 )
 
 var gameIDNameDic map[int]string
 
 func init(){
 	gameIDNameDic = make(map[int]string)
-	gameIDNameDic[GAME_ID_OF_DOUDOZHU] = "斗地主"
-	gameIDNameDic[GAME_ID_OF_SHENGJI] = "升级"
-	gameIDNameDic[GAME_ID_OF_BAOHUANG] = "保皇"
-	gameIDNameDic[GAME_ID_OF_ZHAJINHUA] = "斗地主"
+	gameIDNameDic[GAME_TYPE_OF_DOUDOZHU] = "斗地主"
+	gameIDNameDic[GAME_TYPE_OF_SHENGJI] = "升级"
+	gameIDNameDic[GAME_TYPE_OF_BAOHUANG] = "保皇"
+	gameIDNameDic[GAME_TYPE_OF_ZHAJINHUA] = "斗地主"
 }
 
 func GetGameName(gameID int) string{
@@ -37,16 +36,16 @@ type IGame interface {
 	GetGameName() string                                                            //获取游戏名称
 	GetGameType() int                                                               //获取游戏类型
 
-	AddPlayer(p *player.Player) error                                                //游戏添加玩家
-	RemovePlayer(p *player.Player) error                                             //游戏添加玩家
-	SayToOthers(p *player.Player,msg []byte)										 //跟其他玩家说话
-	SayToAnother(p *player.Player,otherIndex int,msg []byte)						 //跟一个玩家说话
-	PlayerReady(p *player.Player)													 //玩家准备
-	PlayerUnReady(p *player.Player)													 //玩家取消准备
-	PlayerCallScore(p *player.Player,score int)										 //玩家叫地主
-	PlayerPlayCards(p *player.Player,cardsIndex []int)								 //玩家出牌
-	PlayerPassCard(p *player.Player)												 //玩家过牌
-	HintCards(p *player.Player)	[]int													 //提示玩家可出的牌
+	AddPlayer(p IPlayer) error                                                //游戏添加玩家
+	RemovePlayer(p IPlayer) error                                             //游戏添加玩家
+	SayToOthers(p IPlayer,msg []byte)										 //跟其他玩家说话
+	SayToAnother(p IPlayer,otherIndex int,msg []byte)						 //跟一个玩家说话
+	PlayerReady(p IPlayer)													 //玩家准备
+	PlayerUnReady(p IPlayer)													 //玩家取消准备
+	PlayerCallScore(p IPlayer,score int)										 //玩家叫地主
+	PlayerPlayCards(p IPlayer,cardsIndex []int)								 //玩家出牌
+	PlayerPassCard(p IPlayer)												 //玩家过牌
+	HintCards(p IPlayer)	[]int													 //提示玩家可出的牌
 }
 
 type LastCardsType struct{

@@ -1,32 +1,30 @@
-package bind
+package game
 
 import (
 	"sync"
-	"chessSever/program/player"
-	"chessSever/program/game"
 	"errors"
 )
 
 type PlayerGameDic struct {
 	sync.RWMutex
-	Dic map[*player.Player]game.IGame
+	Dic map[IPlayer]IGame
 }
 
 var dic PlayerGameDic
 
 func init(){
 	dic = PlayerGameDic{
-		Dic: make(map[*player.Player]game.IGame),
+		Dic: make(map[IPlayer]IGame),
 	}
 }
 
-func BindPlayerGame(p *player.Player,game game.IGame){
+func BindPlayerGame(p IPlayer,game IGame){
 	dic.Lock()
 	dic.Dic[p] = game
 	dic.Unlock()
 }
 
-func GetPlayerGame(p *player.Player) (game.IGame,error){
+func GetPlayerGame(p IPlayer) (IGame,error){
 	dic.RLock()
 	defer dic.RUnlock()
 	game,ok := dic.Dic[p]
@@ -35,8 +33,4 @@ func GetPlayerGame(p *player.Player) (game.IGame,error){
 	}else{
 		return nil,errors.New("该player没有关联的game")
 	}
-}
-
-func GetDic() *PlayerGameDic{
-	return &dic
 }

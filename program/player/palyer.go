@@ -9,8 +9,8 @@ import (
 	"chessSever/program/game/poker"
 	"chessSever/program/model"
 	"chessSever/program/game/msg"
-	"chessSever/program/proxy"
 	"chessSever/program/game/games"
+	"chessSever/program/game"
 )
 
 /**
@@ -36,9 +36,57 @@ func NewPlayer(user *model.User,conn *websocket.Conn) *Player {
 	return &player
 }
 
+func (p *Player) GetPlayerUser() *model.User{
+	return p.User
+}
+
+func (p *Player) GetIndex() int{
+	return p.Index
+}
+
+func (p *Player) GetReadyStatus() bool{
+	return p.IsReady
+}
+
+func (p *Player) GetAutoStatus() bool{
+	return p.IsAuto
+}
+
+func (p *Player) GetPlayedCardIndexs() []int{
+	return p.PlayedCardIndexs
+}
+
+func (p *Player) GetPlayerCards(indexs []int) []*poker.PokerCard{
+	if len(indexs) > 0{
+		temCards := []*poker.PokerCard{}
+		for _,i := range indexs{
+			temCards = append(temCards,p.PokerCards[i])
+		}
+		return temCards
+	}else{
+		return p.PokerCards
+	}
+}
+
+func (p *Player) SetPokerCards(cards []*poker.PokerCard){
+	p.Lock()
+	defer p.Unlock()
+	p.PokerCards = cards
+	//p.SendPlayerCards(currPlayer)
+	//todo
+}
+
+func (p *Player) StartCallScore(){
+	//todo
+}
+
+func (p *Player) StartPlay(){
+	//todo
+}
+
 //按照桌号加入牌桌
 func (p *Player) JoinGame(gameType int,gameId int){
-	game,err := proxy.GetGameRoom().GetGame(gameType,gameId)
+	game,err := game.GetRoom().GetGame(gameType,gameId)
 	if err != nil{
 		fmt.Println(err.Error())
 	}else{
@@ -49,42 +97,41 @@ func (p *Player) JoinGame(gameType int,gameId int){
 	}
 }
 //开牌桌
-func (p *Player) CreateGame(gameID int,baseScore int){
-	 err := games.NewGame(gameID,baseScore).AddPlayer(p)
+func (p *Player) CreateGame(gameType int,baseScore int){
+	 err := games.NewGame(gameType,baseScore).AddPlayer(p)
 	 if err != nil{
 		println(err.Error())
 	 }
 }
 
 func (p *Player) LeaveGame() {
-	game,ok := proxy.GetPlayerGameDic().Dic[p]
-	if ok {
+	game,err := game.GetPlayerGame(p)
+	if err == nil {
 		err := game.RemovePlayer(p)
 		if err != nil{
 			println(err.Error())
 		}
 	}else{
-		println("未加入任何桌子")
+		println(err.Error())
 	}
-
 }
 //用户跟该桌所有人说话
 func (p *Player) SayToOthers(msg []byte){
 
-	game,ok := proxy.GetPlayerGameDic().Dic[p]
-	if ok {
+	game,err := game.GetPlayerGame(p)
+	if err == nil {
 		game.SayToOthers(p,msg)
 	}else{
-		println("未加入桌子")
+		//todo
 	}
 }
 //用户跟该桌某一个说话
 func (p *Player) SayToAnother(id int,msg []byte){
-	game,ok := proxy.GetPlayerGameDic().Dic[p]
-	if ok {
+	game,err := game.GetPlayerGame(p)
+	if err == nil {
 		game.SayToAnother(p,id,msg)
 	}else{
-		println("未加入桌子")
+		//todo
 	}
 }
 
@@ -111,7 +158,7 @@ func (p *Player)ResolveMsg(msgB []byte) error{
 			}
 			p.PlayCards(cards)
 		case msg.MSG_TYPE_OF_PASS:
-			p.pass()
+			p.Pass()
 		case msg.MSG_TYPE_OF_LEAVE_TABLE:
 
 		case msg.MSG_TYPE_OF_JOIN_TABLE:
@@ -134,11 +181,11 @@ func (p *Player)Ready(){
 	p.IsReady = true
 	p.Unlock()
 
-	game,ok := proxy.GetPlayerGameDic().Dic[p]
-	if ok {
+	game,err := game.GetPlayerGame(p)
+	if err == nil {
 		game.PlayerReady(p)
 	}else{
-		println("未加入桌子")
+		//todo
 	}
 }
 
@@ -147,56 +194,88 @@ func (p *Player) UnReady(){
 	p.IsReady = false
 	p.Unlock()
 
-	game,ok := proxy.GetPlayerGameDic().Dic[p]
-	if ok {
+	game,err := game.GetPlayerGame(p)
+	if err == nil {
 		game.PlayerUnReady(p)
 	}else{
-		println("未加入桌子")
+		//todo
 	}
 }
 
 func (p *Player) CallScore(score int){
-	game,ok := proxy.GetPlayerGameDic().Dic[p]
-	if ok {
+	game,err := game.GetPlayerGame(p)
+	if err == nil{
 		game.PlayerCallScore(p,score)
 	}else{
-		println("未加入桌子")
+		//todo
 	}
 }
 //出牌
-func (p *Player) PlayCards(cards []int){
-	game,ok := proxy.GetPlayerGameDic().Dic[p]
-	if ok {
-		game.PlayerPlayCards(p,cards)
+func (p *Player) PlayCards(cardIndexs []int){
+
+	p.RLock()
+	for _,index := range cardIndexs{
+		//判断是否是之前出过的牌
+		if p.PlayedCardIndexs != nil {
+			for _,playedIndex := range p.PlayedCardIndexs{
+				if index == playedIndex {
+					p.PlayCardError("出牌中包含已出的牌")
+					p.RUnlock()
+					return
+				}
+			}
+		}
+	}
+	p.RUnlock()
+
+	game,err := game.GetPlayerGame(p)
+	if err == nil {
+		game.PlayerPlayCards(p,cardIndexs)
 	}else{
-		println("未加入桌子")
+		//todo
 	}
 }
 //过牌
-func (p *Player)pass(){
-	game,ok := proxy.GetPlayerGameDic().Dic[p]
-	if ok {
+func (p *Player)Pass(){
+	game,err := game.GetPlayerGame(p)
+	if err == nil {
 		game.PlayerPassCard(p)
 	}else{
-		println("未加入桌子")
+		//todo
 	}
 }
 //出牌成功
-func (p *Player) PlayCardSuccess(){
+func (p *Player) PlayCardSuccess(cardIndexs []int){
+
+	if p.PlayedCardIndexs == nil{
+		p.PlayedCardIndexs = []int{}
+	}
+
+	for _,index := range cardIndexs{
+		p.PlayedCardIndexs = append(p.PlayedCardIndexs,index)
+	}
+
 	SendMsgToPlayer(p,msg.MSG_TYPE_OF_PLAY_CARD_SUCCESS,"用户出牌成功")
 }
 
+func (p *Player)IsOutOfCards() bool{
+	return len(p.PlayedCardIndexs) == len(p.PokerCards)
+}
 //出牌出错
 func (p *Player) PlayCardError(error string){
 	SendMsgToPlayer(p,msg.MSG_TYPE_OF_PLAY_ERROR,error)
 }
 //提示出牌
 func(p *Player) HintCards(){
-	game,ok := proxy.GetPlayerGameDic().Dic[p]
-	if ok {
+	game,err := game.GetPlayerGame(p)
+	if err == nil {
 		game.HintCards(p)
 	}else{
-		println("未加入桌子")
+		//todo
 	}
+}
+
+func (p *Player) SendMsg(msg []byte){
+	p.Conn.WriteMessage(websocket.TextMessage,msg)
 }
 

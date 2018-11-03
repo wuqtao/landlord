@@ -21,25 +21,25 @@ func init(){
 func GetRoom() Room {
 	return room
 }
-
-func (r Room)AddGame(gameID int,game IGame) int{
-	list,ok := r[gameID]
+//将game加入房间，并返回game的id
+func (r Room)AddGame(gameType int,game IGame) int{
+	list,ok := r[gameType]
 	if !ok {
-		r[gameID] = &GameList{
+		r[gameType] = &GameList{
 			list:make(map[int]IGame),
 		}
-		list = r[gameID]
+		list = r[gameType]
 	}
 	//todo 暂时用数量来表示
-	gameCount := len(list.list)
 
 	list.Lock()
+	gameCount := len(list.list)
 	list.list[gameCount] = game
 	list.Unlock()
 
 	return gameCount
 }
-
+//根据游戏类型和gameId查找game
 func (r Room)GetGame(gameType int,gameID int) (IGame,error){
 	list,ok := r[gameType]
 	if ok{

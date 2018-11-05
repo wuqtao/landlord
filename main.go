@@ -8,11 +8,11 @@ import (
 	"strconv"
 	"sync"
 	"chessSever/program/game/player"
-	"chessSever/program/game"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"github.com/jinzhu/gorm"
 	"chessSever/program/model"
 	"chessSever/program/game/msg"
+	"chessSever/program/game"
 )
 
 var addr = flag.String("addr", "localhost:8888", "http service address")
@@ -51,10 +51,12 @@ func echo(w http.ResponseWriter, r *http.Request) {
 
 	player.SendMsgToPlayer(currPlayer,msg.MSG_TYPE_OF_LOGIN,"用户登陆")
 
+	shang := currPlayer.User.Id/3
+
 	if currPlayer.User.Id%3 == 1{
-		currPlayer.CreateTable(game.GAME_ID_OF_DOUDOZHU)
+		currPlayer.CreateGame(game.GAME_TYPE_OF_DOUDOZHU,10)
 	}else{
-		currPlayer.JoinTable(player.GetRoom().GetAllTable()[len(player.GetRoom().GetAllTable())-1])
+		currPlayer.JoinGame(game.GAME_TYPE_OF_DOUDOZHU,shang)
 	}
 
 	wg.Add(1)

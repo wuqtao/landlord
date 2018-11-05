@@ -8,7 +8,7 @@ import (
 	"log"
 )
 
-func sendPlayerCards(curPlayer *Player){
+func SendPlayerCards(curPlayer *Player){
 	json,err := msg.NewSendCardMsg(curPlayer.PokerCards)
 	if err != nil{
 		fmt.Println(err.Error())

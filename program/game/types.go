@@ -1,4 +1,4 @@
-package doudizhu
+package game
 
 const(
 	POKERS_TYPE_SINGLE = iota   //"单牌"

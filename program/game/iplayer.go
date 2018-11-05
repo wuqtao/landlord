@@ -1,11 +1,26 @@
 package game
 
 import (
-	"chessSever/program/model"
 	"chessSever/program/game/poker"
+	"chessSever/program/model"
 )
 
 type IPlayer interface {
+	//由game回调的方法
+	PlayCardSuccess(cardIndexs []int)								//出牌成功
+	PlayCardError(err string)										//出牌错误
+	GetReadyStatus() bool
+	GetAutoStatus() bool
+	GetPlayerUser() *model.User
+	GetIndex() int
+	SetIndex(index int)
+	SetPokerCards(cards []*poker.PokerCard)
+	StartCallScore()
+	StartPlay()
+	IsOutOfCards() bool  											//是否出完牌
+	SendMsg(msg []byte)
+
+	//响应客户端请求的方法
 	JoinGame(gameType int,gameId int)   							//加入游戏
 	CreateGame(gameID int,baseScore int)  							//创建游戏
 	LeaveGame()												 		//离开游戏
@@ -17,20 +32,7 @@ type IPlayer interface {
 	CallScore(score int)											//抢地主
 	PlayCards(cards []int)											//出牌
 	Pass()	                                                        //过牌
-	PlayCardSuccess(cardIndexs []int)												//出牌成功
-	PlayCardError(err string)										//出牌错误
 	HintCards()														//提示出牌
-
-	GetPlayerUser() *model.User
-	GetIndex() int
-	GetReadyStatus() bool
-	GetAutoStatus() bool
 	GetPlayedCardIndexs() []int
 	GetPlayerCards(indexs []int) []*poker.PokerCard
-
-	SetPokerCards(cards []*poker.PokerCard)
-	StartCallScore()
-	StartPlay()
-	IsOutOfCards() bool  											//是否出完牌
-	SendMsg(msg []byte)
 }

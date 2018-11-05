@@ -44,6 +44,12 @@ func (p *Player) GetIndex() int{
 	return p.Index
 }
 
+func (p *Player) SetIndex(index int){
+	p.Lock()
+	p.Index = index
+	p.Unlock()
+}
+
 func (p *Player) GetReadyStatus() bool{
 	return p.IsReady
 }
@@ -70,18 +76,32 @@ func (p *Player) GetPlayerCards(indexs []int) []*poker.PokerCard{
 
 func (p *Player) SetPokerCards(cards []*poker.PokerCard){
 	p.Lock()
-	defer p.Unlock()
 	p.PokerCards = cards
-	//p.SendPlayerCards(currPlayer)
-	//todo
+	p.Unlock()
+	msg,err := msg.NewSendCardMsg(cards)
+	if err == nil{
+		p.SendMsg(msg)
+	}else{
+		fmt.Println(err.Error())
+	}
 }
 
 func (p *Player) StartCallScore(){
-	//todo
+	msg,err := msg.NewCallScoreMsg()
+	if err == nil{
+		p.SendMsg(msg)
+	}else{
+		fmt.Println(err.Error())
+	}
 }
 
 func (p *Player) StartPlay(){
-	//todo
+	msg,err := msg.NewPlayCardMsg()
+	if err == nil{
+		p.SendMsg(msg)
+	}else{
+		fmt.Println(err.Error())
+	}
 }
 
 //按照桌号加入牌桌
@@ -147,18 +167,18 @@ func (p *Player)ResolveMsg(msgB []byte) error{
 		case msg.MSG_TYPE_OF_AUTO:
 
 		case msg.MSG_TYPE_OF_UN_READY:
-			p.UnReady()
+			go p.UnReady()
 		case msg.MSG_TYPE_OF_READY:
-			p.Ready()
+			go p.Ready()
 		case msg.MSG_TYPE_OF_PLAY_CARD:
 			cardIndex := gjson.Get(string(msgB),"Data.CardIndex").Array()
 			cards := []int{}
 			for _,card := range cardIndex{
 				cards = append(cards,int(card.Int()))
 			}
-			p.PlayCards(cards)
+			go p.PlayCards(cards)
 		case msg.MSG_TYPE_OF_PASS:
-			p.Pass()
+			go p.Pass()
 		case msg.MSG_TYPE_OF_LEAVE_TABLE:
 
 		case msg.MSG_TYPE_OF_JOIN_TABLE:
@@ -167,10 +187,10 @@ func (p *Player)ResolveMsg(msgB []byte) error{
 
 		case msg.MSG_TYPE_OF_CALL_SCORE:
 			score,_ := strconv.Atoi(gjson.Get(string(msgB),"Data.Score").String())
-			p.CallScore(score)
+			go p.CallScore(score)
 
 		default:
-			p.Conn.WriteMessage(msgType,msgB)
+			go p.Conn.WriteMessage(msgType,msgB)
 	}
 
 	return nil
@@ -185,7 +205,11 @@ func (p *Player)Ready(){
 	if err == nil {
 		game.PlayerReady(p)
 	}else{
-		//todo
+		msg,err1 := msg.NewPlayCardsErrorMsg(err.Error())
+		if err1 == nil{
+			p.SendMsg(msg)
+		}
+		fmt.Println(err.Error())
 	}
 }
 
@@ -198,7 +222,11 @@ func (p *Player) UnReady(){
 	if err == nil {
 		game.PlayerUnReady(p)
 	}else{
-		//todo
+		msg,err1 := msg.NewPlayCardsErrorMsg(err.Error())
+		if err1 == nil{
+			p.SendMsg(msg)
+		}
+		fmt.Println(err.Error())
 	}
 }
 
@@ -207,7 +235,11 @@ func (p *Player) CallScore(score int){
 	if err == nil{
 		game.PlayerCallScore(p,score)
 	}else{
-		//todo
+		msg,err1 := msg.NewPlayCardsErrorMsg(err.Error())
+		if err1 == nil{
+			p.SendMsg(msg)
+		}
+		fmt.Println(err.Error())
 	}
 }
 //出牌
@@ -232,7 +264,11 @@ func (p *Player) PlayCards(cardIndexs []int){
 	if err == nil {
 		game.PlayerPlayCards(p,cardIndexs)
 	}else{
-		//todo
+		msg,err1 := msg.NewPlayCardsErrorMsg(err.Error())
+		if err1 == nil{
+			p.SendMsg(msg)
+		}
+		fmt.Println(err.Error())
 	}
 }
 //过牌
@@ -241,7 +277,11 @@ func (p *Player)Pass(){
 	if err == nil {
 		game.PlayerPassCard(p)
 	}else{
-		//todo
+		msg,err1 := msg.NewPlayCardsErrorMsg(err.Error())
+		if err1 == nil{
+			p.SendMsg(msg)
+		}
+		fmt.Println(err.Error())
 	}
 }
 //出牌成功
@@ -271,7 +311,11 @@ func(p *Player) HintCards(){
 	if err == nil {
 		game.HintCards(p)
 	}else{
-		//todo
+		msg,err1 := msg.NewPlayCardsErrorMsg(err.Error())
+		if err1 == nil{
+			p.SendMsg(msg)
+		}
+		fmt.Println(err.Error())
 	}
 }
 

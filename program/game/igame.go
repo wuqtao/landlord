@@ -32,20 +32,21 @@ func GetGameName(gameID int) string{
 
 //游戏使用接口类型，便于实现多态
 type IGame interface {
-	GetGameID() int                                                                 //获取游戏id
-	GetGameName() string                                                            //获取游戏名称
-	GetGameType() int                                                               //获取游戏类型
+	GetGameID() int                                                          //获取游戏id
+	GetGameName() string                                                     //获取游戏名称
+	GetGameType() int                                                        //获取游戏类型
 
-	AddPlayer(p IPlayer) error                                                //游戏添加玩家
-	RemovePlayer(p IPlayer) error                                             //游戏添加玩家
+	AddPlayer(p IPlayer) error                                               //游戏添加玩家
+	RemovePlayer(p IPlayer) error                                            //游戏移除玩家
 	SayToOthers(p IPlayer,msg []byte)										 //跟其他玩家说话
 	SayToAnother(p IPlayer,otherIndex int,msg []byte)						 //跟一个玩家说话
 	PlayerReady(p IPlayer)													 //玩家准备
-	PlayerUnReady(p IPlayer)													 //玩家取消准备
-	PlayerCallScore(p IPlayer,score int)										 //玩家叫地主
+	PlayerUnReady(p IPlayer)											     //玩家取消准备
+	PlayerCallScore(p IPlayer,score int)								     //玩家叫地主
 	PlayerPlayCards(p IPlayer,cardsIndex []int)								 //玩家出牌
 	PlayerPassCard(p IPlayer)												 //玩家过牌
-	HintCards(p IPlayer)	[]int													 //提示玩家可出的牌
+	HintCards(p IPlayer) []int  									         //提示玩家可出的牌
+	BroadCastMsg(p IPlayer,msgType int,msg string)
 }
 
 type LastCardsType struct{

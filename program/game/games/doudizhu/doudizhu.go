@@ -218,6 +218,9 @@ func (dou *Doudizhu) PlayerCallScore(currPlayer game.IPlayer,score int){
 		}else if dou.lordIndex == -1{//无人叫地主,从新发牌
 			dou.Unlock()
 			dou.restart()
+		}else{
+			dou.Unlock()
+			dou.nextCallLoard()
 		}
 	}else{
 		//直到第一个人二次抢地主结束

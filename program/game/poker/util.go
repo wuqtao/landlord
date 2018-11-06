@@ -32,6 +32,7 @@ func CheckThreeSameValueCard(pokers []*PokerCard) ([]int,[]int){
 					indexs = append(indexs,i-1)
 					indexs = append(indexs,i-2)
 					currValue = card.CardValue
+					num = 1
 				case 3:
 					currValue = card.CardValue
 					num = 1

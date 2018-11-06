@@ -28,6 +28,7 @@ type Doudizhu struct {
 	CalledLoardNum  int                  //叫过地主的人数
 	lordIndex int                        //地主索引
 	CurrPlayerIndex int                  //当前叫地主或者出牌人的index
+	FirstCallScoreIndex int              //第一个叫地主的人的index
 	OutCardIndexs []int                  //出完牌的用户index
 
 	Players []game.IPlayer               //玩家数组
@@ -189,6 +190,7 @@ func (dou *Doudizhu) nextCallLoard(){
 	if dou.CurrPlayerIndex < 0{
 		rand.Seed(time.Now().Unix())
 		dou.CurrPlayerIndex = int(rand.Int31n(int32(dou.playerNum-1)))
+		dou.FirstCallScoreIndex = dou.CurrPlayerIndex
 		currPlayer = dou.Players[dou.CurrPlayerIndex]
 		dou.Unlock()
 	}else{
@@ -207,22 +209,42 @@ func (dou *Doudizhu) PlayerCallScore(currPlayer game.IPlayer,score int){
 	currIndex := dou.getCurrPlayerIndex(currPlayer)
 	dou.Lock()
 	dou.CalledLoardNum++
-	//直到第一个人二次抢地主结束
-	if dou.CalledLoardNum == dou.playerNum+1 {
-		if score != 0 {
-			dou.lordIndex = currIndex
+	//如果还有第一个人叫地主，其余人都不抢，则叫地主结束，不用等第一个人二次叫地主
+	if score == 0 && dou.CalledLoardNum == dou.playerNum {
+		//第一个人叫了地主
+		if dou.lordIndex == dou.FirstCallScoreIndex{
+			dou.Unlock()
+			dou.callLoardEnd()
+		}else if dou.lordIndex == -1{//无人叫地主,从新发牌
+			dou.Unlock()
+			dou.restart()
 		}
-		dou.Unlock()
-		dou.callLoardEnd()
 	}else{
-		if score != 0 {
-			dou.lordIndex = currIndex
+		//直到第一个人二次抢地主结束
+		if dou.CalledLoardNum == dou.playerNum+1 {
+			if score != 0 {
+				dou.lordIndex = currIndex
+			}
+			dou.Unlock()
+			dou.callLoardEnd()
+		}else{
+			if score != 0 {
+				dou.lordIndex = currIndex
+			}
+			dou.Unlock()
+			dou.nextCallLoard()
 		}
-		dou.Unlock()
-		dou.nextCallLoard()
 	}
 }
 
+func (dou *Doudizhu) restart(){
+		dou.Lock()
+		dou.CalledLoardNum = 0
+		dou.lordIndex  = -1
+		dou.CurrPlayerIndex = -1
+		dou.Unlock()
+		dou.dealCards()
+}
 func (dou *Doudizhu) callLoardEnd(){
 	dou.Lock()
 	dou.CurrPlayerIndex = dou.lordIndex

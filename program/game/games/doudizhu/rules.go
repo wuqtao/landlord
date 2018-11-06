@@ -102,6 +102,10 @@ func CheckMultiPairs(pokers []*poker.PokerCard) (*subCardsType,error){
 	}
 
 	poker.CommonSort(pokers)
+	//2和王不能作为连对出牌
+	if pokers[len(pokers)-1].CardValue >= poker.PokerTwo{
+		return nil,errors.New("不是连对")
+	}
 
 	currValue := -1
 
@@ -167,7 +171,7 @@ func CheckThreePlus(pokers []*poker.PokerCard) (*subCardsType,error){
 		}else if len(indexs) == 0{
 			return newCardsType(game.POKERS_TYPE_THREE,cardValue[0],cardValue[0]),nil
 		}else{
-			if poker.IsUnsameCardNumSame(pokers,indexs){
+			if poker.IsCardSame(pokers,indexs){
 				return newCardsType(game.POKERS_TYPE_THREE_PLUS_TWO,cardValue[0],cardValue[0]),nil
 			}else{
 				return nil,errors.New("不是三带牌")
@@ -213,6 +217,18 @@ func CheckMultiThreePlus(pokers []*poker.PokerCard) (*subCardsType,error){
 	if len(cardValues) < 2{
 		return nil,errors.New("不是三顺")
 	}
+	temp := -1
+	for i,v := range cardValues{
+		if i == 0{
+			temp = v
+		}else{
+			temp++
+			//主牌不连续，则不是连三顺
+			if temp != v{
+				return nil,errors.New("不是三顺")
+			}
+		}
+	}
 	//多连不带或者各带一个
 	if len(indexs) == 0{
 		return newCardsType(game.POKERS_TYPE_MULITY_THREE,cardValues[0],cardValues[len(cardValues)-1]),nil
@@ -244,6 +260,20 @@ func CheckMultiFourPlus(pokers []*poker.PokerCard) (*subCardsType,error){
 	if len(cardValues) < 2{
 		return nil,errors.New("不是四顺")
 	}
+
+	temp := -1
+	for i,v := range cardValues{
+		if i == 0{
+			temp = v
+		}else{
+			temp++
+			//主牌不连续，则不是连四顺
+			if temp != v{
+				return nil,errors.New("不是三顺")
+			}
+		}
+	}
+
 	//纯四张牌连牌
 	if len(indexs) == 0{
 		return newCardsType(game.POKERS_TYPE_MULITY_FOUR,cardValues[0],cardValues[len(cardValues)-1]),nil
@@ -270,6 +300,10 @@ func CheckDragon(pokers []*poker.PokerCard) (*subCardsType,error){
 	}
 
 	poker.CommonSort(pokers)
+	//2和王不能参与顺子出牌
+	if pokers[len(pokers)-1].CardValue >= poker.PokerTwo{
+		return nil,errors.New("不是顺子")
+	}
 	//2和大小王不能参与顺子牌
 	if pokers[len(pokers)-1].CardValue == poker.PokerRedJoker ||
 		pokers[len(pokers)-1].CardValue == poker.PokerRedJoker ||

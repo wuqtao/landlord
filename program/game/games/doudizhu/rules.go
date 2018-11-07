@@ -235,17 +235,17 @@ func CheckMultiThreePlus(pokers []*poker.PokerCard) (*subCardsType,error){
 	cardNum := poker.CheckEachCardNum(pokers)
 
 	mainCardValue := -1      //暂存主牌的value，用于比较是否连续
-	mainCardNum := -1        //主牌的数量
+	mainCardNum := 0        //主牌的数量
 	mainCardValues := []int{}  //存放主牌的值
-	attachCardNum := -1      //附牌的数量
+	attachCardNum := 0    //附牌的数量
 	attachCardNumMap := make(map[int]int)  //附牌的value和num的map
 
 	for k,v := range cardNum{
 		if v == 3{
 			mainCardValues = append(mainCardValues,k)
-			if mainCardValue == -1 && mainCardNum == -1{
+			if mainCardValue == -1{
 				mainCardValue = k
-				mainCardNum = 1
+				mainCardNum++
 			}else{
 				if k == mainCardValue+1{
 					mainCardValue = k
@@ -256,12 +256,7 @@ func CheckMultiThreePlus(pokers []*poker.PokerCard) (*subCardsType,error){
 			}
 		}else{
 			attachCardNumMap[k] = v
-
-			if attachCardNum == -1{
-				attachCardNum = v
-			}else{
-				attachCardNum += v
-			}
+			attachCardNum += v
 		}
 	}
 	//2和王不能参与连顺
@@ -298,17 +293,17 @@ func CheckMultiFourPlus(pokers []*poker.PokerCard) (*subCardsType,error){
 	cardNum := poker.CheckEachCardNum(pokers)
 
 	mainCardValue := -1      //暂存主牌的value，用于比较是否连续
-	mainCardNum := -1        //主牌的数量
+	mainCardNum := 0        //主牌的数量
 	mainCardValues := []int{}  //存放主牌的值
-	attachCardNum := -1      //附牌的数量
+	attachCardNum := 0      //附牌的数量
 	attachCardNumMap := make(map[int]int)  //附牌的value和num的map
 
 	for k,v := range cardNum{
 		if v == 4{
 			mainCardValues = append(mainCardValues,k)
-			if mainCardValue == -1 && mainCardNum == -1{
+			if mainCardValue == -1 {
 				mainCardValue = k
-				mainCardNum = 1
+				mainCardNum++
 			}else{
 				if k == mainCardValue+1{
 					mainCardValue = k
@@ -319,12 +314,7 @@ func CheckMultiFourPlus(pokers []*poker.PokerCard) (*subCardsType,error){
 			}
 		}else{
 			attachCardNumMap[k] = v
-
-			if attachCardNum == -1{
-				attachCardNum = v
-			}else{
-				attachCardNum += v
-			}
+			attachCardNum += v
 		}
 	}
 

@@ -3,7 +3,7 @@ package game
 import (
 	"sync"
 	"errors"
-	"fmt"
+	"github.com/sirupsen/logrus"
 )
 
 type PlayerGameDic struct {
@@ -24,7 +24,7 @@ func BindPlayerGame(p IPlayer,game IGame){
 	defer dic.Unlock()
 	_,ok := dic.Dic[p]
 	if ok {
-		fmt.Println("该玩家已绑定游戏，绑定失败")
+		logrus.Error("该玩家已绑定游戏，绑定失败")
 	}else{
 		dic.Dic[p] = game
 	}
@@ -38,10 +38,10 @@ func UnbindPlayerGame(p IPlayer,game IGame){
 		if currGame == game{
 			delete(dic.Dic,p)
 		}else{
-			fmt.Println("玩家已绑定游戏，不是当前给定的游戏，解绑失败")
+			logrus.Error("玩家已绑定游戏，不是当前给定的游戏，解绑失败")
 		}
 	}else{
-		fmt.Println("玩家未绑定游戏，解绑失败")
+		logrus.Error("玩家未绑定游戏，解绑失败")
 	}
 }
 
@@ -52,6 +52,7 @@ func GetPlayerGame(p IPlayer) (IGame,error){
 	if ok {
 		return game,nil
 	}else{
+		logrus.Error("该player没有关联的game")
 		return nil,errors.New("该player没有关联的game")
 	}
 }

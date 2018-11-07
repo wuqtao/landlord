@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"errors"
 	"encoding/json"
+	"github.com/sirupsen/logrus"
 )
 
 type Doudizhu struct {
@@ -66,12 +67,11 @@ func GetDoudizhu(baseScore int) game.IGame{
 	newDou.Players = []game.IPlayer{}
 	newDou.playerCards = [][]*poker.PokerCard{[]*poker.PokerCard{},[]*poker.PokerCard{},[]*poker.PokerCard{}}
 	newDou.bottomCards = []*poker.PokerCard{}
-	newDou.id = game.GetRoom().AddGame(game.GAME_TYPE_OF_DOUDOZHU,&newDou)
+	newDou.id = game.GetRoom().AddGame(newDou.GetGameType(),&newDou)
 	newDou.Unlock()
 
 	newDou.initCards()
 
-	game.GetRoom().AddGame(newDou.GetGameType(),&newDou)
 	return &newDou
 }
 
@@ -84,7 +84,7 @@ func (dou *Doudizhu) AddPlayer(currPlayer game.IPlayer) error {
 	}
 	if len(dou.Players) > dou.playerNum{
 		dou.Unlock()
-		panic("player Num ")
+		logrus.Error("游戏玩家数超限,"+game.GetGameName(dou.GetGameType())+":"+strconv.Itoa(dou.GetGameID()))
 		return errors.New("游戏数据出错")
 	}
 
@@ -92,7 +92,7 @@ func (dou *Doudizhu) AddPlayer(currPlayer game.IPlayer) error {
 		for i,p := range dou.Players{
 			if p == nil{
 				dou.Players[i] = currPlayer
-				fmt.Println("有新玩家加入游戏"+strconv.Itoa(dou.id))
+				logrus.Info("有新玩家加入游戏"+strconv.Itoa(dou.id))
 				dou.Unlock()
 				currPlayer.SetIndex(i)
 				game.BindPlayerGame(currPlayer,dou)
@@ -289,6 +289,10 @@ func (dou *Doudizhu) PlayerPlayCards(p game.IPlayer,cardIndexs []int){
 
 	lastCards,err := dou.matchRoles(dou.getCurrPlayerIndex(p),cards)
 	if err == nil{
+		logrus.Debug("lastCards",lastCards)
+		if dou.lastCards != nil{
+			logrus.Debug("dou.lastCards",dou.lastCards)
+		}
 		//第一个出牌，或者上一次出牌没人管，或者出牌大于上家，此时满足出牌要求
 		if  dou.lastCards == nil || lastCards.PlayerIndex == dou.lastCards.PlayerIndex ||
 			(lastCards.CardsType == dou.lastCards.CardsType &&

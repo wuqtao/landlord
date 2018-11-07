@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"github.com/gorilla/websocket"
-	"log"
 	"net/http"
 	"strconv"
 	"sync"
@@ -13,6 +12,7 @@ import (
 	"chessSever/program/model"
 	"chessSever/program/game/msg"
 	"chessSever/program/game"
+	"github.com/sirupsen/logrus"
 )
 
 var addr = flag.String("addr", "localhost:8888", "http service address")
@@ -29,7 +29,7 @@ func echo(w http.ResponseWriter, r *http.Request) {
 
 	con, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Print("upgrade:", err)
+		logrus.Error("upgrade:", err)
 		return
 	}
 	defer con.Close()
@@ -39,9 +39,9 @@ func echo(w http.ResponseWriter, r *http.Request) {
 	//暂时用变量模拟用户登陆，后续从数据库读取用户信息，实例化用户，游戏过程中用redis来暂存游戏信息，用户推出后持久化到数据库
 	user.Lock()
 	user.userID++
-	nowId := user.userID
+	nowId := user.userID-1
 	user.Unlock()
-
+	logrus.Info("玩家："+strconv.Itoa(nowId)+"登陆游戏")
 	currUser := &model.User{
 		Id:nowId,
 		NickName:"玩家"+strconv.Itoa(nowId),
@@ -53,10 +53,13 @@ func echo(w http.ResponseWriter, r *http.Request) {
 
 	shang := currPlayer.User.Id/3
 
-	if currPlayer.User.Id%3 == 1{
+	if currPlayer.User.Id%3 == 0{
 		currPlayer.CreateGame(game.GAME_TYPE_OF_DOUDOZHU,10)
+		logrus.Info("玩家："+strconv.Itoa(currPlayer.GetPlayerUser().Id)+"创建游戏："+game.GetGameName(game.GAME_TYPE_OF_DOUDOZHU))
 	}else{
 		currPlayer.JoinGame(game.GAME_TYPE_OF_DOUDOZHU,shang)
+		logrus.Info("玩家："+strconv.Itoa(currPlayer.GetPlayerUser().Id)+"加入游戏："+game.GetGameName(game.GAME_TYPE_OF_DOUDOZHU)+
+			strconv.Itoa(game.GAME_TYPE_OF_DOUDOZHU)+":"+strconv.Itoa(shang))
 	}
 
 	wg.Add(1)
@@ -72,11 +75,10 @@ func home(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	flag.Parse()
-	log.SetFlags(0)
 
 	db,err := gorm.Open("mysql", "root:root@/chessgame?charset=utf8&parseTime=True&loc=Local")
 	if err != nil{
-		panic(err.Error())
+		logrus.Fatal(err.Error())
 	}
 	db.AutoMigrate(&model.User{})
 
@@ -84,5 +86,8 @@ func main() {
 	http.HandleFunc("/", home)
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./views/static"))))
 	http.Handle("/pages/", http.StripPrefix("/pages/", http.FileServer(http.Dir("./views/pages"))))
-	log.Fatal(http.ListenAndServe(*addr, nil))
+	err = http.ListenAndServe(*addr, nil)
+	if err != nil{
+		logrus.Fatal(err.Error())
+	}
 }

@@ -4,6 +4,7 @@ import (
 	"chessSever/program/game"
 	"errors"
 	"chessSever/program/game/poker"
+	"fmt"
 )
 //临时类型，便于函数返回类型
 type subCardsType struct {
@@ -30,8 +31,10 @@ func CheckRules(currPlayerIndex int,pokers []*poker.PokerCard) (*game.LastCardsT
 		//对子或者王炸
 	case 2:
 		if cardsType,err := CheckPair(pokers);err == nil{
+			fmt.Println(cardsType)
 			return game.NewLastCards(currPlayerIndex,cardsType.cardsType,pokers,cardsType.cardMinAndMax["min"],cardsType.cardMinAndMax["max"]),nil
 		}else if cardsType,err := CheckJokerBomb(pokers);err == nil{
+			fmt.Println(cardsType)
 			return game.NewLastCards(currPlayerIndex,cardsType.cardsType,pokers,cardsType.cardMinAndMax["min"],cardsType.cardMinAndMax["max"]),nil
 		}else{
 			return nil,errors.New("牌型不符合规则")
@@ -40,6 +43,7 @@ func CheckRules(currPlayerIndex int,pokers []*poker.PokerCard) (*game.LastCardsT
 	case 3:
 		cardsType,err := CheckThreePlus(pokers)
 		if err == nil{
+			fmt.Println(cardsType)
 			return game.NewLastCards(currPlayerIndex,cardsType.cardsType,pokers,cardsType.cardMinAndMax["min"],cardsType.cardMinAndMax["max"]),nil
 		}else{
 			return nil,errors.New("牌型不符合规则")
@@ -47,8 +51,10 @@ func CheckRules(currPlayerIndex int,pokers []*poker.PokerCard) (*game.LastCardsT
 		//炸弹或三带一
 	case 4:
 		if cardsType,err := CheckCommonBomb(pokers);err == nil{
+			fmt.Println(cardsType)
 			return game.NewLastCards(currPlayerIndex,cardsType.cardsType,pokers,cardsType.cardMinAndMax["min"],cardsType.cardMinAndMax["max"]),nil
 		}else if cardsType,err := CheckThreePlus(pokers);err == nil{
+			fmt.Println(cardsType)
 			return game.NewLastCards(currPlayerIndex,cardsType.cardsType,pokers,cardsType.cardMinAndMax["min"],cardsType.cardMinAndMax["max"]),nil
 		}else{
 			return nil,errors.New("牌型不符合规则")
@@ -56,8 +62,10 @@ func CheckRules(currPlayerIndex int,pokers []*poker.PokerCard) (*game.LastCardsT
 		//三带二或者一条龙
 	case 5:
 		if cardsType,err := CheckThreePlus(pokers);err == nil{
+			fmt.Println(cardsType)
 			return game.NewLastCards(currPlayerIndex,cardsType.cardsType,pokers,cardsType.cardMinAndMax["min"],cardsType.cardMinAndMax["max"]),nil
 		}else if cardsType,err := CheckDragon(pokers);err == nil{
+			fmt.Println(cardsType)
 			return game.NewLastCards(currPlayerIndex,cardsType.cardsType,pokers,cardsType.cardMinAndMax["min"],cardsType.cardMinAndMax["max"]),nil
 		}else{
 			return nil,errors.New("牌型不符合规则")
@@ -157,91 +165,122 @@ func CheckCommonBomb(pokers []*poker.PokerCard) (*subCardsType,error){
 
 //是否是三代一或三代二或者不带
 func CheckThreePlus(pokers []*poker.PokerCard) (*subCardsType,error){
-	if len(pokers) < 3 || len(pokers) >5{
+	pokersNum := len(pokers)
+	if pokersNum < 3 || pokersNum >5{
 		return nil,errors.New("不是三带牌")
 	}
 
 	poker.CommonSort(pokers)
-	cardValue,indexs := poker.CheckThreeSameValueCard(pokers)
-	if len(cardValue) == 0{
-		return nil,errors.New("不是三带牌")
-	}else{
-		if len(indexs) == 1{
-			return newCardsType(game.POKERS_TYPE_THREE_PLUS_ONE,cardValue[0],cardValue[0]),nil
-		}else if len(indexs) == 0{
-			return newCardsType(game.POKERS_TYPE_THREE,cardValue[0],cardValue[0]),nil
+	cardNum := poker.CheckEachCardNum(pokers)
+	cardNumCount := len(cardNum)
+	if pokersNum == 3{
+		if cardNumCount == 1{
+			return newCardsType(game.POKERS_TYPE_THREE,pokers[0].CardValue,pokers[0].CardValue),nil
 		}else{
-			if poker.IsCardSame(pokers,indexs){
-				return newCardsType(game.POKERS_TYPE_THREE_PLUS_TWO,cardValue[0],cardValue[0]),nil
-			}else{
-				return nil,errors.New("不是三带牌")
+			return nil,errors.New("不是三带牌")
+		}
+	}else{
+		if cardNumCount == 2 {
+
+			for k,v := range cardNum{
+				if v == 3{
+					if(pokersNum == 4){
+						return newCardsType(game.POKERS_TYPE_THREE_PLUS_ONE,k,k),nil
+					}else{
+						return newCardsType(game.POKERS_TYPE_THREE_PLUS_TWO,k,k),nil
+					}
+				}
 			}
+			return nil,errors.New("不是三带牌")
+		}else{
+			return nil,errors.New("不是三带牌")
 		}
 	}
 }
 //是否是四代一或者四代二
 func CheckFourPlus(pokers []*poker.PokerCard) (*subCardsType,error){
 
-	if len(pokers) !=4 && len(pokers) != 6 && len(pokers) != 8{
+	pokersNum := len(pokers)
+	if pokersNum != 6 && pokersNum != 8{
 		return nil,errors.New("不是四带牌")
 	}
 
 	poker.CommonSort(pokers)
-	cardValue,indexs := poker.CheckFourSameValueCard(pokers)
-	if len(cardValue) == 0 || len(indexs) == 0 {
-		return nil,errors.New("不是四带牌")
-	}else{
-		if len(indexs) == 2{
-			return newCardsType(game.POKERS_TYPE_FOUR_PLUS_TWO,cardValue[0],cardValue[0]),nil
-		}else if len(indexs) == 3{
-			return nil,errors.New("不是四带牌")
-		}else{
-			if poker.IsUnsameCardNumSame(pokers,indexs){
-				return newCardsType(game.POKERS_TYPE_FOUR_PLUS_FOUR,cardValue[0],cardValue[0]),nil
-			}else{
-				return nil,errors.New("不是四带牌")
+
+	cardNum := poker.CheckEachCardNum(pokers)
+	cardNumCount := len(cardNum)
+	if cardNumCount == 2{
+		for k,v := range cardNum{
+			if v == 4{
+				if pokersNum == 6{
+					return newCardsType(game.POKERS_TYPE_FOUR_PLUS_TWO,k,k),nil
+				}else{
+					return newCardsType(game.POKERS_TYPE_FOUR_PLUS_FOUR,k,k),nil
+				}
 			}
 		}
+		return nil,errors.New("不是四带牌")
+	}else{
+		return nil,errors.New("不是四带牌")
 	}
 }
 //是否多个三带一，或三代二，或不带
 func CheckMultiThreePlus(pokers []*poker.PokerCard) (*subCardsType,error){
-
-	if len(pokers) < 6 {
+	pokerNum := len(pokers)
+	if pokerNum < 6 {
 		return nil,errors.New("不是三顺")
 	}
 
 	poker.CommonSort(pokers)
-	cardValues,indexs := poker.CheckThreeSameValueCard(pokers)
-	//不可能是多连
-	if len(cardValues) < 2{
-		return nil,errors.New("不是三顺")
-	}
-	temp := -1
-	for i,v := range cardValues{
-		if i == 0{
-			temp = v
+	cardNum := poker.CheckEachCardNum(pokers)
+
+	mainCardValue := -1      //暂存主牌的value，用于比较是否连续
+	mainCardNum := -1        //主牌的数量
+	mainCardValues := []int{}  //存放主牌的值
+	attachCardNum := -1      //附牌的数量
+	attachCardNumMap := make(map[int]int)  //附牌的value和num的map
+
+	for k,v := range cardNum{
+		if v == 3{
+			mainCardValues = append(mainCardValues,k)
+			if mainCardValue == -1 && mainCardNum == -1{
+				mainCardValue = k
+				mainCardNum = 1
+			}else{
+				if k == mainCardValue+1{
+					mainCardValue = k
+					mainCardNum++
+				}else{//主牌连不起来，不能作为三顺子
+					return nil,errors.New("不是三顺")
+				}
+			}
 		}else{
-			temp++
-			//主牌不连续，则不是连三顺
-			if temp != v{
-				return nil,errors.New("不是三顺")
+			attachCardNumMap[k] = v
+
+			if attachCardNum == -1{
+				attachCardNum = v
+			}else{
+				attachCardNum += v
 			}
 		}
 	}
-	//多连不带或者各带一个
-	if len(indexs) == 0{
-		return newCardsType(game.POKERS_TYPE_MULITY_THREE,cardValues[0],cardValues[len(cardValues)-1]),nil
-	}else if len(cardValues) == len(indexs){
-		return newCardsType(game.POKERS_TYPE_MULITY_THREE_PLUS_ONE,cardValues[0],cardValues[len(cardValues)-1]),nil
-	}
-	//不可能符合多连
-	if len(indexs) != 2*len(cardValues) {
+	//2和王不能参与连顺
+	if mainCardNum > 1 && mainCardValues[len(mainCardValues)-1] > poker.PokerAce{
 		return nil,errors.New("不是三顺")
 	}
-	//数量符合三代二，然后判断牌型是否符合
-	if poker.IsUnsameCardNumSame(pokers,indexs){
-		return newCardsType(game.POKERS_TYPE_MULITY_THREE_PLUS_TWO,cardValues[0],cardValues[len(cardValues)-1]),nil
+
+	//没有附牌
+	if attachCardNum == 0{
+		return newCardsType(game.POKERS_TYPE_MULITY_THREE,mainCardValues[0],mainCardValues[len(mainCardValues)-1]),nil
+	}else if mainCardNum == attachCardNum{//三带一
+		return newCardsType(game.POKERS_TYPE_MULITY_THREE_PLUS_ONE,mainCardValues[0],mainCardValues[len(mainCardValues)-1]),nil
+	}else if mainCardNum*2 == attachCardNum{//三带二
+		for _,v := range attachCardNumMap{
+			if v != 2{
+				return nil,errors.New("不是三顺")
+			}
+		}
+		return newCardsType(game.POKERS_TYPE_MULITY_THREE_PLUS_TWO,mainCardValues[0],mainCardValues[len(mainCardValues)-1]),nil
 	}else{
 		return nil,errors.New("不是三顺")
 	}
@@ -250,45 +289,62 @@ func CheckMultiThreePlus(pokers []*poker.PokerCard) (*subCardsType,error){
 //是否多个四带一或四代二，或不带
 func CheckMultiFourPlus(pokers []*poker.PokerCard) (*subCardsType,error){
 
-	if len(pokers) < 8 {
+	pokerNum := len(pokers)
+	if pokerNum < 8 || pokerNum%2 != 0 {
 		return nil,errors.New("不是四顺")
 	}
 
 	poker.CommonSort(pokers)
-	cardValues,indexs := poker.CheckFourSameValueCard(pokers)
-	//四个相同牌的数量小于二的话可能是四代几，但不是多个
-	if len(cardValues) < 2{
-		return nil,errors.New("不是四顺")
-	}
+	cardNum := poker.CheckEachCardNum(pokers)
 
-	temp := -1
-	for i,v := range cardValues{
-		if i == 0{
-			temp = v
+	mainCardValue := -1      //暂存主牌的value，用于比较是否连续
+	mainCardNum := -1        //主牌的数量
+	mainCardValues := []int{}  //存放主牌的值
+	attachCardNum := -1      //附牌的数量
+	attachCardNumMap := make(map[int]int)  //附牌的value和num的map
+
+	for k,v := range cardNum{
+		if v == 4{
+			mainCardValues = append(mainCardValues,k)
+			if mainCardValue == -1 && mainCardNum == -1{
+				mainCardValue = k
+				mainCardNum = 1
+			}else{
+				if k == mainCardValue+1{
+					mainCardValue = k
+					mainCardNum++
+				}else{//主牌连不起来，不能作为三顺子
+					return nil,errors.New("不是四顺")
+				}
+			}
 		}else{
-			temp++
-			//主牌不连续，则不是连四顺
-			if temp != v{
-				return nil,errors.New("不是三顺")
+			attachCardNumMap[k] = v
+
+			if attachCardNum == -1{
+				attachCardNum = v
+			}else{
+				attachCardNum += v
 			}
 		}
 	}
 
-	//纯四张牌连牌
-	if len(indexs) == 0{
-		return newCardsType(game.POKERS_TYPE_MULITY_FOUR,cardValues[0],cardValues[len(cardValues)-1]),nil
-	}
-	//不可能符合四代二
-	if len(indexs) != 2*len(cardValues) {
+	//2和王不能参与连顺
+	if mainCardNum > 1 && mainCardValues[len(mainCardValues)-1] > poker.PokerAce{
 		return nil,errors.New("不是四顺")
 	}
-	//数量符合四代二，然后判断牌型是否是四代二
-	if poker.IsUnsameCardNumSame(pokers,indexs){
-		if len(indexs) != 2*len(cardValues){
-			return newCardsType(game.POKERS_TYPE_MULITY_FOUR_PLUS_TWO,cardValues[0],cardValues[len(cardValues)-1]),nil
-		}else{
-			return newCardsType(game.POKERS_TYPE_MULITY_FOUR_PLUS_FOUR,cardValues[0],cardValues[len(cardValues)-1]),nil
+
+	//没有附牌
+	if attachCardNum == 0{//四不带
+		return newCardsType(game.POKERS_TYPE_MULITY_FOUR,mainCardValues[0],mainCardValues[len(mainCardValues)-1]),nil
+	}else if mainCardNum*2 == attachCardNum{//四带二
+		return newCardsType(game.POKERS_TYPE_MULITY_FOUR_PLUS_TWO,mainCardValues[0],mainCardValues[len(mainCardValues)-1]),nil
+	}else if mainCardNum*4 == attachCardNum{//四带四
+		for _,v := range attachCardNumMap{
+			if v != 2{
+				return nil,errors.New("不是四顺")
+			}
 		}
+		return newCardsType(game.POKERS_TYPE_MULITY_FOUR_PLUS_FOUR,mainCardValues[0],mainCardValues[len(mainCardValues)-1]),nil
 	}else{
 		return nil,errors.New("不是四顺")
 	}

@@ -2,6 +2,7 @@ package game
 
 import (
 	"chessSever/program/game/poker"
+	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -26,6 +27,7 @@ func GetGameName(gameID int) string{
 	if ok{
 		return name
 	}else{
+		logrus.Error("未定义游戏名称")
 		return "未定义游戏名称"
 	}
 }

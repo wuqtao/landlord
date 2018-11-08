@@ -18,6 +18,7 @@ const MSG_TYPE_OF_SETTLE_SCORE = 16    //结算玩家分数
 const MSG_TYPE_OF_GAME_OVER = 17           //游戏结束
 const MSG_TYPE_OF_LOGIN = 18           //玩家登陆成功
 const MSG_TYPE_OF_SEND_BOTTOM_CARDS = 19 //发底牌
+const MSG_TYPE_OF_TIME_TICKER = 20 //倒计时
 var ws;
 var lastPlayCardIndex = [];
 var currPlayerId = -1;
@@ -151,6 +152,9 @@ function openConnection(){
                             break;
                         case MSG_TYPE_OF_CALL_SCORE:
                             $("#PlayerMsg"+data.PlayerId).html("玩家"+data.PlayerId+"叫地主"+data.Score+"分");
+                            if (data.PlayerId == currPlayerId){
+                                $("#divScore").hide();
+                            }
                             console.log(data);
                             break;
                         case MSG_TYPE_OF_SCORE_CHANGE:
@@ -158,8 +162,12 @@ function openConnection(){
                             console.log(data);
                             break;
                         case MSG_TYPE_OF_GAME_OVER:
-                            print("游戏结束")
+                            print("游戏结束");
                             console.log(data);
+                            break;
+                        case MSG_TYPE_OF_TIME_TICKER:
+                            $("#stormTime").html(data.Msg);
+                            break;
                         default:
                             print("未知消息子类型");
                             console.log(data);

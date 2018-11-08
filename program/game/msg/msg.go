@@ -3,6 +3,7 @@ package msg
 import (
 	"encoding/json"
 	"chessSever/program/game/poker"
+	"strconv"
 )
 
 const(
@@ -28,6 +29,7 @@ const(
 	MSG_TYPE_OF_GAME_OVER            //游戏结束
 	MSG_TYPE_OF_LOGIN                //登陆消息
 	MSG_TYPE_OF_SEND_BOTTOM_CARDS    //发底牌
+	MSG_TYPE_OF_TIME_TICKER          //倒计时数
 )
 type SendCard struct {
 	Index int          //标志当前牌在用户所有牌中的索引位置
@@ -66,7 +68,13 @@ func NewCallScoreMsg() ([]byte,error){
 	}
 	return json.Marshal(msg)
 }
-
+func NewTimeCountMsg(second int) ([]byte,error){
+	msg := Msg{
+		MSG_TYPE_OF_CALL_SCORE,
+		strconv.Itoa(second),
+	}
+	return json.Marshal(msg)
+}
 func NewCallScoreTimeOutMsg() ([]byte,error){
 	msg := Msg{
 		MSG_TYPE_OF_CALL_SCORE_TIME_OUT,

@@ -12,6 +12,7 @@ import (
 	"chessSever/program/game/games"
 	"chessSever/program/game"
 	"github.com/sirupsen/logrus"
+	"time"
 )
 
 /**
@@ -27,12 +28,19 @@ type Player struct {
 	IsReady          bool               //是否准备
 	IsAuto           bool               //是否托管
 	PlayedCardIndexs []int              //已经出牌的ID
+	timeOutChan      chan int			//超时通道
+	callScoreChan    chan int           //叫地主通道
+	playCardsChan    chan []*poker.PokerCard  //出牌通道
 }
 
 func NewPlayer(user *model.User,conn *websocket.Conn) *Player {
 	player := Player{
 		User:user,
 		Conn:conn,
+		PlayedCardIndexs:[]int{},
+		timeOutChan:make(chan int),
+		callScoreChan:make(chan int),
+		playCardsChan:make(chan []*poker.PokerCard),
 	}
 	return &player
 }
@@ -90,9 +98,46 @@ func (p *Player) SetPokerCards(cards []*poker.PokerCard){
 }
 
 func (p *Player) StartCallScore(){
-	msg,err := msg.NewCallScoreMsg()
+	currMsg,err := msg.NewCallScoreMsg()
 	if err == nil{
-		p.SendMsg(msg)
+		p.SendMsg(currMsg)
+
+		go func(){
+			score := 0
+			select{
+				case score = <-p.timeOutChan:
+				case score = <-p.callScoreChan:
+			}
+			game,err := game.GetPlayerGame(p)
+			if err == nil{
+				game.PlayerCallScore(p,score)
+			}else{
+				currMsg,err1 := msg.NewPlayCardsErrorMsg(err.Error())
+				if err1 == nil{
+					p.SendMsg(currMsg)
+				}
+				fmt.Println(err.Error())
+			}
+		}()
+		//启动定时器,限制叫地主时间，过时自动不叫
+		go func(){
+			second := 15
+			for {
+				//给玩家发送定时消息
+				game,err := game.GetPlayerGame(p)
+				if err == nil{
+					game.BroadCastMsg(p,msg.MSG_TYPE_OF_TIME_TICKER,strconv.Itoa(second))
+				}else{
+					fmt.Println("未获得用户game")
+				}
+				second--
+				if second <= 0{
+					break
+				}
+				time.Sleep(time.Second)
+			}
+			p.timeOutChan<-0
+		}()
 	}else{
 		fmt.Println(err.Error())
 	}
@@ -234,16 +279,7 @@ func (p *Player) UnReady(){
 }
 
 func (p *Player) CallScore(score int){
-	game,err := game.GetPlayerGame(p)
-	if err == nil{
-		game.PlayerCallScore(p,score)
-	}else{
-		msg,err1 := msg.NewPlayCardsErrorMsg(err.Error())
-		if err1 == nil{
-			p.SendMsg(msg)
-		}
-		fmt.Println(err.Error())
-	}
+	p.callScoreChan<-score
 }
 //出牌
 func (p *Player) PlayCards(cardIndexs []int){

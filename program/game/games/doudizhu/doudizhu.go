@@ -166,6 +166,9 @@ func (dou *Doudizhu)PlayerUnReady(p game.IPlayer){
 }
 //发牌
 func (dou *Doudizhu) dealCards(){
+	//发牌前先初始化游戏相关变量
+	dou.initGame()
+	//洗牌
 	dou.shuffleCards()
 	dou.Lock()
 	//每个玩家的切片
@@ -248,13 +251,18 @@ func (dou *Doudizhu) PlayerCallScore(currPlayer game.IPlayer,score int){
 		}
 	}
 }
-
+func (dou *Doudizhu) initGame(){
+	dou.Lock()
+	for i,_ := range dou.playerCards{
+		dou.playerCards[i] = []*poker.PokerCard{}
+	}
+	dou.CalledLoardNum = 0
+	dou.lordIndex  = -1
+	dou.CurrPlayerIndex = -1
+	dou.baseScore = 10
+	dou.Unlock()
+}
 func (dou *Doudizhu) restart(){
-		dou.Lock()
-		dou.CalledLoardNum = 0
-		dou.lordIndex  = -1
-		dou.CurrPlayerIndex = -1
-		dou.Unlock()
 		dou.dealCards()
 }
 func (dou *Doudizhu) callLoardEnd(){
@@ -366,6 +374,12 @@ func (dou *Doudizhu) PlayerPlayCards(p game.IPlayer,cardIndexs []int){
 }
 
 func (dou *Doudizhu) gameOver(){
+
+	dou.Lock()
+	for i,_ := range dou.playerCards{
+		dou.playerCards[i] = []*poker.PokerCard{}
+	}
+	dou.Unlock()
 	//todo结算分数
 	if len(dou.OutCardIndexs) == 1 {
 		dou.BroadCastMsg(nil,msg.MSG_TYPE_OF_GAME_OVER,"游戏结束,地主胜利")
@@ -423,52 +437,56 @@ func (dou *Doudizhu) BroadCastMsg(player game.IPlayer,msgType int,hints string){
 	}
 
 	switch msgType{
-	case msg.MSG_TYPE_OF_READY:
-		newMsg.Msg = strconv.Itoa(player.GetPlayerUser().Id)+"已准备"
-	case msg.MSG_TYPE_OF_UN_READY:
-		newMsg.Msg = strconv.Itoa(player.GetPlayerUser().Id)+"取消准备"
-	case msg.MSG_TYPE_OF_JOIN_TABLE:
-		newMsg.Msg = strconv.Itoa(player.GetPlayerUser().Id)+"加入游戏"
-	case msg.MSG_TYPE_OF_LEAVE_TABLE:
-		newMsg.Msg = strconv.Itoa(player.GetPlayerUser().Id)+"离开游戏"
-	case msg.MSG_TYPE_OF_PLAY_CARD:
-		newMsg.Msg = strconv.Itoa(player.GetPlayerUser().Id)+"出牌"
-		for _,card := range dou.lastCards.Cards{
-			newMsg.Cards = append(newMsg.Cards,card)
-		}
-	case msg.MSG_TYPE_OF_PASS:
-		newMsg.Msg = strconv.Itoa(player.GetPlayerUser().Id)+"过牌"
-	case msg.MSG_TYPE_OF_CALL_SCORE:
-		newMsg.Msg = strconv.Itoa(player.GetPlayerUser().Id)+"叫地主"
-		newMsg.Score = dou.currMulti
-	case msg.MSG_TYPE_OF_SCORE_CHANGE:
-		newMsg.Msg = "基础变动"
-		newMsg.Score = dou.currMulti
-	case msg.MSG_TYPE_OF_SEND_BOTTOM_CARDS:
-		newMsg.Msg = "发放底牌"
-		newMsg.Cards = dou.bottomCards
-		newMsg.PlayerId = player.GetPlayerUser().Id
-	case msg.MSG_TYPE_OF_GAME_OVER:
-		newMsg.Msg = "游戏结束，结算积分"
-		newMsg.Score = dou.currMulti
-		for _,index := range dou.OutCardIndexs{
-			if index == dou.lordIndex{
-				newMsg.SettleInfoDic["id"+strconv.Itoa(dou.Players[index].GetPlayerUser().Id)] = "+"+strconv.Itoa(dou.currMulti*dou.baseScore*2)
-			}else{
-				newMsg.SettleInfoDic["id"+strconv.Itoa(dou.Players[index].GetPlayerUser().Id)] = "+"+strconv.Itoa(dou.currMulti*dou.baseScore)
+		case msg.MSG_TYPE_OF_TIME_TICKER:
+			newMsg.Msg = hints
+		case msg.MSG_TYPE_OF_READY:
+			newMsg.Msg = strconv.Itoa(player.GetPlayerUser().Id)+"已准备"
+		case msg.MSG_TYPE_OF_UN_READY:
+			newMsg.Msg = strconv.Itoa(player.GetPlayerUser().Id)+"取消准备"
+		case msg.MSG_TYPE_OF_JOIN_TABLE:
+			newMsg.Msg = strconv.Itoa(player.GetPlayerUser().Id)+"加入游戏"
+		case msg.MSG_TYPE_OF_LEAVE_TABLE:
+			newMsg.Msg = strconv.Itoa(player.GetPlayerUser().Id)+"离开游戏"
+		case msg.MSG_TYPE_OF_PLAY_CARD:
+			newMsg.Msg = strconv.Itoa(player.GetPlayerUser().Id)+"出牌"
+			for _,card := range dou.lastCards.Cards{
+				newMsg.Cards = append(newMsg.Cards,card)
 			}
-		}
-
-		for i,player := range dou.Players{
-			_,ok := newMsg.SettleInfoDic["id"+strconv.Itoa(player.GetPlayerUser().Id)]
-			if !ok{
-				if i == dou.lordIndex{
-					newMsg.SettleInfoDic["id"+strconv.Itoa(dou.Players[i].GetPlayerUser().Id)] = "-"+strconv.Itoa(dou.currMulti*dou.baseScore*2)
+		case msg.MSG_TYPE_OF_PASS:
+			newMsg.Msg = strconv.Itoa(player.GetPlayerUser().Id)+"过牌"
+		case msg.MSG_TYPE_OF_CALL_SCORE:
+			newMsg.Msg = strconv.Itoa(player.GetPlayerUser().Id)+"叫地主"
+			newMsg.Score = dou.currMulti
+		case msg.MSG_TYPE_OF_SCORE_CHANGE:
+			newMsg.Msg = "基础变动"
+			newMsg.Score = dou.currMulti
+		case msg.MSG_TYPE_OF_SEND_BOTTOM_CARDS:
+			newMsg.Msg = "发放底牌"
+			newMsg.Cards = dou.bottomCards
+			newMsg.PlayerId = player.GetPlayerUser().Id
+		case msg.MSG_TYPE_OF_GAME_OVER:
+			newMsg.Msg = "游戏结束，结算积分"
+			newMsg.Score = dou.currMulti
+			for _,index := range dou.OutCardIndexs{
+				if index == dou.lordIndex{
+					newMsg.SettleInfoDic["id"+strconv.Itoa(dou.Players[index].GetPlayerUser().Id)] = "+"+strconv.Itoa(dou.currMulti*dou.baseScore*2)
 				}else{
-					newMsg.SettleInfoDic["id"+strconv.Itoa(dou.Players[i].GetPlayerUser().Id)] = "-"+strconv.Itoa(dou.currMulti*dou.baseScore)
+					newMsg.SettleInfoDic["id"+strconv.Itoa(dou.Players[index].GetPlayerUser().Id)] = "+"+strconv.Itoa(dou.currMulti*dou.baseScore)
 				}
 			}
-		}
+
+			for i,player := range dou.Players{
+				_,ok := newMsg.SettleInfoDic["id"+strconv.Itoa(player.GetPlayerUser().Id)]
+				if !ok{
+					if i == dou.lordIndex{
+						newMsg.SettleInfoDic["id"+strconv.Itoa(dou.Players[i].GetPlayerUser().Id)] = "-"+strconv.Itoa(dou.currMulti*dou.baseScore*2)
+					}else{
+						newMsg.SettleInfoDic["id"+strconv.Itoa(dou.Players[i].GetPlayerUser().Id)] = "-"+strconv.Itoa(dou.currMulti*dou.baseScore)
+					}
+				}
+			}
+		default:
+			newMsg.Msg = hints
 	}
 
 	msgJson,err := json.Marshal(newMsg)

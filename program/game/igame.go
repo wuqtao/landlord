@@ -37,6 +37,7 @@ type IGame interface {
 	GetGameID() int                                                          //获取游戏id
 	GetGameName() string                                                     //获取游戏名称
 	GetGameType() int                                                        //获取游戏类型
+	GetLastCard() *LastCardsType                                             //获取游戏最后出的牌
 
 	AddPlayer(p IPlayer) error                                               //游戏添加玩家
 	RemovePlayer(p IPlayer) error                                            //游戏移除玩家
@@ -49,6 +50,7 @@ type IGame interface {
 	PlayerPassCard(p IPlayer)												 //玩家过牌
 	HintCards(p IPlayer) []int  									         //提示玩家可出的牌
 	BroadCastMsg(p IPlayer,msgType int,msg string)
+
 }
 
 type LastCardsType struct{

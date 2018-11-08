@@ -144,6 +144,13 @@ function openConnection(){
                             $.each(data.Cards,function(i,o){
                                 $("#divPlayCards").append(String.format($("#tempCard").html(),o.CardName,o.CardSuit));
                             })
+
+                            if(data.PlayerId == currPlayerId){
+                                $("#divPlay").hide();
+                                $.each(data.CardsIndex,function(i,o){
+                                    $("#cardDiv"+o).remove();
+                                })
+                            }
                             console.log(data);
                             break;
                         case MSG_TYPE_OF_PASS:
@@ -166,7 +173,7 @@ function openConnection(){
                             console.log(data);
                             break;
                         case MSG_TYPE_OF_TIME_TICKER:
-                            $("#stormTime").html(data.Msg);
+                            $(".timeDown").html(data.Msg);
                             break;
                         default:
                             print("未知消息子类型");

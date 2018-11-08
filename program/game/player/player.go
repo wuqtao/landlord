@@ -28,9 +28,9 @@ type Player struct {
 	IsReady          bool               //是否准备
 	IsAuto           bool               //是否托管
 	PlayedCardIndexs []int              //已经出牌的ID
-	timeOutChan      chan int			//超时通道
 	callScoreChan    chan int           //叫地主通道
-	playCardsChan    chan []*poker.PokerCard  //出牌通道
+	playCardsChan    chan []int 		//出牌的索引切片通道
+	stopTimeChan	 chan byte			//停止倒计时的通道
 }
 
 func NewPlayer(user *model.User,conn *websocket.Conn) *Player {
@@ -38,9 +38,9 @@ func NewPlayer(user *model.User,conn *websocket.Conn) *Player {
 		User:user,
 		Conn:conn,
 		PlayedCardIndexs:[]int{},
-		timeOutChan:make(chan int),
 		callScoreChan:make(chan int),
-		playCardsChan:make(chan []*poker.PokerCard),
+		playCardsChan:make(chan []int),
+		stopTimeChan:make(chan byte),
 	}
 	return &player
 }
@@ -103,11 +103,7 @@ func (p *Player) StartCallScore(){
 		p.SendMsg(currMsg)
 
 		go func(){
-			score := 0
-			select{
-				case score = <-p.timeOutChan:
-				case score = <-p.callScoreChan:
-			}
+			score := <-p.callScoreChan
 			game,err := game.GetPlayerGame(p)
 			if err == nil{
 				game.PlayerCallScore(p,score)
@@ -121,22 +117,28 @@ func (p *Player) StartCallScore(){
 		}()
 		//启动定时器,限制叫地主时间，过时自动不叫
 		go func(){
-			second := 15
-			for {
-				//给玩家发送定时消息
-				game,err := game.GetPlayerGame(p)
-				if err == nil{
-					game.BroadCastMsg(p,msg.MSG_TYPE_OF_TIME_TICKER,strconv.Itoa(second))
-				}else{
-					fmt.Println("未获得用户game")
+			//给玩家发送定时消息
+			game,err := game.GetPlayerGame(p)
+			if err == nil{
+				second := 10
+				for {
+					select {
+						case <-p.stopTimeChan:
+							fmt.Println("用户叫地主，定时器退出")
+							return
+						default:
+							game.BroadCastMsg(p,msg.MSG_TYPE_OF_TIME_TICKER,strconv.Itoa(second))
+							second--
+							if second <= 0{
+								p.callScoreChan<-0
+								return
+							}
+							time.Sleep(time.Second)
+					}
 				}
-				second--
-				if second <= 0{
-					break
-				}
-				time.Sleep(time.Second)
+			}else{
+				fmt.Println("未获得用户game")
 			}
-			p.timeOutChan<-0
 		}()
 	}else{
 		fmt.Println(err.Error())
@@ -144,14 +146,149 @@ func (p *Player) StartCallScore(){
 }
 
 func (p *Player) StartPlay(){
-	msg,err := msg.NewPlayCardMsg()
+	currMsg,err := msg.NewPlayCardMsg()
 	if err == nil{
-		p.SendMsg(msg)
+		p.SendMsg(currMsg)
+
+		go func(){
+			cardIndexs := <-p.playCardsChan
+			game,err := game.GetPlayerGame(p)
+			if err == nil{
+				if len(cardIndexs) == 0{
+					game.PlayerPassCard(p)
+				}else{
+					game.PlayerPlayCards(p,cardIndexs)
+				}
+			}else{
+				currMsg,err1 := msg.NewPlayCardsErrorMsg(err.Error())
+				if err1 == nil{
+					p.SendMsg(currMsg)
+				}
+				fmt.Println(err.Error())
+			}
+		}()
+		//启动定时器,限制叫地主时间，过时自动不叫
+		go func(){
+			//给玩家发送定时消息
+			game,err := game.GetPlayerGame(p)
+			if err == nil{
+				second := 15
+				for {
+					select {
+						case <-p.stopTimeChan:
+							fmt.Println("玩家出牌，定时器结束")
+							return
+						default:
+							game.BroadCastMsg(p,msg.MSG_TYPE_OF_TIME_TICKER,strconv.Itoa(second))
+							second--
+							if second <= 0{
+								//如果不是必须出牌，则过牌，否则出最小的一种牌，有几张出几张
+								p.Lock()
+								if lastCard := game.GetLastCard(); lastCard != nil && lastCard.PlayerIndex != p.Index{
+									p.playCardsChan<- []int{}
+								}else{
+									cardIndexs := []int{}
+									tempCardValue := -1
+									played := false
+									//使用for range无法回退一步，导致被忽略掉的元素没法重新使用，所以使用for实现
+									cardNum := len(p.PokerCards)
+									for i:=0;i<cardNum;i++{
+										if tempCardValue == -1{
+											tempCardValue = p.PokerCards[i].CardValue
+											cardIndexs = append(cardIndexs,i)
+											if(i == cardNum-1){
+												playCardIndexs := fiterCardIndex(cardIndexs,p.PlayedCardIndexs)
+												cardIndexs = []int{}
+												if (len(playCardIndexs) > 0){
+													p.playCardsChan<-playCardIndexs
+													played = true
+												}
+											}
+										}else{
+											//将相同值的牌的索引放入待出牌切片中，大小王算是相同的牌可以一次性出牌
+											if p.PokerCards[i].CardValue == tempCardValue ||
+												(tempCardValue == poker.PokerBlackJoker && p.PokerCards[i].CardValue == poker.PokerRedJoker){
+												cardIndexs = append(cardIndexs,i)
+											}else{
+												tempCardValue = -1
+												i--//此处回退一步，防止忽略掉元素
+												playCardIndexs := fiterCardIndex(cardIndexs,p.PlayedCardIndexs)
+												cardIndexs = []int{}
+												if (len(playCardIndexs) > 0){
+													p.playCardsChan<-playCardIndexs
+													played = true
+													break
+												}
+											}
+										}
+									}
+									if !played{
+										p.playCardsChan<- []int{} //无可出的牌，逻辑有错
+										fmt.Println("必须出牌情况下，无可出的牌，逻辑错误")
+									}
+								}
+								p.Unlock()
+								return
+							}
+							time.Sleep(time.Second)
+					}
+				}
+			}else{
+				fmt.Println("未获得用户game")
+			}
+		}()
 	}else{
 		fmt.Println(err.Error())
 	}
 }
 
+func fiterCardIndex(cardIndexs []int,playedCardIndexs []int) []int{
+	//检测待出牌切片中牌是否已经出过
+	for j,index := range cardIndexs {
+		for _,playedIndex := range playedCardIndexs{
+			if index == playedIndex{
+				cardIndexs[j] = -1
+				break
+			}
+		}
+	}
+	//重新整理待出的牌
+	playIndexs := []int{}
+	for _,index := range cardIndexs {
+		if index != -1{
+			playIndexs = append(playIndexs,index)
+		}
+	}
+	return playIndexs
+}
+
+func (p *Player) CallScore(score int){
+	p.stopTimeChan<-1
+	p.callScoreChan<-score
+}
+//出牌
+func (p *Player) PlayCards(cardIndexs []int){
+
+	p.RLock()
+	for _,index := range cardIndexs{
+		//判断是否是之前出过的牌
+		if p.PlayedCardIndexs != nil {
+			for _,playedIndex := range p.PlayedCardIndexs{
+				if index == playedIndex {
+					p.PlayCardError("出牌中包含已出的牌")
+					p.RUnlock()
+					return
+				}
+			}
+		}
+	}
+	p.RUnlock()
+
+	fmt.Println("玩家出牌"+strconv.Itoa(p.GetPlayerUser().Id))
+
+	p.stopTimeChan<-1
+	p.playCardsChan<-cardIndexs
+}
 //按照桌号加入牌桌
 func (p *Player) JoinGame(gameType int,gameId int){
 	game,err := game.GetRoom().GetGame(gameType,gameId)
@@ -269,41 +406,6 @@ func (p *Player) UnReady(){
 	game,err := game.GetPlayerGame(p)
 	if err == nil {
 		game.PlayerUnReady(p)
-	}else{
-		msg,err1 := msg.NewPlayCardsErrorMsg(err.Error())
-		if err1 == nil{
-			p.SendMsg(msg)
-		}
-		fmt.Println(err.Error())
-	}
-}
-
-func (p *Player) CallScore(score int){
-	p.callScoreChan<-score
-}
-//出牌
-func (p *Player) PlayCards(cardIndexs []int){
-
-	p.RLock()
-	for _,index := range cardIndexs{
-		//判断是否是之前出过的牌
-		if p.PlayedCardIndexs != nil {
-			for _,playedIndex := range p.PlayedCardIndexs{
-				if index == playedIndex {
-					p.PlayCardError("出牌中包含已出的牌")
-					p.RUnlock()
-					return
-				}
-			}
-		}
-	}
-	p.RUnlock()
-
-	fmt.Println("玩家出牌"+strconv.Itoa(p.GetPlayerUser().Id))
-
-	game,err := game.GetPlayerGame(p)
-	if err == nil {
-		game.PlayerPlayCards(p,cardIndexs)
 	}else{
 		msg,err1 := msg.NewPlayCardsErrorMsg(err.Error())
 		if err1 == nil{

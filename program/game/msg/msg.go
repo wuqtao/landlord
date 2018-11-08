@@ -128,6 +128,7 @@ type BroadCastMsg struct{
 	SubMsgType       int
 	Msg              string
 	Cards            []*poker.PokerCard
+	CardsIndex       []int
 	Score            int
 	PlayerId         int
 	SettleInfoDic    map[string]string
@@ -139,6 +140,7 @@ func NewBraodCastMsg() BroadCastMsg{
 		-1,
 		"",
 		[]*poker.PokerCard{},
+		[]int{},
 		-1,
 		-1,
 		make(map[string]string),

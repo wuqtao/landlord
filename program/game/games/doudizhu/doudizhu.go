@@ -75,6 +75,9 @@ func GetDoudizhu(baseScore int) game.IGame{
 	return &newDou
 }
 
+func (dou *Doudizhu) GetLastCard() *game.LastCardsType{
+	return dou.lastCards
+}
 //增加玩家
 func (dou *Doudizhu) AddPlayer(currPlayer game.IPlayer) error {
 	dou.Lock()
@@ -400,6 +403,7 @@ func (dou *Doudizhu) PlayerPassCard(currPlayer game.IPlayer){
 		dou.play(dou.getNextPlayer())
 	}else{
 		currPlayer.PlayCardError("第一个出牌的玩家不能过牌")
+		currPlayer.StartPlay()
 	}
 }
 
@@ -451,6 +455,9 @@ func (dou *Doudizhu) BroadCastMsg(player game.IPlayer,msgType int,hints string){
 			newMsg.Msg = strconv.Itoa(player.GetPlayerUser().Id)+"出牌"
 			for _,card := range dou.lastCards.Cards{
 				newMsg.Cards = append(newMsg.Cards,card)
+			}
+			for _,index := range dou.lastCards.PlayerCardIndexs{
+				newMsg.CardsIndex = append(newMsg.CardsIndex,index)
 			}
 		case msg.MSG_TYPE_OF_PASS:
 			newMsg.Msg = strconv.Itoa(player.GetPlayerUser().Id)+"过牌"

@@ -77,9 +77,6 @@ func (p *Player) GetPlayerCards(indexs []int) []*poker.PokerCard{
 
 func (p *Player) SetPokerCards(cards []*poker.PokerCard){
 
-	for _,card := range cards{
-		fmt.Println(card)
-	}
 	p.Lock()
 	p.PokerCards = cards
 	p.Unlock()
@@ -267,10 +264,6 @@ func (p *Player) PlayCards(cardIndexs []int){
 	p.RUnlock()
 
 	fmt.Println("玩家出牌"+strconv.Itoa(p.GetPlayerUser().Id))
-	fmt.Println(cardIndexs)
-	for _,card := range p.GetPlayerCards(cardIndexs){
-		fmt.Println(card)
-	}
 
 	game,err := game.GetPlayerGame(p)
 	if err == nil {

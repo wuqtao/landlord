@@ -4,7 +4,6 @@ import (
 	"chessSever/program/game"
 	"errors"
 	"chessSever/program/game/poker"
-	"fmt"
 )
 //临时类型，便于函数返回类型
 type subCardsType struct {
@@ -31,10 +30,8 @@ func CheckRules(currPlayerIndex int,pokers []*poker.PokerCard) (*game.LastCardsT
 		//对子或者王炸
 	case 2:
 		if cardsType,err := CheckPair(pokers);err == nil{
-			fmt.Println(cardsType)
 			return game.NewLastCards(currPlayerIndex,cardsType.cardsType,pokers,cardsType.cardMinAndMax["min"],cardsType.cardMinAndMax["max"]),nil
 		}else if cardsType,err := CheckJokerBomb(pokers);err == nil{
-			fmt.Println(cardsType)
 			return game.NewLastCards(currPlayerIndex,cardsType.cardsType,pokers,cardsType.cardMinAndMax["min"],cardsType.cardMinAndMax["max"]),nil
 		}else{
 			return nil,errors.New("牌型不符合规则")
@@ -43,7 +40,6 @@ func CheckRules(currPlayerIndex int,pokers []*poker.PokerCard) (*game.LastCardsT
 	case 3:
 		cardsType,err := CheckThreePlus(pokers)
 		if err == nil{
-			fmt.Println(cardsType)
 			return game.NewLastCards(currPlayerIndex,cardsType.cardsType,pokers,cardsType.cardMinAndMax["min"],cardsType.cardMinAndMax["max"]),nil
 		}else{
 			return nil,errors.New("牌型不符合规则")
@@ -51,10 +47,8 @@ func CheckRules(currPlayerIndex int,pokers []*poker.PokerCard) (*game.LastCardsT
 		//炸弹或三带一
 	case 4:
 		if cardsType,err := CheckCommonBomb(pokers);err == nil{
-			fmt.Println(cardsType)
 			return game.NewLastCards(currPlayerIndex,cardsType.cardsType,pokers,cardsType.cardMinAndMax["min"],cardsType.cardMinAndMax["max"]),nil
 		}else if cardsType,err := CheckThreePlus(pokers);err == nil{
-			fmt.Println(cardsType)
 			return game.NewLastCards(currPlayerIndex,cardsType.cardsType,pokers,cardsType.cardMinAndMax["min"],cardsType.cardMinAndMax["max"]),nil
 		}else{
 			return nil,errors.New("牌型不符合规则")
@@ -62,10 +56,8 @@ func CheckRules(currPlayerIndex int,pokers []*poker.PokerCard) (*game.LastCardsT
 		//三带二或者一条龙
 	case 5:
 		if cardsType,err := CheckThreePlus(pokers);err == nil{
-			fmt.Println(cardsType)
 			return game.NewLastCards(currPlayerIndex,cardsType.cardsType,pokers,cardsType.cardMinAndMax["min"],cardsType.cardMinAndMax["max"]),nil
 		}else if cardsType,err := CheckDragon(pokers);err == nil{
-			fmt.Println(cardsType)
 			return game.NewLastCards(currPlayerIndex,cardsType.cardsType,pokers,cardsType.cardMinAndMax["min"],cardsType.cardMinAndMax["max"]),nil
 		}else{
 			return nil,errors.New("牌型不符合规则")

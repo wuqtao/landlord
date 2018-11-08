@@ -64,3 +64,15 @@ func GetCardTypeName(pattern int) string {
 			return "未定义的牌型"
 	}
 }
+
+func IsDoudizhuTypeBiger(type1 int,type2 int) bool{
+	if type1 == POKERS_TYPE_JOKER_BOMB && type2 != POKERS_TYPE_JOKER_BOMB{
+		return true
+	}
+
+	if type1 == POKERS_TYPE_COMMON_BOMB && type2 != POKERS_TYPE_JOKER_BOMB && type2 != POKERS_TYPE_COMMON_BOMB{
+		return true
+	}
+
+	return false
+}

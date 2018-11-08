@@ -168,9 +168,18 @@ func (dou *Doudizhu)PlayerUnReady(p game.IPlayer){
 func (dou *Doudizhu) dealCards(){
 	dou.shuffleCards()
 	dou.Lock()
-	dou.playerCards[0] = dou.pokerCards[:17]
-	dou.playerCards[1] = dou.pokerCards[17:34]
-	dou.playerCards[2] = dou.pokerCards[34:51]
+	//每个玩家的切片
+	for i,card := range dou.pokerCards{
+		if i > 50{
+			break
+		}
+		shang := i/17
+		dou.playerCards[shang] = append(dou.playerCards[shang],card)
+	}
+	//玩家的牌，不能直接从所有牌的切片上分割，因为后续会追加底牌，重新排序，会影响底层数组
+	//dou.playerCards[0] = dou.pokerCards[:17]
+	//dou.playerCards[1] = dou.pokerCards[17:34]
+	//dou.playerCards[2] = dou.pokerCards[34:51]
 	dou.bottomCards = dou.pokerCards[51:]
 	dou.Unlock()
 
@@ -294,8 +303,10 @@ func (dou *Doudizhu) PlayerPlayCards(p game.IPlayer,cardIndexs []int){
 			logrus.Debug("dou.lastCards",dou.lastCards)
 		}
 		//第一个出牌，或者上一次出牌没人管，或者出牌大于上家，此时满足出牌要求
-		if  dou.lastCards == nil || lastCards.PlayerIndex == dou.lastCards.PlayerIndex ||
-			(lastCards.CardsType == dou.lastCards.CardsType &&
+		if  dou.lastCards == nil || //第一次出牌
+			lastCards.PlayerIndex == dou.lastCards.PlayerIndex ||  //上一次出牌无人管
+			game.IsDoudizhuTypeBiger(lastCards.CardsType,dou.lastCards.CardsType) || //牌型压制
+			(lastCards.CardsType == dou.lastCards.CardsType &&  //同牌型比较大小
 				lastCards.CardMinAndMax["min"] > dou.lastCards.CardMinAndMax["min"] &&
 				lastCards.CardMinAndMax["max"] > dou.lastCards.CardMinAndMax["min"]){
 

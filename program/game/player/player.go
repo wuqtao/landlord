@@ -182,53 +182,7 @@ func (p *Player) StartPlay(){
 							game.BroadCastMsg(p,msg.MSG_TYPE_OF_TIME_TICKER,strconv.Itoa(second))
 							second--
 							if second <= 0{
-								//如果不是必须出牌，则过牌，否则出最小的一种牌，有几张出几张
-								p.Lock()
-								if lastCard := game.GetLastCard(); lastCard != nil && lastCard.PlayerIndex != p.Index{
-									p.playCardsChan<- []int{}
-								}else{
-									cardIndexs := []int{}
-									tempCardValue := -1
-									played := false
-									//使用for range无法回退一步，导致被忽略掉的元素没法重新使用，所以使用for实现
-									cardNum := len(p.PokerCards)
-									for i:=0;i<cardNum;i++{
-										if tempCardValue == -1{
-											tempCardValue = p.PokerCards[i].CardValue
-											cardIndexs = append(cardIndexs,i)
-											if(i == cardNum-1){
-												playCardIndexs := fiterCardIndex(cardIndexs,p.PlayedCardIndexs)
-												cardIndexs = []int{}
-												if (len(playCardIndexs) > 0){
-													p.playCardsChan<-playCardIndexs
-													played = true
-												}
-											}
-										}else{
-											//将相同值的牌的索引放入待出牌切片中，大小王算是相同的牌可以一次性出牌
-											if p.PokerCards[i].CardValue == tempCardValue ||
-												(tempCardValue == poker.PokerBlackJoker && p.PokerCards[i].CardValue == poker.PokerRedJoker){
-												cardIndexs = append(cardIndexs,i)
-											}else{
-												tempCardValue = -1
-												i--//此处回退一步，防止忽略掉元素
-												playCardIndexs := fiterCardIndex(cardIndexs,p.PlayedCardIndexs)
-												cardIndexs = []int{}
-												if (len(playCardIndexs) > 0){
-													p.playCardsChan<-playCardIndexs
-													played = true
-													break
-												}
-											}
-										}
-									}
-									if !played{
-										p.playCardsChan<- []int{} //无可出的牌，逻辑有错
-										fmt.Println("必须出牌情况下，无可出的牌，逻辑错误")
-									}
-								}
-								p.Unlock()
-								return
+								p.autoPlay()
 							}
 							time.Sleep(time.Second)
 					}
@@ -242,6 +196,60 @@ func (p *Player) StartPlay(){
 	}
 }
 
+func (p *Player)autoPlay(){
+	//如果不是必须出牌，则过牌，否则出最小的一种牌，有几张出几张
+	game,err := game.GetPlayerGame(p)
+	if err == nil{
+		p.Lock()
+		if lastCard := game.GetLastCard(); lastCard != nil && lastCard.PlayerIndex != p.Index{
+			p.playCardsChan<- []int{}
+		}else{
+			cardIndexs := []int{}
+			tempCardValue := -1
+			played := false
+			//使用for range无法回退一步，导致被忽略掉的元素没法重新使用，所以使用for实现
+			cardNum := len(p.PokerCards)
+			for i:=0;i<cardNum;i++{
+				if tempCardValue == -1{
+					tempCardValue = p.PokerCards[i].CardValue
+					cardIndexs = append(cardIndexs,i)
+					if(i == cardNum-1){
+						playCardIndexs := fiterCardIndex(cardIndexs,p.PlayedCardIndexs)
+						cardIndexs = []int{}
+						if (len(playCardIndexs) > 0){
+							p.playCardsChan<-playCardIndexs
+							played = true
+						}
+					}
+				}else{
+					//将相同值的牌的索引放入待出牌切片中，大小王算是相同的牌可以一次性出牌
+					if p.PokerCards[i].CardValue == tempCardValue ||
+						(tempCardValue == poker.PokerBlackJoker && p.PokerCards[i].CardValue == poker.PokerRedJoker){
+						cardIndexs = append(cardIndexs,i)
+					}else{
+						tempCardValue = -1
+						i--//此处回退一步，防止忽略掉元素
+						playCardIndexs := fiterCardIndex(cardIndexs,p.PlayedCardIndexs)
+						cardIndexs = []int{}
+						if (len(playCardIndexs) > 0){
+							p.playCardsChan<-playCardIndexs
+							played = true
+							break
+						}
+					}
+				}
+			}
+			if !played{
+				p.playCardsChan<- []int{} //无可出的牌，逻辑有错
+				fmt.Println("必须出牌情况下，无可出的牌，逻辑错误")
+			}
+		}
+		p.Unlock()
+		return
+	}else{
+		p.playCardsChan<- []int{}
+	}
+}
 func fiterCardIndex(cardIndexs []int,playedCardIndexs []int) []int{
 	//检测待出牌切片中牌是否已经出过
 	for j,index := range cardIndexs {

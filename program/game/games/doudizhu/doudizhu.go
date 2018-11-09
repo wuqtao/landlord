@@ -140,6 +140,7 @@ func (dou *Doudizhu) PlayerReady(p game.IPlayer){
 	dou.BroadCastMsg(p,msg.MSG_TYPE_OF_READY,"玩家已准备")
 
 	userAllReady := false
+	dou.Lock()
 	if len(dou.Players) == dou.playerNum{
 
 		for _,p := range dou.Players{
@@ -156,11 +157,12 @@ func (dou *Doudizhu) PlayerReady(p game.IPlayer){
 	}
 	//用户都准备好了，则发牌
 	if userAllReady {
-		dou.Lock()
 		fmt.Println("桌子"+strconv.Itoa(dou.id)+"的玩家都准备好了")
 		dou.IsPlaying = true
 		dou.Unlock()
 		dou.dealCards()
+	}else{
+		dou.Unlock()
 	}
 }
 //玩家取消准备

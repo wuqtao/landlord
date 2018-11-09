@@ -120,7 +120,7 @@ func (p *Player) StartCallScore(){
 			//给玩家发送定时消息
 			game,err := game.GetPlayerGame(p)
 			if err == nil{
-				second := 10
+				second := 7
 				for {
 					select {
 						case <-p.stopTimeChan:
@@ -172,7 +172,7 @@ func (p *Player) StartPlay(){
 			//给玩家发送定时消息
 			game,err := game.GetPlayerGame(p)
 			if err == nil{
-				second := 15
+				second := 3
 				for {
 					select {
 						case <-p.stopTimeChan:

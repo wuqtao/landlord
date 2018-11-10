@@ -183,6 +183,7 @@ func (p *Player) StartPlay(){
 							second--
 							if second <= 0{
 								p.autoPlay()
+								return
 							}
 							time.Sleep(time.Second)
 					}

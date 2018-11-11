@@ -31,6 +31,11 @@ type Player struct {
 	callScoreChan    chan int           //叫地主通道
 	playCardsChan    chan []int 		//出牌的索引切片通道
 	stopTimeChan	 chan byte			//停止倒计时的通道
+
+	IsOnline bool                       //是否在线，用于短线重连
+	UpLineTime time.Time
+	OffLine time.Time
+
 }
 
 func NewPlayer(user *model.User,conn *websocket.Conn) *Player {
@@ -225,7 +230,7 @@ func (p *Player)autoPlay(){
 				}else{
 					//将相同值的牌的索引放入待出牌切片中，大小王算是相同的牌可以一次性出牌
 					if p.PokerCards[i].CardValue == tempCardValue ||
-						(tempCardValue == poker.PokerBlackJoker && p.PokerCards[i].CardValue == poker.PokerRedJoker){
+						(tempCardValue == poker.POKER_VALUE_BLACK_JOKER && p.PokerCards[i].CardValue == poker.POKER_VALUE_RED_JOKER){
 						cardIndexs = append(cardIndexs,i)
 					}else{
 						tempCardValue = -1

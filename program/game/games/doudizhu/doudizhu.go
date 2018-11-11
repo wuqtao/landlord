@@ -36,6 +36,7 @@ type Doudizhu struct {
 	pokerCards []*poker.PokerCard        //当前游戏中的所有的牌
 	lastCards  *game.LastCardsType 		 //最后的出牌结构
 	playerCards [][]*poker.PokerCard     //同桌不同玩家的牌的切片
+	playerCardRecorder []poker.PokerRecorder  //每个玩家的记牌器，帮助玩家记录其他两家手里牌的合计情况
 	bottomCards []*poker.PokerCard       //底牌
 }
 
@@ -381,6 +382,7 @@ func (dou *Doudizhu) PlayerPlayCards(p game.IPlayer,cardIndexs []int){
 func (dou *Doudizhu) gameOver(){
 
 	dou.Lock()
+	dou.IsPlaying = false
 	for i,_ := range dou.playerCards{
 		dou.playerCards[i] = []*poker.PokerCard{}
 	}

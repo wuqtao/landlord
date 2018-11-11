@@ -2,24 +2,42 @@ package poker
 
 /**
 	定义扑克牌花色和数字
- */
- //定义扑克牌序号
+*/
+//定义扑克牌值
 const (
-	PokerThree = iota
-	PokerFour
-	PokerFive
-	PokerSix
-	PokerSeven
-	PokerEight
-	PokerNine
-	PokerTen
-	PokerJack
-	PokerQueen
-	PokerKing
-	PokerAce
-	PokerTwo
-	PokerBlackJoker
-	PokerRedJoker
+	POKER_VALUE_THREE = iota
+	POKER_VALUE_FOUR
+	POKER_VALUE_FIVE
+	POKER_VALUE_SIX
+	POKER_VALUE_SEVEN
+	POKER_VALUE_EIGHT
+	POKER_VALUE_NINE
+	POKER_VALUE_TEN
+	POKER_VALUE_JACK
+	POKER_VALUE_QUEEN
+	POKER_VALUE_KING
+	POKER_VALUE_ACE
+	POKER_VALUE_TWO
+	POKER_VALUE_BLACK_JOKER
+	POKER_VALUE_RED_JOKER
+)
+//定义扑克牌符号
+const (
+	POKER_SYMBOL_THREE = "3"
+	POKER_SYMBOL_FOUR = "4"
+	POKER_SYMBOL_FIVE = "5"
+	POKER_SYMBOL_SIX = "6"
+	POKER_SYMBOL_SEVEN = "7"
+	POKER_SYMBOL_EIGHT = "8"
+	POKER_SYMBOL_NINE = "9"
+	POKER_SYMBOL_TEN = "10"
+	POKER_SYMBOL_JACK = "J"
+	POKER_SYMBOL_QUEEN = "Q"
+	POKER_SYMBOL_KING = "K"
+	POKER_SYMBOL_ACE = "A"
+	POKER_SYMBOL_TWO = "2"
+	POKER_SYMBOL_BLACK_JOKER = "BlackJoker"
+	POKER_SYMBOL_RED_JOKER = "RedJoker"
 )
 //定义扑克牌花色
 const(
@@ -67,44 +85,44 @@ func CreateOriginDeck() PokerDeck{
 		pokerName := ""
 		switch(shang){
 		case 0:
-			pokerValue = PokerThree
-			pokerName = "3"
+			pokerValue = POKER_VALUE_THREE
+			pokerName = POKER_SYMBOL_THREE
 		case 1:
-			pokerValue = PokerFour
-			pokerName = "4"
+			pokerValue = POKER_VALUE_FOUR
+			pokerName = POKER_SYMBOL_FOUR
 		case 2:
-			pokerValue = PokerFive
-			pokerName = "5"
+			pokerValue = POKER_VALUE_FIVE
+			pokerName = POKER_SYMBOL_FIVE
 		case 3:
-			pokerValue = PokerSix
-			pokerName = "6"
+			pokerValue = POKER_VALUE_SIX
+			pokerName = POKER_SYMBOL_SIX
 		case 4:
-			pokerValue = PokerSeven
-			pokerName = "7"
+			pokerValue = POKER_VALUE_SEVEN
+			pokerName = POKER_SYMBOL_SEVEN
 		case 5:
-			pokerValue = PokerEight
-			pokerName = "8"
+			pokerValue = POKER_VALUE_EIGHT
+			pokerName = POKER_SYMBOL_EIGHT
 		case 6:
-			pokerValue = PokerNine
-			pokerName = "9"
+			pokerValue = POKER_VALUE_NINE
+			pokerName = POKER_SYMBOL_NINE
 		case 7:
-			pokerValue = PokerTen
-			pokerName = "10"
+			pokerValue = POKER_VALUE_TEN
+			pokerName = POKER_SYMBOL_TEN
 		case 8:
-			pokerValue = PokerJack
-			pokerName = "J"
+			pokerValue = POKER_VALUE_JACK
+			pokerName = POKER_SYMBOL_JACK
 		case 9:
-			pokerValue = PokerQueen
-			pokerName = "Q"
+			pokerValue = POKER_VALUE_QUEEN
+			pokerName = POKER_SYMBOL_QUEEN
 		case 10:
-			pokerValue = PokerKing
-			pokerName = "K"
+			pokerValue = POKER_VALUE_KING
+			pokerName = POKER_SYMBOL_KING
 		case 11:
-			pokerValue = PokerAce
-			pokerName = "A"
+			pokerValue = POKER_VALUE_ACE
+			pokerName = POKER_SYMBOL_ACE
 		case 12:
-			pokerValue = PokerTwo
-			pokerName = "2"
+			pokerValue = POKER_VALUE_TWO
+			pokerName = POKER_SYMBOL_TWO
 		}
 		deck.Cards[i] = PokerCard{
 			pokerValue,
@@ -113,15 +131,15 @@ func CreateOriginDeck() PokerDeck{
 		}
 	}
 	deck.Cards[52] = PokerCard{
-		PokerBlackJoker,
+		POKER_VALUE_BLACK_JOKER,
 		PokerSuitJoker,
-		"BlackJoker",
+		POKER_SYMBOL_BLACK_JOKER,
 	}
 
 	deck.Cards[53] = PokerCard{
-		PokerRedJoker,
+		POKER_VALUE_RED_JOKER,
 		PokerSuitJoker,
-		"RedJoker",
+		POKER_SYMBOL_RED_JOKER,
 	}
 	return deck
 }

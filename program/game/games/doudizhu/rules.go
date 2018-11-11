@@ -103,7 +103,7 @@ func CheckMultiPairs(pokers []*poker.PokerCard) (*subCardsType,error){
 
 	poker.CommonSort(pokers)
 	//2和王不能作为连对出牌
-	if pokers[len(pokers)-1].CardValue >= poker.PokerTwo{
+	if pokers[len(pokers)-1].CardValue >= poker.POKER_VALUE_TWO{
 		return nil,errors.New("不是连对")
 	}
 
@@ -135,7 +135,7 @@ func CheckJokerBomb(pokers []*poker.PokerCard) (*subCardsType,error){
 		return nil,errors.New("不是王炸")
 	}
 	poker.CommonSort(pokers)
-	if(pokers[0].CardValue == poker.PokerBlackJoker && pokers[1].CardValue == poker.PokerRedJoker){
+	if(pokers[0].CardValue == poker.POKER_VALUE_BLACK_JOKER && pokers[1].CardValue == poker.POKER_VALUE_RED_JOKER){
 		return newCardsType(game.POKERS_TYPE_JOKER_BOMB,pokers[0].CardValue,pokers[1].CardValue),nil
 	}else{
 		return nil,errors.New("不是王炸")
@@ -252,7 +252,7 @@ func CheckMultiThreePlus(pokers []*poker.PokerCard) (*subCardsType,error){
 		}
 	}
 	//2和王不能参与连顺
-	if mainCardNum > 1 && mainCardValues[len(mainCardValues)-1] > poker.PokerAce{
+	if mainCardNum > 1 && mainCardValues[len(mainCardValues)-1] > poker.POKER_VALUE_ACE{
 		return nil,errors.New("不是三顺")
 	}
 
@@ -311,7 +311,7 @@ func CheckMultiFourPlus(pokers []*poker.PokerCard) (*subCardsType,error){
 	}
 
 	//2和王不能参与连顺
-	if mainCardNum > 1 && mainCardValues[len(mainCardValues)-1] > poker.PokerAce{
+	if mainCardNum > 1 && mainCardValues[len(mainCardValues)-1] > poker.POKER_VALUE_ACE{
 		return nil,errors.New("不是四顺")
 	}
 
@@ -339,13 +339,13 @@ func CheckDragon(pokers []*poker.PokerCard) (*subCardsType,error){
 
 	poker.CommonSort(pokers)
 	//2和王不能参与顺子出牌
-	if pokers[len(pokers)-1].CardValue >= poker.PokerTwo{
+	if pokers[len(pokers)-1].CardValue >= poker.POKER_VALUE_TWO{
 		return nil,errors.New("不是顺子")
 	}
 	//2和大小王不能参与顺子牌
-	if pokers[len(pokers)-1].CardValue == poker.PokerRedJoker ||
-		pokers[len(pokers)-1].CardValue == poker.PokerRedJoker ||
-		pokers[len(pokers)-1].CardValue == poker.PokerTwo{
+	if pokers[len(pokers)-1].CardValue == poker.POKER_VALUE_RED_JOKER ||
+		pokers[len(pokers)-1].CardValue == poker.POKER_VALUE_RED_JOKER ||
+		pokers[len(pokers)-1].CardValue == poker.POKER_VALUE_TWO{
 		return nil,errors.New("不是顺子")
 	}
 	tempValue := -1

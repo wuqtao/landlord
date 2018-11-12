@@ -47,7 +47,7 @@ type Msg struct {
 }
 
 
-func NewSendCardMsg(cards []*poker.PokerCard) ([]byte,error){
+func NewSendCardMsg(cards poker.PokerSet) ([]byte,error){
 	cardMsg := SendCardMsg{
 		MSG_TYPE_OF_SEND_CARD,
 		[]*SendCard{},
@@ -127,7 +127,7 @@ type BroadCastMsg struct{
 	MsgType          int
 	SubMsgType       int
 	Msg              string
-	Cards            []*poker.PokerCard
+	Cards            poker.PokerSet
 	CardsIndex       []int
 	Score            int
 	PlayerId         int
@@ -139,7 +139,7 @@ func NewBraodCastMsg() BroadCastMsg{
 		MSG_TYPE_OF_TABLE_BRODCAST,
 		-1,
 		"",
-		[]*poker.PokerCard{},
+		poker.PokerSet{},
 		[]int{},
 		-1,
 		-1,

@@ -22,7 +22,7 @@ type Player struct {
 	User *model.User
 	Conn  *websocket.Conn //用户socket链接
 	sync.RWMutex
-	PokerCards       []*poker.PokerCard //玩家手里的扑克牌0
+	PokerCards       poker.PokerSet //玩家手里的扑克牌0
 
 	Index            int                //在桌子上的索引
 	IsReady          bool               //是否准备
@@ -76,9 +76,9 @@ func (p *Player) GetPlayedCardIndexs() []int{
 	return p.PlayedCardIndexs
 }
 
-func (p *Player) GetPlayerCards(indexs []int) []*poker.PokerCard{
+func (p *Player) GetPlayerCards(indexs []int) poker.PokerSet{
 	if indexs != nil && len(indexs) > 0{
-		temCards := []*poker.PokerCard{}
+		temCards := poker.PokerSet{}
 		for _,i := range indexs{
 			temCards = append(temCards,p.PokerCards[i])
 		}
@@ -88,7 +88,7 @@ func (p *Player) GetPlayerCards(indexs []int) []*poker.PokerCard{
 	}
 }
 
-func (p *Player) SetPokerCards(cards []*poker.PokerCard){
+func (p *Player) SetPokerCards(cards poker.PokerSet){
 
 	p.Lock()
 	p.PokerCards = cards

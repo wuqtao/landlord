@@ -14,7 +14,7 @@ type IPlayer interface {
 	GetPlayerUser() *model.User
 	GetIndex() int
 	SetIndex(index int)
-	SetPokerCards(cards []*poker.PokerCard)
+	SetPokerCards(cards poker.PokerSet)
 	StartCallScore()
 	StartPlay()
 	IsOutOfCards() bool  											//是否出完牌
@@ -34,5 +34,5 @@ type IPlayer interface {
 	Pass()	                                                        //过牌
 	HintCards()														//提示出牌
 	GetPlayedCardIndexs() []int
-	GetPlayerCards(indexs []int) []*poker.PokerCard
+	GetPlayerCards(indexs []int) poker.PokerSet
 }

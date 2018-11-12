@@ -32,15 +32,15 @@ type Doudizhu struct {
 	FirstCallScoreIndex int              //第一个叫地主的人的index
 	OutCardIndexs []int                  //出完牌的用户index
 
-	pokerCards []*poker.PokerCard        //当前游戏中的所有的牌
+	pokerCards poker.PokerSet        //当前游戏中的所有的牌
 	lastCards  *game.LastCardsType 		 //最后的出牌结构
 
 	Players []game.IPlayer               //玩家数组
-	playerCards [][]*poker.PokerCard     //同桌不同玩家的牌的切片
+	playerCards []poker.PokerSet     //同桌不同玩家的牌的切片
 	playerPokerRecorders []poker.PokerRecorder  //玩家的记牌器数组
 	playerPokerAnalyzer []poker.PokerAnalyzer   //玩家的牌型分析器
 	playerCardRecorder []poker.PokerRecorder  //每个玩家的记牌器，帮助玩家记录其他两家手里牌的合计情况
-	bottomCards []*poker.PokerCard       //底牌
+	bottomCards poker.PokerSet       //底牌
 }
 
 var originDoudizhu Doudizhu
@@ -67,10 +67,10 @@ func GetDoudizhu(baseScore int) game.IGame{
 
 	newDou.Lock()
 	newDou.baseScore = baseScore
-	newDou.pokerCards = []*poker.PokerCard{}
+	newDou.pokerCards = poker.PokerSet{}
 	newDou.Players = []game.IPlayer{}
-	newDou.playerCards = [][]*poker.PokerCard{[]*poker.PokerCard{},[]*poker.PokerCard{},[]*poker.PokerCard{}}
-	newDou.bottomCards = []*poker.PokerCard{}
+	newDou.playerCards = []poker.PokerSet{poker.PokerSet{},poker.PokerSet{},poker.PokerSet{}}
+	newDou.bottomCards = poker.PokerSet{}
 	newDou.playerPokerRecorders = []poker.PokerRecorder{}
 	newDou.playerPokerAnalyzer = []poker.PokerAnalyzer{}
 	for i:=0;i<newDou.playerNum;i++{
@@ -269,7 +269,7 @@ func (dou *Doudizhu) PlayerCallScore(currPlayer game.IPlayer,score int){
 func (dou *Doudizhu) initGame(){
 	dou.Lock()
 	for i,_ := range dou.playerCards{
-		dou.playerCards[i] = []*poker.PokerCard{}
+		dou.playerCards[i] = poker.PokerSet{}
 	}
 	dou.CalledLoardNum = 0
 	dou.lordIndex  = -1
@@ -313,7 +313,7 @@ func (dou *Doudizhu) PlayerPlayCards(p game.IPlayer,cardIndexs []int){
 		return
 	}
 
-	cards := []*poker.PokerCard{}
+	cards := poker.PokerSet{}
 	for _,card := range p.GetPlayerCards(cardIndexs){
 		//判断是否是之前出过的牌
 		cards = append(cards,card)
@@ -393,7 +393,7 @@ func (dou *Doudizhu) gameOver(){
 	dou.Lock()
 	dou.IsPlaying = false
 	for i,_ := range dou.playerCards{
-		dou.playerCards[i] = []*poker.PokerCard{}
+		dou.playerCards[i] = poker.PokerSet{}
 	}
 	dou.Unlock()
 	//todo结算分数
@@ -563,7 +563,7 @@ func (dou *Doudizhu)HintCards(p game.IPlayer) []int{
 }
 
 //检查出牌是否符合规则
-func (dou *Doudizhu) matchRoles(currPlayerIndex int,pokers []*poker.PokerCard) (*game.LastCardsType,error){
+func (dou *Doudizhu) matchRoles(currPlayerIndex int,pokers poker.PokerSet) (*game.LastCardsType,error){
 	return CheckRules(currPlayerIndex,pokers)
 }
 

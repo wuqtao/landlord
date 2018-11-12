@@ -32,10 +32,13 @@ type Doudizhu struct {
 	FirstCallScoreIndex int              //第一个叫地主的人的index
 	OutCardIndexs []int                  //出完牌的用户index
 
-	Players []game.IPlayer               //玩家数组
 	pokerCards []*poker.PokerCard        //当前游戏中的所有的牌
 	lastCards  *game.LastCardsType 		 //最后的出牌结构
+
+	Players []game.IPlayer               //玩家数组
 	playerCards [][]*poker.PokerCard     //同桌不同玩家的牌的切片
+	playerPokerRecorders []poker.PokerRecorder  //玩家的记牌器数组
+	playerPokerAnalyzer []poker.PokerAnalyzer   //玩家的牌型分析器
 	playerCardRecorder []poker.PokerRecorder  //每个玩家的记牌器，帮助玩家记录其他两家手里牌的合计情况
 	bottomCards []*poker.PokerCard       //底牌
 }
@@ -68,6 +71,12 @@ func GetDoudizhu(baseScore int) game.IGame{
 	newDou.Players = []game.IPlayer{}
 	newDou.playerCards = [][]*poker.PokerCard{[]*poker.PokerCard{},[]*poker.PokerCard{},[]*poker.PokerCard{}}
 	newDou.bottomCards = []*poker.PokerCard{}
+	newDou.playerPokerRecorders = []poker.PokerRecorder{}
+	newDou.playerPokerAnalyzer = []poker.PokerAnalyzer{}
+	for i:=0;i<newDou.playerNum;i++{
+		newDou.playerPokerRecorders = append(newDou.playerPokerRecorders,poker.NewPokerRecorder())
+		newDou.playerPokerAnalyzer = append(newDou.playerPokerAnalyzer,poker.NewPokerAnalyzer())
+	}
 	newDou.id = game.GetRoom().AddGame(newDou.GetGameType(),&newDou)
 	newDou.Unlock()
 

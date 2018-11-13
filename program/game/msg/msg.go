@@ -31,6 +31,7 @@ const(
 	MSG_TYPE_OF_LOGIN                //登陆消息
 	MSG_TYPE_OF_SEND_BOTTOM_CARDS    //发底牌
 	MSG_TYPE_OF_TIME_TICKER          //倒计时数
+	MSG_TYPE_OF_POKER_RECORDER       //推送记牌器消息
 )
 type SendCard struct {
 	Index int          //标志当前牌在用户所有牌中的索引位置

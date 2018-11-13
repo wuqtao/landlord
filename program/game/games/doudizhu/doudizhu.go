@@ -298,6 +298,19 @@ func (dou *Doudizhu) callLoardEnd(){
 
 	dou.BroadCastMsg(dou.Players[dou.lordIndex],msg.MSG_TYPE_OF_SEND_BOTTOM_CARDS,"发放底牌")
 	fmt.Println("底牌发送完毕，开始游戏")
+	//初始化记牌器和分析器
+	for i,pokerSet := range dou.playerCards{
+
+		dou.playerPokerAnalyzer[i].InitAnalyzer()
+		dou.playerPokerRecorders[i].InitRecorder()
+		//自己的扑克牌初始化自己的分析器
+		dou.playerPokerAnalyzer[i].AddPokerSet(pokerSet)
+		//使用别人的牌初始化自己的记牌器
+		for _,index := range dou.getOthersIndex(i){
+			dou.playerPokerRecorders[index].AddPokerSet(pokerSet)
+		}
+		dou.Players[i].SendMsg([]byte(dou.playerPokerRecorders[i].SequenceJsonEncode()))
+	}
 	dou.play(dou.Players[dou.lordIndex])
 }
 
@@ -357,6 +370,13 @@ func (dou *Doudizhu) PlayerPlayCards(p game.IPlayer,cardIndexs []int){
 			}
 			//出牌成功，给前端提示
 			p.PlayCardSuccess(cardIndexs)
+
+			//出牌成功，更新记牌器和分析器
+			dou.playerPokerRecorders[dou.CurrPlayerIndex].RemovePokerSet(cards)
+			for _,index := range dou.getOthersIndex(dou.CurrPlayerIndex){
+				dou.playerPokerRecorders[index].RemovePokerSet(cards)
+				dou.Players[index].SendMsg([]byte(dou.playerPokerRecorders[index].SequenceJsonEncode()))
+			}
 
 			dou.BroadCastMsg(p,msg.MSG_TYPE_OF_PLAY_CARD,"玩家出牌")
 			//玩家的牌全部出完了
@@ -589,4 +609,14 @@ func (dou *Doudizhu)SayToOthers(p game.IPlayer,msg []byte){
 
 func (dou *Doudizhu)SayToAnother(p game.IPlayer,otherIndex int,msg []byte){
 	//todo
+}
+
+func (dou *Doudizhu)getOthersIndex(currIndex int)[]int{
+	if currIndex == 0{
+		return []int{1,2}
+	}else if currIndex == 1{
+		return []int{0,2}
+	}else{
+		return []int{0,1}
+	}
 }

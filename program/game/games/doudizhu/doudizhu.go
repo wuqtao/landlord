@@ -293,7 +293,7 @@ func (dou *Doudizhu) callLoardEnd(){
 		dou.playerCards[dou.lordIndex] = append(dou.playerCards[dou.lordIndex],card)
 	}
 
-	set.SortDesc(dou.playerCards[dou.lordIndex])
+	set.SortAsc(dou.playerCards[dou.lordIndex])
 	dou.Players[dou.lordIndex].SetPokerCards(dou.playerCards[dou.lordIndex])
 
 	dou.BroadCastMsg(dou.Players[dou.lordIndex],msg.MSG_TYPE_OF_SEND_BOTTOM_CARDS,"发放底牌")
@@ -303,6 +303,9 @@ func (dou *Doudizhu) callLoardEnd(){
 
 		dou.playerPokerAnalyzer[i].InitAnalyzer()
 		dou.playerPokerRecorders[i].InitRecorder()
+
+		dou.Players[i].SetPokerAnalyzer(dou.playerPokerAnalyzer[i])
+		dou.Players[i].SetPokerRecorder(dou.playerPokerRecorders[i])
 		//自己的扑克牌初始化自己的分析器
 		dou.playerPokerAnalyzer[i].AddPokerSet(pokerSet)
 		//使用别人的牌初始化自己的记牌器
@@ -599,7 +602,7 @@ func (dou *Doudizhu)sortPlayerCards(){
 	dou.Lock()
 	defer dou.Unlock()
 	for _,cards := range dou.playerCards{
-		cards.SortDesc()
+		cards.SortAsc()
 	}
 }
 

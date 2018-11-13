@@ -14,6 +14,8 @@ import (
 	"time"
 	"chessSever/program/game/poker/set"
 	"chessSever/program/game/poker/card"
+	"chessSever/program/game/poker/recorder"
+	"chessSever/program/game/poker/analyzer"
 )
 
 /**
@@ -21,9 +23,9 @@ import (
 */
 type Player struct {
 	User *model.User
-	Conn  *websocket.Conn //用户socket链接
+	Conn  *websocket.Conn 				//用户socket链接
 	sync.RWMutex
-	PokerCards       set.PokerSet //玩家手里的扑克牌0
+	PokerCards       set.PokerSet 		//玩家手里的扑克牌0
 
 	Index            int                //在桌子上的索引
 	IsReady          bool               //是否准备
@@ -33,10 +35,11 @@ type Player struct {
 	playCardsChan    chan []int 		//出牌的索引切片通道
 	stopTimeChan	 chan byte			//停止倒计时的通道
 
-	IsOnline bool                       //是否在线，用于短线重连
+	IsOnline bool                       //是否在线，用于断线重连
 	UpLineTime time.Time
 	OffLine time.Time
-
+	PokerRecorder recorder.PokerRecorder
+	PokerAnalyzer analyzer.PokerAnalyzer
 }
 
 func NewPlayer(user *model.User,conn *websocket.Conn) *Player {
@@ -204,13 +207,13 @@ func (p *Player) StartPlay(){
 }
 
 func (p *Player)autoPlay(){
-	//如果不是必须出牌，则过牌，否则出最小的一种牌，有几张出几张
 	game,err := game.GetPlayerGame(p)
 	if err == nil{
 		p.Lock()
+		//可以过牌的情况下过牌
 		if lastCard := game.GetLastCard(); lastCard != nil && lastCard.PlayerIndex != p.Index{
 			p.playCardsChan<- []int{}
-		}else{
+		}else{//不能过牌情况下从最小的开始出牌,有几张出几张
 			cardIndexs := []int{}
 			tempCardValue := -1
 			played := false
@@ -481,3 +484,9 @@ func (p *Player) SendMsg(msg []byte){
 	p.Conn.WriteMessage(websocket.TextMessage,msg)
 }
 
+func (p *Player) SetPokerRecorder(recorder recorder.PokerRecorder){
+	p.PokerRecorder = recorder
+}
+func (p *Player) SetPokerAnalyzer(analyzer analyzer.PokerAnalyzer){
+	p.PokerAnalyzer = analyzer
+}

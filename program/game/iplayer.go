@@ -3,6 +3,8 @@ package game
 import (
 	"chessSever/program/model"
 	"chessSever/program/game/poker/set"
+	"chessSever/program/game/poker/recorder"
+	"chessSever/program/game/poker/analyzer"
 )
 
 type IPlayer interface {
@@ -35,4 +37,7 @@ type IPlayer interface {
 	HintCards()														//提示出牌
 	GetPlayedCardIndexs() []int
 	GetPlayerCards(indexs []int) set.PokerSet
+
+	SetPokerRecorder(recorder recorder.PokerRecorder)
+	SetPokerAnalyzer(analyzer analyzer.PokerAnalyzer)
 }

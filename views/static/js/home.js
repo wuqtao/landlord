@@ -56,7 +56,7 @@ function openConnection(){
                 case MSG_TYPE_OF_SEND_CARD:
                     $("#userCards").html('');
                     $.each(data.Cards,function(i,o){
-                        $("#userCards").append(String.format($("#tempPlayCard").html(),o.Card.CardName,o.Card.CardSuit,o.Index));
+                        $("#userCards").prepend(String.format($("#tempPlayCard").html(),o.Card.CardName,o.Card.CardSuit,o.Index));
                     })
                     break;
                 case MSG_TYPE_OF_CALL_SCORE:

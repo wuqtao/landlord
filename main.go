@@ -8,11 +8,11 @@ import (
 	"sync"
 	"chessSever/program/game/player"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
-	"github.com/jinzhu/gorm"
 	"chessSever/program/model"
 	"chessSever/program/game/msg"
 	"chessSever/program/game"
 	"github.com/sirupsen/logrus"
+	"github.com/jinzhu/gorm"
 )
 
 var addr = flag.String("addr", "localhost:8888", "http service address")

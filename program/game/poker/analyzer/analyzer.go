@@ -39,6 +39,6 @@ func (ana PokerAnalyzer) RemovePokerSet(pokers set.PokerSet){
 
 func (ana PokerAnalyzer) AddPokerSet(pokers set.PokerSet){
 	pokers.DoOnEachPokerCard(func(index int,card *card.PokerCard){
-		ana[card.CardValue].AddPokers(set.PokerSet{card})
+		ana[card.CardValue] = ana[card.CardValue].AddPokers(set.PokerSet{card})
 	})
 }

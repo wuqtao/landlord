@@ -298,12 +298,13 @@ func (dou *Doudizhu) callLoardEnd(){
 
 	dou.BroadCastMsg(dou.Players[dou.lordIndex],msg.MSG_TYPE_OF_SEND_BOTTOM_CARDS,"发放底牌")
 	fmt.Println("底牌发送完毕，开始游戏")
-	//初始化记牌器和分析器
-	for i,pokerSet := range dou.playerCards{
 
+	for i,_ := range dou.Players{
 		dou.playerPokerAnalyzer[i].InitAnalyzer()
 		dou.playerPokerRecorders[i].InitRecorder()
-
+	}
+	//初始化记牌器和分析器
+	for i,pokerSet := range dou.playerCards{
 		dou.Players[i].SetPokerAnalyzer(dou.playerPokerAnalyzer[i])
 		dou.Players[i].SetPokerRecorder(dou.playerPokerRecorders[i])
 		//自己的扑克牌初始化自己的分析器
@@ -312,7 +313,9 @@ func (dou *Doudizhu) callLoardEnd(){
 		for _,index := range dou.getOthersIndex(i){
 			dou.playerPokerRecorders[index].AddPokerSet(pokerSet)
 		}
-		dou.Players[i].SendMsg([]byte(dou.playerPokerRecorders[i].SequenceJsonEncode()))
+	}
+	for i,p := range dou.Players{
+		p.SendMsg([]byte(dou.playerPokerRecorders[i].SequenceJsonEncode()))
 	}
 	dou.play(dou.Players[dou.lordIndex])
 }

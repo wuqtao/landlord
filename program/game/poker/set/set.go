@@ -1,7 +1,7 @@
 package set
 
 import (
-	"iris/core/errors"
+	"errors"
 	"chessSever/program/game/poker/card"
 )
 
@@ -14,10 +14,12 @@ func NewPokerSet() PokerSet{
 	return PokerSet{}
 }
 //向扑克集中添加扑克
-func (set PokerSet)AddPokers(cards PokerSet){
+func (set PokerSet)AddPokers(cards PokerSet) PokerSet{
 	for _,card := range cards{
 		set = append(set,card)
 	}
+	//append元素可能需要重新分配空间，导致原切片引用发生变化，此处需要返回新的切片引用
+	return set
 }
 //检查给定的索引是否存在
 func (set PokerSet)checkIndex(indexs []int) error{

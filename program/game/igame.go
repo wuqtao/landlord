@@ -1,8 +1,8 @@
 package game
 
 import (
-	"chessSever/program/game/poker"
 	"github.com/sirupsen/logrus"
+	"chessSever/program/game/poker/set"
 )
 
 const (
@@ -56,19 +56,16 @@ type IGame interface {
 type LastCardsType struct{
 	PlayerCardIndexs []int		 	//扑克牌在出牌玩家所有牌中的index
 	PlayerIndex int              	//出牌的玩家index
-	CardsType int				 	//牌的类型
-	Cards poker.PokerSet	    //出的牌
-	CardMinAndMax map[string]int    //出的牌的map,min为主体牌的最小值，max为有主体牌的最大值，比如三带一，三为主体牌，带一为辅助牌
+	Cards set.PokerSet	    		//出的牌
+	PokerSetTypeInfo *set.SetTypeInfo
 }
 
-func NewLastCards(playerIndex int,cardsType int,cards poker.PokerSet,minValue int,maxValue int) *LastCardsType {
+func NewLastCards(playerIndex int,cards set.PokerSet,cardIndexs []int,setTypeInfo *set.SetTypeInfo) *LastCardsType {
 	lastCards :=  &LastCardsType{
 		PlayerIndex:playerIndex,
-		CardsType:cardsType,
 		Cards:cards,
-		CardMinAndMax:make(map[string]int),
+		PlayerCardIndexs:cardIndexs,
+		PokerSetTypeInfo:setTypeInfo,
 	}
-	lastCards.CardMinAndMax["min"] = minValue
-	lastCards.CardMinAndMax["max"] = maxValue
 	return lastCards
 }

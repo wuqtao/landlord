@@ -6,13 +6,14 @@ import (
 	"strconv"
 	"github.com/tidwall/gjson"
 	"fmt"
-	"chessSever/program/game/poker"
 	"chessSever/program/model"
 	"chessSever/program/game/msg"
 	"chessSever/program/game/games"
 	"chessSever/program/game"
 	"github.com/sirupsen/logrus"
 	"time"
+	"chessSever/program/game/poker/set"
+	"chessSever/program/game/poker/card"
 )
 
 /**
@@ -22,7 +23,7 @@ type Player struct {
 	User *model.User
 	Conn  *websocket.Conn //用户socket链接
 	sync.RWMutex
-	PokerCards       poker.PokerSet //玩家手里的扑克牌0
+	PokerCards       set.PokerSet //玩家手里的扑克牌0
 
 	Index            int                //在桌子上的索引
 	IsReady          bool               //是否准备
@@ -76,9 +77,9 @@ func (p *Player) GetPlayedCardIndexs() []int{
 	return p.PlayedCardIndexs
 }
 
-func (p *Player) GetPlayerCards(indexs []int) poker.PokerSet{
+func (p *Player) GetPlayerCards(indexs []int) set.PokerSet{
 	if indexs != nil && len(indexs) > 0{
-		temCards := poker.PokerSet{}
+		temCards := set.PokerSet{}
 		for _,i := range indexs{
 			temCards = append(temCards,p.PokerCards[i])
 		}
@@ -88,7 +89,7 @@ func (p *Player) GetPlayerCards(indexs []int) poker.PokerSet{
 	}
 }
 
-func (p *Player) SetPokerCards(cards poker.PokerSet){
+func (p *Player) SetPokerCards(cards set.PokerSet){
 
 	p.Lock()
 	p.PokerCards = cards
@@ -230,7 +231,7 @@ func (p *Player)autoPlay(){
 				}else{
 					//将相同值的牌的索引放入待出牌切片中，大小王算是相同的牌可以一次性出牌
 					if p.PokerCards[i].CardValue == tempCardValue ||
-						(tempCardValue == poker.POKER_VALUE_BLACK_JOKER && p.PokerCards[i].CardValue == poker.POKER_VALUE_RED_JOKER){
+						(tempCardValue == card.POKER_VALUE_BLACK_JOKER && p.PokerCards[i].CardValue == card.POKER_VALUE_RED_JOKER){
 						cardIndexs = append(cardIndexs,i)
 					}else{
 						tempCardValue = -1

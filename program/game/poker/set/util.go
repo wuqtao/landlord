@@ -1,7 +1,7 @@
-package poker
+package set
 
 //检查一组牌中，各牌的数量,返回map[cardValue]num
-func CheckEachCardNum(pokers []*PokerCard) map[int]int{
+func CheckEachCardNum(pokers PokerSet) map[int]int{
 	cardMap := make(map[int]int)
 
 	if len(pokers) == 0 {
@@ -21,7 +21,7 @@ func CheckEachCardNum(pokers []*PokerCard) map[int]int{
 }
 
 //判断一组牌中，不同数字的数量是否相同
-func IsUnsameCardNumSame(pokers []*PokerCard,cardIndexs []int) bool{
+func IsUnsameCardNumSame(pokers PokerSet,cardIndexs []int) bool{
 	numMap := make(map[int]int)
 	for _,index := range cardIndexs{
 		_,ok := numMap[pokers[index].CardValue]
@@ -47,7 +47,7 @@ func IsUnsameCardNumSame(pokers []*PokerCard,cardIndexs []int) bool{
 	return true
 }
 //判断一组牌中，给定索引的牌是否一样大小
-func IsCardSame(pokers []*PokerCard,cardIndexs []int) bool{
+func IsCardSame(pokers PokerSet,cardIndexs []int) bool{
 	temp := -1
 	for i,v:= range cardIndexs{
 		if i == 0{

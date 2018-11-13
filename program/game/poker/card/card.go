@@ -1,4 +1,4 @@
-package poker
+package card
 
 /**
 	定义扑克牌花色、显示牌型、值以及扑克牌
@@ -53,6 +53,20 @@ type PokerCard struct {
 	CardSuit string			//card花色
 	CardName string			//card显示的字符
 }
+
+func (card PokerCard)GetValue() int{
+	return card.CardValue
+}
+
+func (card PokerCard)GetSuit() string{
+	return card.CardSuit
+}
+
+func (card PokerCard)GetCardName() string{
+	return card.CardName
+}
+
+
 
 
 

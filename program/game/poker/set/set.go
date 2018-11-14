@@ -456,5 +456,14 @@ func (set PokerSet)SortAsc(){
 func (set PokerSet)SortDesc(){
 	SortDesc(set)
 }
-
-
+//检测是否有相同元素，有则冲突
+func (set PokerSet)HasSamePoker(s PokerSet) bool{
+	for _,card1 := range set{
+		for _,card2 := range s{
+			if card1 == card2{
+				return true
+			}
+		}
+	}
+	return false
+}

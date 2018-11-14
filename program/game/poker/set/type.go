@@ -79,3 +79,10 @@ func NewSetInfo(setType int,minValue int,maxValue int) *SetTypeInfo {
 	setInfo.CardValueMinAndMax["max"] = maxValue
 	return &setInfo
 }
+
+func (setInfo *SetTypeInfo)GetRangeWidth() int{
+	return setInfo.CardValueMinAndMax["max"] - setInfo.CardValueMinAndMax["min"]+1
+}
+func (setInfo *SetTypeInfo)GetSetTypeName() string{
+	return GetPokerSetTypeName(setInfo.SetType)
+}

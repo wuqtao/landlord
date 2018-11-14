@@ -378,7 +378,7 @@ func (dou *Doudizhu) PlayerPlayCards(p game.IPlayer,cardIndexs []int){
 			p.PlayCardSuccess(cardIndexs)
 
 			//出牌成功，更新记牌器和分析器
-			dou.playerPokerRecorders[dou.CurrPlayerIndex].RemovePokerSet(cards)
+			dou.playerPokerAnalyzer[dou.CurrPlayerIndex].RemovePokerSet(cards)
 			for _,index := range dou.getOthersIndex(dou.CurrPlayerIndex){
 				dou.playerPokerRecorders[index].RemovePokerSet(cards)
 				dou.Players[index].SendMsg([]byte(dou.playerPokerRecorders[index].SequenceJsonEncode()))

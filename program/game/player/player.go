@@ -13,7 +13,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"time"
 	"chessSever/program/game/poker/set"
-	"chessSever/program/game/poker/card"
 	"chessSever/program/game/poker/recorder"
 	"chessSever/program/game/poker/analyzer"
 )
@@ -214,42 +213,17 @@ func (p *Player)autoPlay(){
 		if lastCard := game.GetLastCard(); lastCard != nil && lastCard.PlayerIndex != p.Index{
 			p.playCardsChan<- []int{}
 		}else{//不能过牌情况下从最小的开始出牌,有几张出几张
-			cardIndexs := []int{}
-			tempCardValue := -1
-			played := false
-			//使用for range无法回退一步，导致被忽略掉的元素没法重新使用，所以使用for实现
-			cardNum := len(p.PokerCards)
-			for i:=0;i<cardNum;i++{
-				if tempCardValue == -1{
-					tempCardValue = p.PokerCards[i].CardValue
-					cardIndexs = append(cardIndexs,i)
-					if(i == cardNum-1){
-						playCardIndexs := fiterCardIndex(cardIndexs,p.PlayedCardIndexs)
-						cardIndexs = []int{}
-						if (len(playCardIndexs) > 0){
-							p.playCardsChan<-playCardIndexs
-							played = true
-						}
-					}
+			playCards := p.PokerAnalyzer.GetMinPlayableCards()
+
+			if playCards.GetLength() > 0{
+				indexs,err := p.PokerCards.GetPokerIndexs(playCards)
+				if err == nil{
+					p.playCardsChan <- indexs
 				}else{
-					//将相同值的牌的索引放入待出牌切片中，大小王算是相同的牌可以一次性出牌
-					if p.PokerCards[i].CardValue == tempCardValue ||
-						(tempCardValue == card.POKER_VALUE_BLACK_JOKER && p.PokerCards[i].CardValue == card.POKER_VALUE_RED_JOKER){
-						cardIndexs = append(cardIndexs,i)
-					}else{
-						tempCardValue = -1
-						i--//此处回退一步，防止忽略掉元素
-						playCardIndexs := fiterCardIndex(cardIndexs,p.PlayedCardIndexs)
-						cardIndexs = []int{}
-						if (len(playCardIndexs) > 0){
-							p.playCardsChan<-playCardIndexs
-							played = true
-							break
-						}
-					}
+					p.playCardsChan<- []int{} //无可出的牌，逻辑有错
+					fmt.Println(err.Error())
 				}
-			}
-			if !played{
+			}else{
 				p.playCardsChan<- []int{} //无可出的牌，逻辑有错
 				fmt.Println("必须出牌情况下，无可出的牌，逻辑错误")
 			}

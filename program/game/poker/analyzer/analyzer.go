@@ -79,7 +79,7 @@ func (ana PokerAnalyzer) GetUseableCards(setType *set.SetTypeInfo) []set.PokerSe
 			for i,tempset := range useableSets{
 				tempsetPlus := ana.getPlusSet(1,1,tempset)
 				if tempsetPlus.GetLength() >0 {
-					tempset = tempset.AddPokers(tempsetPlus)
+					useableSets[i] = tempset.AddPokers(tempsetPlus)
 				}else{//没有牌可以带，将之前的主牌移除可出牌集合
 					useableSets[i] = nil
 				}
@@ -89,7 +89,7 @@ func (ana PokerAnalyzer) GetUseableCards(setType *set.SetTypeInfo) []set.PokerSe
 			for i,tempset := range useableSets{
 				tempsetPlus := ana.getPlusSet(2,1,tempset)
 				if tempsetPlus.GetLength() >0 {
-					tempset = tempset.AddPokers(tempsetPlus)
+					useableSets[i] = tempset.AddPokers(tempsetPlus)
 				}else{//没有牌可以带，将之前的主牌移除可出牌集合
 					useableSets[i] = nil
 				}
@@ -101,7 +101,7 @@ func (ana PokerAnalyzer) GetUseableCards(setType *set.SetTypeInfo) []set.PokerSe
 			for i,tempset := range useableSets{
 				tempsetPlus := ana.getPlusSet(1,setType.GetRangeWidth(),tempset)
 				if tempsetPlus.GetLength() >0 {
-					tempset = tempset.AddPokers(tempsetPlus)
+					useableSets[i] = tempset.AddPokers(tempsetPlus)
 				}else{//没有牌可以带，将之前的主牌移除可出牌集合
 					useableSets[i] = nil
 				}
@@ -111,7 +111,7 @@ func (ana PokerAnalyzer) GetUseableCards(setType *set.SetTypeInfo) []set.PokerSe
 			for i,tempset := range useableSets{
 				tempsetPlus := ana.getPlusSet(2,setType.GetRangeWidth(),tempset)
 				if tempsetPlus.GetLength() >0 {
-					tempset = tempset.AddPokers(tempsetPlus)
+					useableSets[i] = tempset.AddPokers(tempsetPlus)
 				}else{//没有牌可以带，将之前的主牌移除可出牌集合
 					useableSets[i] = nil
 				}
@@ -122,12 +122,12 @@ func (ana PokerAnalyzer) GetUseableCards(setType *set.SetTypeInfo) []set.PokerSe
 				//带两个单牌
 				tempsetPlus := ana.getPlusSet(1,2,tempset)
 				if tempsetPlus.GetLength() >0 {
-					tempset = tempset.AddPokers(tempsetPlus)
+					useableSets[i] = tempset.AddPokers(tempsetPlus)
 				}else{
 					//带一对牌，看做两个单牌
 					tempsetPlus := ana.getPlusSet(2,1,tempset)
 					if tempsetPlus.GetLength() >0 {
-						tempset = tempset.AddPokers(tempsetPlus)
+						useableSets[i] = tempset.AddPokers(tempsetPlus)
 					}else{//没有牌可以带，将之前的主牌移除可出牌集合
 						useableSets[i] = nil
 					}
@@ -138,7 +138,7 @@ func (ana PokerAnalyzer) GetUseableCards(setType *set.SetTypeInfo) []set.PokerSe
 			for i,tempset := range useableSets{
 				tempsetPlus := ana.getPlusSet(2,2,tempset)
 				if tempsetPlus.GetLength() >0 {
-					tempset = tempset.AddPokers(tempsetPlus)
+					useableSets[i] = tempset.AddPokers(tempsetPlus)
 				}else{//没有牌可以带，将之前的主牌移除可出牌集合
 					useableSets[i] = nil
 				}
@@ -151,12 +151,12 @@ func (ana PokerAnalyzer) GetUseableCards(setType *set.SetTypeInfo) []set.PokerSe
 				//带两个单牌
 				tempsetPlus := ana.getPlusSet(1,2*setType.GetRangeWidth(),tempset)
 				if tempsetPlus.GetLength() >0 {
-					tempset = tempset.AddPokers(tempsetPlus)
+					useableSets[i] = tempset.AddPokers(tempsetPlus)
 				}else{
 					//带一对牌，看做两个单牌
 					tempsetPlus := ana.getPlusSet(2,setType.GetRangeWidth(),tempset)
 					if tempsetPlus.GetLength() >0 {
-						tempset = tempset.AddPokers(tempsetPlus)
+						useableSets[i] = tempset.AddPokers(tempsetPlus)
 					}else{//没有牌可以带，将之前的主牌移除可出牌集合
 						useableSets[i] = nil
 					}
@@ -167,7 +167,7 @@ func (ana PokerAnalyzer) GetUseableCards(setType *set.SetTypeInfo) []set.PokerSe
 			for i,tempset := range useableSets{
 				tempsetPlus := ana.getPlusSet(2,2*setType.GetRangeWidth(),tempset)
 				if tempsetPlus.GetLength() >0 {
-					tempset = tempset.AddPokers(tempsetPlus)
+					useableSets[i] = tempset.AddPokers(tempsetPlus)
 				}else{//没有牌可以带，将之前的主牌移除可出牌集合
 					useableSets[i] = nil
 				}
@@ -217,8 +217,8 @@ func (ana PokerAnalyzer) getMultiValueSet(count int,minValue int,maxValue int) [
 	valueRange := maxValue-minValue+1
 	for i:=minValue+1;i<=card.POKER_VALUE_TWO-valueRange;i++{
 		for j:=i;j<i+valueRange;j++{
-			if ana.Dic[i].GetLength() >= count {
-				se = se.AddPokers(ana.Dic[i][:count])
+			if ana.Dic[j].GetLength() >= count {
+				se = se.AddPokers(ana.Dic[j][:count])
 			}
 		}
 		//该范围内连续的牌的张数符合要求

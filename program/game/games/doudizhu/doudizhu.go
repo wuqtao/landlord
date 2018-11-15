@@ -408,10 +408,12 @@ func (dou *Doudizhu) PlayerPlayCards(p game.IPlayer,cardIndexs []int){
 			dou.play(dou.getNextPlayer())
 			//todo 此处判断下家的牌是否都小于当前玩家，给出要不起的提示
 		}else{
+			p.StartPlay()
 			p.PlayCardError("出牌必须大于上一家")
 		}
 
 	}else{
+		p.StartPlay()
 		p.PlayCardError(err.Error())
 	}
 }

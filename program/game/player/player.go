@@ -176,9 +176,8 @@ func (p *Player) StartPlay(){
 		if len(p.UseablePokerSets) > 0 && p.UseablePokerSets[0].GetLength() > 0{
 			p.SendMsg(currMsg)
 		}else{
-			//todo
+			p.Pass()
 		}
-
 		p.Unlock()
 		go func(){
 			cardIndexs := <-p.playCardsChan
@@ -191,7 +190,7 @@ func (p *Player) StartPlay(){
 		//启动定时器,限制叫地主时间，过时自动不叫
 		go func(){
 			//给玩家发送定时消息
-			second := 3
+			second := 7
 			for {
 				select {
 					case <-p.stopTimeChan:
@@ -359,7 +358,7 @@ func (p *Player)ResolveMsg(msgB []byte) error{
 			go p.CallScore(score)
 
 		default:
-			go p.Conn.WriteMessage(msgType,msgB)
+			p.Conn.WriteMessage(msgType,msgB)
 	}
 
 	return nil

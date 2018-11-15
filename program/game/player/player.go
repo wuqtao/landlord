@@ -39,6 +39,9 @@ type Player struct {
 	OffLine time.Time
 	PokerRecorder recorder.PokerRecorder
 	PokerAnalyzer analyzer.PokerAnalyzer
+
+	UseablePokerSets []set.PokerSet
+	CurrHintSetIndex int
 }
 
 func NewPlayer(user *model.User,conn *websocket.Conn) *Player {
@@ -156,48 +159,53 @@ func (p *Player) StartCallScore(){
 func (p *Player) StartPlay(){
 	currMsg,err := msg.NewPlayCardMsg()
 	if err == nil{
-		p.SendMsg(currMsg)
+		p.Lock()
+		currGame,err := game.GetPlayerGame(p)
+		if err == nil{
+			 lastCards := currGame.GetLastCard()
+			 //如果上家没有出牌或者上次是当前玩家出牌，提示可用最小牌即可,否则根据上轮出牌给出可用的扑克牌
+			 if lastCards == nil || lastCards.PlayerIndex == p.Index{
+				 p.UseablePokerSets = []set.PokerSet{p.PokerAnalyzer.GetMinPlayableCards()}
+			 }else{
+			 	p.UseablePokerSets = p.PokerAnalyzer.GetUseableCards(lastCards.PokerSetTypeInfo)
+			 }
+			 //重新分析完牌型，将当前提示的牌型索引重置为0
+			 p.CurrHintSetIndex = 0
+		}
+		//如果有牌可以出，发送出牌消息，否则发送要不起消息
+		if len(p.UseablePokerSets) > 0 && p.UseablePokerSets[0].GetLength() > 0{
+			p.SendMsg(currMsg)
+		}else{
+			//todo
+		}
 
+		p.Unlock()
 		go func(){
 			cardIndexs := <-p.playCardsChan
-			game,err := game.GetPlayerGame(p)
-			if err == nil{
-				if len(cardIndexs) == 0{
-					game.PlayerPassCard(p)
-				}else{
-					game.PlayerPlayCards(p,cardIndexs)
-				}
+			if len(cardIndexs) == 0{
+				currGame.PlayerPassCard(p)
 			}else{
-				currMsg,err1 := msg.NewPlayCardsErrorMsg(err.Error())
-				if err1 == nil{
-					p.SendMsg(currMsg)
-				}
-				fmt.Println(err.Error())
+				currGame.PlayerPlayCards(p,cardIndexs)
 			}
 		}()
 		//启动定时器,限制叫地主时间，过时自动不叫
 		go func(){
 			//给玩家发送定时消息
-			game,err := game.GetPlayerGame(p)
-			if err == nil{
-				second := 3
-				for {
-					select {
-						case <-p.stopTimeChan:
-							fmt.Println("玩家出牌，定时器结束")
+			second := 3
+			for {
+				select {
+					case <-p.stopTimeChan:
+						fmt.Println("玩家出牌，定时器结束")
+						return
+					default:
+						currGame.BroadCastMsg(p,msg.MSG_TYPE_OF_TIME_TICKER,strconv.Itoa(second))
+						second--
+						if second <= 0{
+							p.autoPlay(currGame)
 							return
-						default:
-							game.BroadCastMsg(p,msg.MSG_TYPE_OF_TIME_TICKER,strconv.Itoa(second))
-							second--
-							if second <= 0{
-								p.autoPlay()
-								return
-							}
-							time.Sleep(time.Second)
-					}
+						}
+						time.Sleep(time.Second)
 				}
-			}else{
-				fmt.Println("未获得用户game")
 			}
 		}()
 	}else{
@@ -205,35 +213,19 @@ func (p *Player) StartPlay(){
 	}
 }
 
-func (p *Player)autoPlay(){
-	game,err := game.GetPlayerGame(p)
-	if err == nil{
-		p.Lock()
-		//可以过牌的情况下过牌
-		if lastCard := game.GetLastCard(); lastCard != nil && lastCard.PlayerIndex != p.Index{
-			p.playCardsChan<- []int{}
-		}else{//不能过牌情况下从最小的开始出牌,有几张出几张
-			playCards := p.PokerAnalyzer.GetMinPlayableCards()
-
-			if playCards.GetLength() > 0{
-				indexs,err := p.PokerCards.GetPokerIndexs(playCards)
-				if err == nil{
-					p.playCardsChan <- indexs
-				}else{
-					p.playCardsChan<- []int{} //无可出的牌，逻辑有错
-					fmt.Println(err.Error())
-				}
-			}else{
-				p.playCardsChan<- []int{} //无可出的牌，逻辑有错
-				fmt.Println("必须出牌情况下，无可出的牌，逻辑错误")
-			}
+func (p *Player)autoPlay(currGame game.IGame){
+	if len(p.UseablePokerSets) > 0 {
+		indexs,err := p.PokerCards.GetPokerIndexs(p.UseablePokerSets[0])
+		if err == nil{
+			p.playCardsChan<- indexs
+		}else{
+			fmt.Println(err.Error())
 		}
-		p.Unlock()
-		return
 	}else{
 		p.playCardsChan<- []int{}
 	}
 }
+
 func fiterCardIndex(cardIndexs []int,playedCardIndexs []int) []int{
 	//检测待出牌切片中牌是否已经出过
 	for j,index := range cardIndexs {

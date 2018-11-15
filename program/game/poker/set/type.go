@@ -86,3 +86,9 @@ func (setInfo *SetTypeInfo)GetRangeWidth() int{
 func (setInfo *SetTypeInfo)GetSetTypeName() string{
 	return GetPokerSetTypeName(setInfo.SetType)
 }
+func (setInfo *SetTypeInfo)GetMinValue() int{
+	return setInfo.CardValueMinAndMax["min"]
+}
+func (setInfo *SetTypeInfo)GetMaxValue() int{
+	return setInfo.CardValueMinAndMax["max"]
+}

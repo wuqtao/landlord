@@ -13,6 +13,7 @@ import (
 	"chessSever/program/game"
 	"github.com/sirupsen/logrus"
 	"github.com/jinzhu/gorm"
+	"chessSever/program/connection"
 )
 
 var addr = flag.String("addr", "localhost:8888", "http service address")
@@ -47,7 +48,7 @@ func echo(w http.ResponseWriter, r *http.Request) {
 		NickName:"玩家"+strconv.Itoa(nowId),
 		Avatar:"no_avatar",
 	}
-	currPlayer := player.NewPlayer(currUser,con)
+	currPlayer := player.NewPlayer(currUser,connection.NewWebSocketConnection(con))
 
 	player.SendMsgToPlayer(currPlayer,msg.MSG_TYPE_OF_LOGIN,"用户登陆")
 

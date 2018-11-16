@@ -323,8 +323,23 @@ func (dou *Doudizhu) callLoardEnd(){
 func (dou *Doudizhu) play(currPlayer game.IPlayer){
 	if currPlayer == nil{
 		currPlayer = dou.Players[dou.lordIndex]
+		currPlayer.StartPlay()
+	}else{
+		//判断当前玩家是否出牌结束，出牌结束则跳过当前玩家
+		dou.RLock()
+		isOutOfCard := false
+		for _,index := range dou.OutCardIndexs{
+			if index == currPlayer.GetIndex(){
+				isOutOfCard = true
+			}
+		}
+		dou.RUnlock()
+		if isOutOfCard{
+			dou.play(dou.getNextPlayer())
+		}else{
+			currPlayer.StartPlay()
+		}
 	}
-	currPlayer.StartPlay()
 }
 
 func (dou *Doudizhu) PlayerPlayCards(p game.IPlayer,cardIndexs []int){
@@ -349,6 +364,7 @@ func (dou *Doudizhu) PlayerPlayCards(p game.IPlayer,cardIndexs []int){
 		//第一个出牌，或者上一次出牌没人管，或者出牌大于上家，此时满足出牌要求
 		if  dou.lastCards == nil || //第一次出牌
 			lastCards.PlayerIndex == dou.lastCards.PlayerIndex ||  //上一次出牌无人管
+			dou.IsLastCardUserFinish() || //接风
 			game.IsDoudizhuTypeBiger(lastCards.PokerSetTypeInfo.SetType,dou.lastCards.PokerSetTypeInfo.SetType) || //牌型压制
 			(lastCards.PokerSetTypeInfo.SetType == dou.lastCards.PokerSetTypeInfo.SetType &&  //同牌型比较大小
 				lastCards.PokerSetTypeInfo.CardValueMinAndMax["min"] > dou.lastCards.PokerSetTypeInfo.CardValueMinAndMax["min"] &&
@@ -396,10 +412,13 @@ func (dou *Doudizhu) PlayerPlayCards(p game.IPlayer,cardIndexs []int){
 
 				if currIndex == dou.lordIndex{
 					dou.gameOver()
+					fmt.Println("地主第一个出完牌,游戏结束")
 					return
 				}else{
+					fmt.Println("玩家出牌结束")
 					if len(dou.OutCardIndexs) == 2{
 						dou.gameOver()
+						fmt.Println("两个农民出完牌,游戏结束")
 						return
 					}
 				}
@@ -416,6 +435,18 @@ func (dou *Doudizhu) PlayerPlayCards(p game.IPlayer,cardIndexs []int){
 		p.StartPlay()
 		p.PlayCardError(err.Error())
 	}
+}
+//最后出牌的玩家是否已经出完牌
+func (dou *Doudizhu) IsLastCardUserFinish() bool{
+	dou.RLock()
+	defer dou.RUnlock()
+	isOutOfCards := false
+	for _,index := range dou.OutCardIndexs{
+		if index == dou.lastCards.PlayerIndex{
+			isOutOfCards = true
+		}
+	}
+	return isOutOfCards
 }
 
 func (dou *Doudizhu) gameOver(){

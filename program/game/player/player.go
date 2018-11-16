@@ -1,7 +1,6 @@
 package player
 
 import (
-	"github.com/gorilla/websocket"
 	"sync"
 	"strconv"
 	"github.com/tidwall/gjson"
@@ -15,6 +14,7 @@ import (
 	"chessSever/program/game/poker/set"
 	"chessSever/program/game/poker/recorder"
 	"chessSever/program/game/poker/analyzer"
+	"chessSever/program/connection"
 )
 
 /**
@@ -22,7 +22,7 @@ import (
 */
 type Player struct {
 	User *model.User
-	Conn  *websocket.Conn 				//用户socket链接
+	Conn  *connection.WebSocketConnection//用户socket链接
 	sync.RWMutex
 	PokerCards       set.PokerSet 		//玩家手里的扑克牌0
 
@@ -44,7 +44,7 @@ type Player struct {
 	CurrHintSetIndex int
 }
 
-func NewPlayer(user *model.User,conn *websocket.Conn) *Player {
+func NewPlayer(user *model.User,conn *connection.WebSocketConnection) *Player {
 	player := Player{
 		User:user,
 		Conn:conn,
@@ -164,7 +164,7 @@ func (p *Player) StartPlay(){
 		if err == nil{
 			 lastCards := currGame.GetLastCard()
 			 //如果上家没有出牌或者上次是当前玩家出牌，提示可用最小牌即可,否则根据上轮出牌给出可用的扑克牌
-			 if lastCards == nil || lastCards.PlayerIndex == p.Index{
+			 if lastCards == nil || lastCards.PlayerIndex == p.Index || currGame.IsLastCardUserFinish(){
 				 p.UseablePokerSets = []set.PokerSet{p.PokerAnalyzer.GetMinPlayableCards()}
 			 }else{
 			 	p.UseablePokerSets = p.PokerAnalyzer.GetUseableCards(lastCards.PokerSetTypeInfo)
@@ -174,11 +174,15 @@ func (p *Player) StartPlay(){
 		}
 		//如果有牌可以出，发送出牌消息，否则发送要不起消息
 		if len(p.UseablePokerSets) > 0 && p.UseablePokerSets[0].GetLength() > 0{
+			p.Unlock()
 			p.SendMsg(currMsg)
 		}else{
-			p.Pass()
+			p.Unlock()
+			//此处应发送要不起消息
+			p.SendMsg(currMsg)
+			//todo
 		}
-		p.Unlock()
+
 		go func(){
 			cardIndexs := <-p.playCardsChan
 			if len(cardIndexs) == 0{
@@ -194,7 +198,6 @@ func (p *Player) StartPlay(){
 			for {
 				select {
 					case <-p.stopTimeChan:
-						fmt.Println("玩家出牌，定时器结束")
 						return
 					default:
 						currGame.BroadCastMsg(p,msg.MSG_TYPE_OF_TIME_TICKER,strconv.Itoa(second))
@@ -219,6 +222,7 @@ func (p *Player)autoPlay(currGame game.IGame){
 			p.playCardsChan<- indexs
 		}else{
 			fmt.Println(err.Error())
+			p.playCardsChan<- []int{}
 		}
 	}else{
 		p.playCardsChan<- []int{}
@@ -266,9 +270,6 @@ func (p *Player) PlayCards(cardIndexs []int){
 		}
 	}
 	p.RUnlock()
-
-	fmt.Println("玩家出牌"+strconv.Itoa(p.GetPlayerUser().Id))
-
 	p.stopTimeChan<-1
 	p.playCardsChan<-cardIndexs
 }
@@ -358,7 +359,7 @@ func (p *Player)ResolveMsg(msgB []byte) error{
 			go p.CallScore(score)
 
 		default:
-			p.Conn.WriteMessage(msgType,msgB)
+			p.Conn.SendMsgWithType(msgType,msgB)
 	}
 
 	return nil
@@ -400,6 +401,7 @@ func (p *Player) UnReady(){
 //过牌
 func (p *Player)Pass(){
 	game,err := game.GetPlayerGame(p)
+	p.stopTimeChan<-1
 	if err == nil {
 		game.PlayerPassCard(p)
 	}else{
@@ -407,6 +409,7 @@ func (p *Player)Pass(){
 		if err1 == nil{
 			p.SendMsg(msg)
 		}
+		p.StartPlay()
 		fmt.Println(err.Error())
 	}
 }
@@ -446,7 +449,7 @@ func(p *Player) HintCards(){
 }
 
 func (p *Player) SendMsg(msg []byte){
-	p.Conn.WriteMessage(websocket.TextMessage,msg)
+	p.Conn.SendMsg(msg)
 }
 
 func (p *Player) SetPokerRecorder(recorder recorder.PokerRecorder){

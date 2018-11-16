@@ -179,21 +179,28 @@ func (ana PokerAnalyzer) GetUseableCards(setType *set.SetTypeInfo) []set.PokerSe
 		default:
 			useableSets = []set.PokerSet{}
 	}
+	//去掉nil元素
+	newUseableSets := []set.PokerSet{}
+	for _,sets := range useableSets{
+		if sets != nil{
+			newUseableSets = append(newUseableSets,sets)
+		}
+	}
 	//上一次出牌不是炸弹，则直接将炸弹加入可出的排中
 	if setType.SetType != set.POKERS_SET_TYPE_COMMON_BOMB && setType.SetType != set.POKERS_SET_TYPE_JOKER_BOMB{
 		//王炸
 		jokerBombSet := ana.GetJokerBomb()
 		if jokerBombSet.GetLength() > 0{
-			useableSets = append(useableSets,jokerBombSet)
+			newUseableSets = append(newUseableSets,jokerBombSet)
 		}
 		//普通炸弹
 		for _,tempSet := range ana.getSingleValueSet(4,-1){
 			if tempSet.GetLength() > 0{
-				useableSets = append(useableSets,tempSet)
+				newUseableSets = append(newUseableSets,tempSet)
 			}
 		}
 	}
-	return useableSets
+	return newUseableSets
 }
 //获取单值牌组成的扑克集的切片，单排对牌三牌四排等等
 //count表示单值牌的张数

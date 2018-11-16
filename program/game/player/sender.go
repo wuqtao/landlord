@@ -2,7 +2,6 @@ package player
 
 import (
 	"fmt"
-	"strconv"
 	"chessSever/program/game/msg"
 	"log"
 )
@@ -13,7 +12,6 @@ func SendPlayerCards(curPlayer *Player){
 		fmt.Println(err.Error())
 		return
 	}
-	fmt.Println("给玩家"+strconv.Itoa(curPlayer.User.Id)+"发牌")
 	curPlayer.SendMsg(json)
 }
 
@@ -23,10 +21,8 @@ func SendMsgToPlayer(p *Player,msgType int,hints string){
 	var err error
 	switch msgType {
 		case msg.MSG_TYPE_OF_CALL_SCORE:
-			fmt.Println(strconv.Itoa(p.User.Id)+"开始叫地主")
 			newMsg,err = msg.NewCallScoreMsg()
 		case msg.MSG_TYPE_OF_CALL_SCORE_TIME_OUT:
-			fmt.Println(strconv.Itoa(p.User.Id)+"叫地主超时")
 			newMsg,err = msg.NewCallScoreTimeOutMsg()
 		case msg.MSG_TYPE_OF_PLAY_CARD:
 			newMsg,err = msg.NewPlayCardMsg()

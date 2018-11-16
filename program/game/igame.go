@@ -50,7 +50,7 @@ type IGame interface {
 	PlayerPassCard(p IPlayer)												 //玩家过牌
 	HintCards(p IPlayer) []int  									         //提示玩家可出的牌
 	BroadCastMsg(p IPlayer,msgType int,msg string)
-
+	IsLastCardUserFinish() bool
 }
 
 type LastCardsType struct{

@@ -187,10 +187,10 @@ func (p *Player) StartPlay(){
 				currGame.PlayerPlayCards(p,cardIndexs)
 			}
 		}()
-		//启动定时器,限制叫地主时间，过时自动不叫
+		//启动定时器,限制出牌时间，超时自动出牌
 		go func(){
 			//给玩家发送定时消息
-			second := 7
+			second := 3
 			for {
 				select {
 					case <-p.stopTimeChan:
@@ -327,7 +327,7 @@ func (p *Player)ResolveMsg(msgB []byte) error{
 	fmt.Println(string(msgB))
 	msgType,err := strconv.Atoi(gjson.Get(string(msgB),"MsgType").String())
 	if err != nil{
-		p.Conn.WriteMessage(websocket.TextMessage,msgB)
+		p.SendMsg(msgB)
 		return err
 	}
 

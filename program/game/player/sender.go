@@ -2,7 +2,6 @@ package player
 
 import (
 	"fmt"
-	"github.com/gorilla/websocket"
 	"strconv"
 	"chessSever/program/game/msg"
 	"log"
@@ -15,7 +14,7 @@ func SendPlayerCards(curPlayer *Player){
 		return
 	}
 	fmt.Println("给玩家"+strconv.Itoa(curPlayer.User.Id)+"发牌")
-	curPlayer.Conn.WriteMessage(websocket.TextMessage,json)
+	curPlayer.SendMsg(json)
 }
 
 func SendMsgToPlayer(p *Player,msgType int,hints string){
@@ -42,7 +41,7 @@ func SendMsgToPlayer(p *Player,msgType int,hints string){
 	}
 
 	if err == nil{
-		p.Conn.WriteMessage(websocket.TextMessage,newMsg)
+		p.SendMsg(newMsg)
 	}else{
 		log.Fatal(err.Error())
 	}

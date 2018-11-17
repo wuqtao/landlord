@@ -194,7 +194,7 @@ func (p *Player) StartPlay(){
 		//启动定时器,限制出牌时间，超时自动出牌
 		go func(){
 			//给玩家发送定时消息
-			second := 3
+			second := 15
 			for {
 				select {
 					case <-p.stopTimeChan:

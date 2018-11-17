@@ -364,7 +364,6 @@ func (dou *Doudizhu) PlayerPlayCards(p game.IPlayer,cardIndexs []int){
 		//第一个出牌，或者上一次出牌没人管，或者出牌大于上家，此时满足出牌要求
 		if  dou.lastCards == nil || //第一次出牌
 			lastCards.PlayerIndex == dou.lastCards.PlayerIndex ||  //上一次出牌无人管
-			dou.IsLastCardUserFinish() || //接风
 			game.IsDoudizhuTypeBiger(lastCards.PokerSetTypeInfo.SetType,dou.lastCards.PokerSetTypeInfo.SetType) || //牌型压制
 			(lastCards.PokerSetTypeInfo.SetType == dou.lastCards.PokerSetTypeInfo.SetType &&  //同牌型比较大小
 				lastCards.PokerSetTypeInfo.CardValueMinAndMax["min"] > dou.lastCards.PokerSetTypeInfo.CardValueMinAndMax["min"] &&
@@ -415,12 +414,9 @@ func (dou *Doudizhu) PlayerPlayCards(p game.IPlayer,cardIndexs []int){
 					fmt.Println("地主第一个出完牌,游戏结束")
 					return
 				}else{
-					fmt.Println("玩家出牌结束")
-					if len(dou.OutCardIndexs) == 2{
 						dou.gameOver()
-						fmt.Println("两个农民出完牌,游戏结束")
+						fmt.Println("一个农民出完牌,游戏结束")
 						return
-					}
 				}
 			}
 			//下一个玩家出牌

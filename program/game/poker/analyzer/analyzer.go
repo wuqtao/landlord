@@ -208,11 +208,22 @@ func (ana PokerAnalyzer) GetUseableCards(setType *set.SetTypeInfo) []set.PokerSe
 func (ana PokerAnalyzer) getSingleValueSet(count int,minValue int) []set.PokerSet{
 	sets := []set.PokerSet{}
 	se := set.NewPokerSet()
+	//先不拆牌的情况下查找
 	for i:=minValue+1;i<=card.POKER_VALUE_RED_JOKER;i++{
-		if ana.Dic[i].GetLength() >= count {
-			se = se.AddPokers(ana.Dic[i][:count])
+		if ana.Dic[i].GetLength() == count {
+			se = se.AddPokers(ana.Dic[i])
 			sets = append(sets,se)
 			se =  set.NewPokerSet()
+		}
+	}
+	//不拆牌的情况下找不到可出的牌，再考虑拆牌的情况
+	if len(sets) == 0{
+		for i:=minValue+1;i<=card.POKER_VALUE_RED_JOKER;i++{
+			if ana.Dic[i].GetLength() > count {
+				se = se.AddPokers(ana.Dic[i][:count])
+				sets = append(sets,se)
+				se =  set.NewPokerSet()
+			}
 		}
 	}
 	return sets
@@ -222,10 +233,11 @@ func (ana PokerAnalyzer) getMultiValueSet(count int,minValue int,maxValue int) [
 	sets := []set.PokerSet{}
 	se := set.NewPokerSet()
 	valueRange := maxValue-minValue+1
+	//先考虑不拆拍的情况
 	for i:=minValue+1;i<=card.POKER_VALUE_TWO-valueRange;i++{
 		for j:=i;j<i+valueRange;j++{
-			if ana.Dic[j].GetLength() >= count {
-				se = se.AddPokers(ana.Dic[j][:count])
+			if ana.Dic[j].GetLength() == count {
+				se = se.AddPokers(ana.Dic[j])
 			}
 		}
 		//该范围内连续的牌的张数符合要求
@@ -236,6 +248,24 @@ func (ana PokerAnalyzer) getMultiValueSet(count int,minValue int,maxValue int) [
 			se =  set.NewPokerSet()
 		}
 	}
+	//如果不拆拍找不到可出的牌，则考虑拆牌
+	if len(sets) == 0{
+		for i:=minValue+1;i<=card.POKER_VALUE_TWO-valueRange;i++{
+			for j:=i;j<i+valueRange;j++{
+				if ana.Dic[j].GetLength() > count {
+					se = se.AddPokers(ana.Dic[j][:count])
+				}
+			}
+			//该范围内连续的牌的张数符合要求
+			if se.GetLength() == valueRange*count{
+				sets = append(sets,se)
+				se =  set.NewPokerSet()
+			}else{
+				se =  set.NewPokerSet()
+			}
+		}
+	}
+
 	return sets
 }
 //获取附牌，比如三带一中的一，四带二中二，只获取一种可能即可
@@ -245,15 +275,29 @@ func (ana PokerAnalyzer) getPlusSet(num int,count int,exceptSet set.PokerSet) se
 	resSet := set.NewPokerSet()
 	//第一原则不拆牌原则
 	for i:=card.POKER_VALUE_THREE;i<= card.POKER_VALUE_RED_JOKER;i++{
-		if ana.Dic[i].GetLength() >= num{
+		if ana.Dic[i].GetLength() == num{
 			if !ana.Dic[i][:num].HasSamePoker(exceptSet) {
-				resSet = resSet.AddPokers(ana.Dic[i][:num])
+				resSet = resSet.AddPokers(ana.Dic[i])
 			}
 		}
 		if resSet.GetLength() == num*count{
 			return resSet
 		}
 	}
+	//不拆牌找不到则，考虑拆牌
+	if resSet.GetLength() == 0{
+		for i:=card.POKER_VALUE_THREE;i<= card.POKER_VALUE_RED_JOKER;i++{
+			if ana.Dic[i].GetLength() > num{
+				if !ana.Dic[i][:num].HasSamePoker(exceptSet) {
+					resSet = resSet.AddPokers(ana.Dic[i][:num])
+				}
+			}
+			if resSet.GetLength() == num*count{
+				return resSet
+			}
+		}
+	}
+
 	return set.PokerSet{}
 }
 func (ana PokerAnalyzer) GetJokerBomb() set.PokerSet{

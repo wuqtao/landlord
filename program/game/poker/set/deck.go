@@ -1,6 +1,8 @@
 package set
 
-import "chessSever/program/game/poker/card"
+import (
+	"chessSever/program/game/poker/card"
+)
 
 //定义一副扑克牌
 type PokerDeck struct {

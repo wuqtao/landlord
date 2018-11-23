@@ -34,3 +34,13 @@ func BubbleSortCardsMin2Max(cards PokerSet,maxCard func (card1 *card.PokerCard,c
 	}
 }
 
+func BubbleSortIntMin2Max(ints []int){
+	length := len(ints)
+	for i :=0;i<length;i++{
+		for j := i;j < length;j++{
+			if ints[i] > ints[j]{
+				ints[i],ints[j] = ints[j],ints[i]
+			}
+		}
+	}
+}

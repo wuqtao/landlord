@@ -328,7 +328,28 @@ func (set PokerSet)CheckFourPlus() (*SetTypeInfo,error){
 			}
 		}
 		return nil,errors.New("不是四带牌")
-	}else{
+	}else if cardNumCount == 3{
+		mainValue := -1
+		for k,v := range cardNum{
+			if v == 4 {
+				mainValue = k
+			}
+			if pokersNum == 6{
+				if v == 2 || v == 3 || v == 5 || v == 6{
+					return nil,errors.New("不是四带牌")
+				}
+			}else{
+				if v == 1 || v == 3 || v == 5 || v == 6 {
+					return nil,errors.New("不是四带牌")
+				}
+			}
+		}
+		if pokersNum == 6 {
+			return NewSetInfo(POKERS_SET_TYPE_FOUR_PLUS_TWO,mainValue,mainValue),nil
+		}else{
+			return NewSetInfo(POKERS_SET_TYPE_FOUR_PLUS_FOUR,mainValue,mainValue),nil
+		}
+	} else{
 		return nil,errors.New("不是四带牌")
 	}
 }
@@ -343,8 +364,8 @@ func (set PokerSet)CheckMultiThreePlus() (*SetTypeInfo,error){
 	set.SortAsc()
 	cardNum := CheckEachCardNum(set)
 
-	mainCardValue := -1      //暂存主牌的value，用于比较是否连续
-	mainCardNum := 0        //主牌的数量
+	//mainCardValue := -1      //暂存主牌的value，用于比较是否连续
+	//mainCardNum := 0        //主牌的数量
 	mainCardValues := []int{}  //存放主牌的值
 	attachCardNum := 0    //附牌的数量
 	attachCardNumMap := make(map[int]int)  //附牌的value和num的map
@@ -352,22 +373,32 @@ func (set PokerSet)CheckMultiThreePlus() (*SetTypeInfo,error){
 	for k,v := range cardNum{
 		if v == 3{
 			mainCardValues = append(mainCardValues,k)
-			if mainCardValue == -1{
-				mainCardValue = k
-				mainCardNum++
-			}else{
-				if k == mainCardValue+1{
-					mainCardValue = k
-					mainCardNum++
-				}else{//主牌连不起来，不能作为三顺子
-					return nil,errors.New("不是三顺")
-				}
-			}
+			//if mainCardValue == -1{
+			//	mainCardValue = k
+			//	mainCardNum++
+			//}else{
+			//	if k == mainCardValue+1{
+			//		mainCardValue = k
+			//		mainCardNum++
+			//	}else{//主牌连不起来，不能作为三顺子
+			//		return nil,errors.New("不是三顺")
+			//	}
+			//}
 		}else{
 			attachCardNumMap[k] = v
 			attachCardNum += v
 		}
 	}
+
+	mainCardNum := len(mainCardValues)
+	BubbleSortIntMin2Max(mainCardValues)
+
+	for i:=0;i<mainCardNum-1;i++{
+		if mainCardValues[i]+1 != mainCardValues[i+1]{
+			return nil,errors.New("不是三顺")
+		}
+	}
+
 	//2和王不能参与连顺
 	if mainCardNum > 1 && mainCardValues[len(mainCardValues)-1] > card.POKER_VALUE_ACE{
 		return nil,errors.New("不是三顺")
@@ -401,8 +432,8 @@ func (set PokerSet)CheckMultiFourPlus() (*SetTypeInfo,error){
 	set.SortAsc()
 	cardNum := CheckEachCardNum(set)
 
-	mainCardValue := -1      //暂存主牌的value，用于比较是否连续
-	mainCardNum := 0        //主牌的数量
+	//mainCardValue := -1      //暂存主牌的value，用于比较是否连续
+	//mainCardNum := 0        //主牌的数量
 	mainCardValues := []int{}  //存放主牌的值
 	attachCardNum := 0      //附牌的数量
 	attachCardNumMap := make(map[int]int)  //附牌的value和num的map
@@ -410,20 +441,29 @@ func (set PokerSet)CheckMultiFourPlus() (*SetTypeInfo,error){
 	for k,v := range cardNum{
 		if v == 4{
 			mainCardValues = append(mainCardValues,k)
-			if mainCardValue == -1 {
-				mainCardValue = k
-				mainCardNum++
-			}else{
-				if k == mainCardValue+1{
-					mainCardValue = k
-					mainCardNum++
-				}else{//主牌连不起来，不能作为三顺子
-					return nil,errors.New("不是四顺")
-				}
-			}
+			//map遍历不能保证顺序输出，导致每次结果不一致，下面的判断方式，可能因为map的遍历的顺序产生不可预知的差异
+			//if mainCardValue == -1 {
+			//	mainCardValue = k
+			//	mainCardNum++
+			//}else{
+			//	if k == mainCardValue+1{
+			//		mainCardValue = k
+			//		mainCardNum++
+			//	}else{//主牌连不起来，不能作为三顺子
+			//		return nil,errors.New("不是四顺")
+			//	}
+			//}
 		}else{
 			attachCardNumMap[k] = v
 			attachCardNum += v
+		}
+	}
+	mainCardNum := len(mainCardValues)
+	BubbleSortIntMin2Max(mainCardValues)
+
+	for i:=0;i<mainCardNum-1;i++{
+		if mainCardValues[i]+1 != mainCardValues[i+1]{
+			return nil,errors.New("不是四顺")
 		}
 	}
 

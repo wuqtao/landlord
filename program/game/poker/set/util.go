@@ -21,14 +21,14 @@ func CheckEachCardNum(pokers PokerSet) map[int]int{
 }
 
 //判断一组牌中，不同数字的数量是否相同
-func IsUnsameCardNumSame(pokers PokerSet,cardIndexs []int) bool{
+func IsUnsameCardNumSame(pokers PokerSet) bool{
 	numMap := make(map[int]int)
-	for _,index := range cardIndexs{
-		_,ok := numMap[pokers[index].CardValue]
+	for _,v := range pokers{
+		_,ok := numMap[v.CardValue]
 		if ok {
-			numMap[pokers[index].CardValue]++
+			numMap[v.CardValue]++
 		}else{
-			numMap[pokers[index].CardValue] = 1
+			numMap[v.CardValue] = 1
 		}
 	}
 	temp := 0
@@ -43,7 +43,6 @@ func IsUnsameCardNumSame(pokers PokerSet,cardIndexs []int) bool{
 			}
 		}
 	}
-	temp++ //消除，定义未引用错误
 	return true
 }
 //判断一组牌中，给定索引的牌是否一样大小

@@ -727,9 +727,26 @@ func TestPokerSet_IsMultiPair(t *testing.T) {
 }
 
 func TestPokerSet_IsPair(t *testing.T) {
+	set := PokerSet{&dec.Cards[36],&dec.Cards[37]}
+	if !set.IsPair(){
+		t.Error("1")
+	}
 
+	set = PokerSet{&dec.Cards[36],&dec.Cards[40]}
+	if set.IsPair(){
+		t.Error("2")
+	}
 }
 
 func TestPokerSet_ReplacePoker(t *testing.T) {
+	set := PokerSet{&dec.Cards[36],&dec.Cards[37]}
+	err := set.ReplacePoker(0,&dec.Cards[0])
+	if err != nil{
+		t.Error("1")
+	}else{
+		if set[0] != &dec.Cards[0]{
+			t.Error("2")
+		}
+	}
 
 }

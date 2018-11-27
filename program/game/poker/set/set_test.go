@@ -3,12 +3,107 @@ package set
 import (
 	"testing"
 	"fmt"
+	"reflect"
+	"strconv"
 )
 
 var dec PokerDeck
 
 func init(){
 	dec = CreateDeck()
+}
+
+type Check struct{
+	setStr []string   //牌型字符串
+	isTrue bool       //是否检测的类型
+	setType int       //扑克集类型
+}
+
+func checkBool(t *testing.T,c []Check,funcName string){
+	for i,_ := range c{
+		set := getPokerset(c[i].setStr)
+		setInfo := reflect.ValueOf(set)
+		method := setInfo.MethodByName(funcName)
+		if method.String() == "<invalid Value>"{
+			t.Error("no this func "+funcName)
+		}else{
+			res := method.Call(nil)
+			if res[0].Interface().(bool) != c[i].isTrue{
+				t.Error(funcName+strconv.Itoa(i))
+			}
+		}
+	}
+}
+
+func checkBoolWithType(t *testing.T,c []Check,funcName string){
+	for i,_ := range c{
+		set := getPokerset(c[i].setStr)
+		setInfo := reflect.ValueOf(set)
+		method := setInfo.MethodByName(funcName)
+		if method.String() == "<invalid Value>"{
+			t.Error("no this func "+funcName)
+		}else{
+			res := method.Call(nil)
+			tempBool := false
+			if res[1].Interface() == nil{
+				tempBool = true
+			}
+
+			if tempBool != c[i].isTrue {
+				t.Error(funcName+" err"+strconv.Itoa(i))
+			}else{
+
+				if !c[i].isTrue{
+					continue
+				}
+
+				if res[0].Interface() != nil{
+					setTypeInfo,ok := res[0].Interface().(*SetTypeInfo)
+					if ok{
+						if setTypeInfo == nil || setTypeInfo.SetType != c[i].setType{
+							t.Error(funcName+" typeInfo "+strconv.Itoa(i))
+						}
+					}else{
+						t.Error(funcName+" typeInfo "+strconv.Itoa(i))
+					}
+				}else{
+					t.Error(funcName+" typeInfo "+strconv.Itoa(i))
+				}
+			}
+		}
+	}
+}
+
+//根据传入的字符数组，生成相应的扑克集，便于写测试用例
+//此处不区分花色
+func getPokerset(setString []string) PokerSet{
+	set := PokerSet{}
+	for _,name := range setString{
+		for i,card := range dec.Cards{
+			if card.GetCardName() == name{
+				set = append(set,&dec.Cards[i])
+				break
+			}
+		}
+	}
+	return set
+}
+//先测试生成扑克集的正确性
+func TestPokerSet_GetPokerset(t *testing.T){
+	test := []string{"3","4","5"}
+	set := getPokerset(test)
+	if set[0].CardName != test[0]{
+		t.Error("pokerset creator err")
+	}
+
+	if set[1].CardName != test[1]{
+		t.Error("pokerset creator err")
+	}
+
+	if set[2].CardName != test[2]{
+		t.Error("pokerset creator err")
+	}
+
 }
 func echoSets(set PokerSet){
 	for _,card := range set{
@@ -27,178 +122,53 @@ func TestPokerSet_AddPokers(t *testing.T) {
 }
 
 func TestPokerSet_CheckFourPlus(t *testing.T) {
-	set1 := PokerSet{&dec.Cards[0],&dec.Cards[1]}
-	_,err1 := set1.CheckFourPlus()
-	if err1 == nil{
-		echoSets(set1)
-		t.Error("四带拍检测错误err1")
+	checks := []Check{
+				Check{[]string{"3"},false,-1},
+				Check{[]string{"3","3"},false,-1},
+				Check{[]string{"3","3","3"},false,-1},
+				Check{[]string{"3","3","3","3"},false,-1},
+				Check{[]string{"3","3","3","3","4"},false,-1},
+				Check{[]string{"3","3","3","3","4","4"},true,POKERS_SET_TYPE_FOUR_PLUS_TWO},
+				Check{[]string{"3","3","3","3","4","5"},true,POKERS_SET_TYPE_FOUR_PLUS_TWO},
+				Check{[]string{"3","3","3","3","4","4","5"},false,-1},
+				Check{[]string{"3","3","3","3","4","4","5","5"},true,POKERS_SET_TYPE_FOUR_PLUS_FOUR},
+				Check{[]string{"3","3","3","3","5","5","5","5"},true,POKERS_SET_TYPE_FOUR_PLUS_FOUR},
+				Check{[]string{"3","3","3","3","4","4","5","6"},false,-1},
+				Check{[]string{"3","3","3","3","4","4","5","5","6"},false,-1},
 	}
 
-	set9 := PokerSet{&dec.Cards[0],&dec.Cards[1],&dec.Cards[2]}
-	_,err9 := set9.CheckFourPlus()
-	if err9 == nil{
-		echoSets(set9)
-		t.Error("四带拍检测错误err9")
-	}
-
-	set2 := PokerSet{&dec.Cards[0],&dec.Cards[1],&dec.Cards[2],&dec.Cards[3]}
-	_,err2 := set2.CheckFourPlus()
-	if err2 == nil{
-		echoSets(set2)
-		t.Error("四带拍检测错误err2")
-	}
-
-	set3 := PokerSet{&dec.Cards[0],&dec.Cards[1],&dec.Cards[2],&dec.Cards[3],&dec.Cards[4]}
-	_,err3 := set3.CheckFourPlus()
-	if err3 == nil{
-		echoSets(set3)
-		t.Error("四带拍检测错误err3")
-	}
-
-	set4 := PokerSet{&dec.Cards[0],&dec.Cards[1],&dec.Cards[2],&dec.Cards[3],&dec.Cards[4],&dec.Cards[5]}
-	typeInfo4,err := set4.CheckFourPlus()
-	if err != nil{
-		echoSets(set4)
-		t.Error("四带拍检测错误err4")
-	}else{
-		if typeInfo4.SetType != POKERS_SET_TYPE_FOUR_PLUS_TWO{
-			echoSets(set4)
-			t.Error("四带拍检测错误typeInfo4")
-		}
-	}
-
-
-	set5 := PokerSet{&dec.Cards[0],&dec.Cards[1],&dec.Cards[2],&dec.Cards[3],&dec.Cards[4],&dec.Cards[9]}
-	typeInfo5,err5 := set5.CheckFourPlus()
-	if err5 != nil{
-		echoSets(set5)
-		t.Error("四带拍检测错误err5")
-	}else{
-		if typeInfo5.SetType != POKERS_SET_TYPE_FOUR_PLUS_TWO{
-			echoSets(set5)
-			t.Error("四带拍检测错误typeInfo5")
-		}
-	}
-	
-	set6 := PokerSet{&dec.Cards[0],&dec.Cards[1],&dec.Cards[2],&dec.Cards[3],&dec.Cards[4],&dec.Cards[5],&dec.Cards[8],&dec.Cards[9]}
-	typeInfo6,err6 := set6.CheckFourPlus()
-	if err6 != nil{
-		echoSets(set6)
-		t.Error("四带拍检测错误err6")
-	}else{
-		if typeInfo6.SetType != POKERS_SET_TYPE_FOUR_PLUS_FOUR{
-			echoSets(set6)
-			t.Error("四带拍检测错误typeInfo6")
-		}
-	}
-
-	set7 := PokerSet{&dec.Cards[0],&dec.Cards[1],&dec.Cards[2],&dec.Cards[3],&dec.Cards[4],&dec.Cards[5],&dec.Cards[8]}
-	_,err7 := set7.CheckFourPlus()
-	if err7 == nil{
-		echoSets(set7)
-		t.Error("四带拍检测错误err7")
-	}
-
-	set8 := PokerSet{&dec.Cards[0],&dec.Cards[1],&dec.Cards[2],&dec.Cards[3],&dec.Cards[4],&dec.Cards[5],&dec.Cards[8],&dec.Cards[12]}
-	_,err8 := set8.CheckFourPlus()
-	if err8 == nil{
-		echoSets(set8)
-		t.Error("四带拍检测错误err8")
-	}
+	checkBoolWithType(t,checks,"CheckFourPlus")
 }
 
 func TestPokerSet_CheckMultiFourPlus(t *testing.T) {
-	set1 := PokerSet{&dec.Cards[0],&dec.Cards[1],&dec.Cards[2],&dec.Cards[3],
-					&dec.Cards[4],&dec.Cards[5],&dec.Cards[6],&dec.Cards[7],
-					&dec.Cards[8],&dec.Cards[9],&dec.Cards[10],&dec.Cards[11]}
-	typeInfo1,err1 := set1.CheckMultiFourPlus()
-	if err1 != nil{
-		echoSets(set1)
-		t.Error(err1.Error())
-		t.Error("CheckMultiFourPlus err1")
-	}else{
-		if typeInfo1.SetType != POKERS_SET_TYPE_MULITY_FOUR{
-			echoSets(set1)
-			t.Error("CheckMultiFourPlus typeInfo1")
-		}
+	checks := []Check{
+		Check{[]string{"3"},false,-1},
+		Check{[]string{"3","3"},false,-1},
+		Check{[]string{"3","3","3"},false,-1},
+		Check{[]string{"3","3","3","3"},false,-1},
+		Check{[]string{"3","3","3","3","4"},false,-1},
+
+		Check{[]string{"3","3","3","3","4","4","4","4"},true,POKERS_SET_TYPE_MULITY_FOUR},
+		Check{[]string{"3","3","3","3","4","4","4","4","5","5","5","5"},true,POKERS_SET_TYPE_MULITY_FOUR},
+		Check{[]string{"3","3","3","3","4","4","4","4","5"},false,-1},
+		Check{[]string{"3","3","3","3","4","4","4","4","5","5"},false,-1},
+		Check{[]string{"3","3","3","3","4","4","4","4","5","5","5"},false,-1},
+
+
+		Check{[]string{"3","3","3","3","4","4","4","4","5","5","6","6"},true,POKERS_SET_TYPE_MULITY_FOUR_PLUS_TWO},
+		Check{[]string{"3","3","3","3","4","4","4","4","5","5","6","7"},true,POKERS_SET_TYPE_MULITY_FOUR_PLUS_TWO},
+		Check{[]string{"3","3","3","3","4","4","4","4","5","6","7","8"},true,POKERS_SET_TYPE_MULITY_FOUR_PLUS_TWO},
+		Check{[]string{"3","3","3","3","4","4","4","4","6","6","6","6"},true,POKERS_SET_TYPE_MULITY_FOUR_PLUS_TWO},
+		Check{[]string{"3","3","3","3","4","4","4","4","5","6","7","8","9"},false,-1},
+
+		Check{[]string{"3","3","3","3","4","4","4","4","6","6","7","7","8","8","9","9"},true,POKERS_SET_TYPE_MULITY_FOUR_PLUS_FOUR},
+		Check{[]string{"3","3","3","3","4","4","4","4","6","6","7","7","7","7","9","9"},true,POKERS_SET_TYPE_MULITY_FOUR_PLUS_FOUR},
+		Check{[]string{"3","3","3","3","4","4","4","4","6","6","6","6","8","8","9","9"},true,POKERS_SET_TYPE_MULITY_FOUR_PLUS_FOUR},
+		Check{[]string{"3","3","3","3","4","4","4","4","6","6","6","6","8","8","8","8"},true,POKERS_SET_TYPE_MULITY_FOUR_PLUS_FOUR},
+
 	}
 
-	set2 := PokerSet{&dec.Cards[0],&dec.Cards[1],&dec.Cards[2],&dec.Cards[3],
-		&dec.Cards[16],&dec.Cards[17],&dec.Cards[18],&dec.Cards[19],
-		&dec.Cards[8],&dec.Cards[9],&dec.Cards[10],&dec.Cards[11]}
-
-	_,err2 := set2.CheckMultiFourPlus()
-	if err2 == nil{
-		echoSets(set2)
-		t.Error("CheckMultiFourPlus err2")
-	}
-
-	set3 := PokerSet{&dec.Cards[0],&dec.Cards[1],&dec.Cards[2],&dec.Cards[3],
-		&dec.Cards[4],&dec.Cards[5],&dec.Cards[6],&dec.Cards[7],
-		&dec.Cards[8],&dec.Cards[12],&dec.Cards[16],&dec.Cards[20]}
-	typeInfo3,err3 := set3.CheckMultiFourPlus()
-	if err3 != nil{
-		echoSets(set3)
-		t.Error("CheckMultiFourPlus err3")
-	}else{
-		if typeInfo3.SetType != POKERS_SET_TYPE_MULITY_FOUR_PLUS_TWO{
-			echoSets(set3)
-			t.Error("CheckMultiFourPlus typeInfo3")
-		}
-	}
-
-	set7 := PokerSet{&dec.Cards[0],&dec.Cards[1],&dec.Cards[2],&dec.Cards[3],
-		&dec.Cards[4],&dec.Cards[5],&dec.Cards[6],&dec.Cards[7],
-		&dec.Cards[8],&dec.Cards[9],&dec.Cards[16],&dec.Cards[20]}
-	typeInfo7,err7 := set7.CheckMultiFourPlus()
-	if err7 != nil{
-		echoSets(set7)
-		t.Error("CheckMultiFourPlus err7")
-	}else{
-		if typeInfo7.SetType != POKERS_SET_TYPE_MULITY_FOUR_PLUS_TWO{
-			echoSets(set7)
-			t.Error("CheckMultiFourPlus typeInfo7")
-		}
-	}
-
-	set4 := PokerSet{&dec.Cards[0],&dec.Cards[1],&dec.Cards[2],&dec.Cards[3],
-		&dec.Cards[4],&dec.Cards[5],&dec.Cards[6],&dec.Cards[7],
-		&dec.Cards[8],&dec.Cards[9],&dec.Cards[16],&dec.Cards[17]}
-	typeInfo4,err4 := set4.CheckMultiFourPlus()
-	if err4 != nil{
-		echoSets(set4)
-		t.Error("CheckMultiFourPlus err4")
-	}else{
-		if typeInfo4.SetType != POKERS_SET_TYPE_MULITY_FOUR_PLUS_TWO{
-			echoSets(set4)
-			t.Error("CheckMultiFourPlus typeInfo4")
-		}
-	}
-
-	set5 := PokerSet{&dec.Cards[0],&dec.Cards[1],&dec.Cards[2],&dec.Cards[3],
-		&dec.Cards[4],&dec.Cards[5],&dec.Cards[6],&dec.Cards[7],
-		&dec.Cards[8],&dec.Cards[9],&dec.Cards[16],&dec.Cards[17],
-		&dec.Cards[20],&dec.Cards[21],&dec.Cards[24],&dec.Cards[25]}
-	typeInfo5,err5 := set5.CheckMultiFourPlus()
-	if err5 != nil{
-		echoSets(set5)
-		t.Error("CheckMultiFourPlus err5")
-	}else{
-		if typeInfo5.SetType != POKERS_SET_TYPE_MULITY_FOUR_PLUS_FOUR{
-			echoSets(set5)
-			t.Error("CheckMultiFourPlus typeInfo5")
-		}
-	}
-
-	set8 := PokerSet{&dec.Cards[0],&dec.Cards[1],&dec.Cards[2],&dec.Cards[3],
-		&dec.Cards[4],&dec.Cards[5],&dec.Cards[6],&dec.Cards[7],
-		&dec.Cards[8],&dec.Cards[18],&dec.Cards[16],&dec.Cards[17],
-		&dec.Cards[20],&dec.Cards[21],&dec.Cards[24],&dec.Cards[25]}
-	_,err8 := set8.CheckMultiFourPlus()
-	if err8 == nil{
-		echoSets(set8)
-		t.Error("CheckMultiFourPlus err8")
-	}
+	checkBoolWithType(t,checks,"CheckMultiFourPlus")
 }
 
 func TestPokerSet_CheckMultiThreePlus(t *testing.T) {

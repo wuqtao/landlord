@@ -318,18 +318,46 @@ func (set PokerSet)CheckFourPlus() (*SetTypeInfo,error){
 	cardNum := CheckEachCardNum(set)
 	cardNumCount := len(cardNum)
 	if cardNumCount == 2{
+		k1 := -1
+		v1 := -1
+		k2 := -1
+		v2 := -1
+		i := 1
 		for k,v := range cardNum{
-			if v == 4{
-				if pokersNum == 6{
-					//支持444455这种四带二
-					return NewSetInfo(POKERS_SET_TYPE_FOUR_PLUS_TWO,k,k),nil
+			if i == 1{
+				k1 = k
+				v1 = v
+			}else{
+				k2 = k
+				v2 = v
+			}
+			i++
+		}
+
+		if pokersNum == 6{
+			//支持444455这种四带二
+			if v1 == 4{
+				return NewSetInfo(POKERS_SET_TYPE_FOUR_PLUS_TWO,k1,k1),nil
+			}else if v2 == 4{
+				return NewSetInfo(POKERS_SET_TYPE_FOUR_PLUS_TWO,k2,k2),nil
+			}else{
+				return nil,errors.New("不是四带牌")
+			}
+		}else{
+			//不支持44445555这种连续四带四的牌,因为没法判断是四带四还是多连四
+			//支持44446666这种牌型，以大的作为主牌，即四个6带两对4
+			if v1 == 4 && k1 != k2+1 && k2 != k1+1{
+				k := -1
+				if k1 > k2 {
+					k = k1
 				}else{
-					//不支持44446666这种四带四的牌
-					//return NewSetInfo(POKERS_SET_TYPE_FOUR_PLUS_FOUR,k,k),nil
+					k = k2
 				}
+				return NewSetInfo(POKERS_SET_TYPE_FOUR_PLUS_FOUR,k,k),nil
+			}else{
+				return nil,errors.New("不是四带牌")
 			}
 		}
-		return nil,errors.New("不是四带牌")
 	}else if cardNumCount == 3{
 		mainValue := -1
 		for k,v := range cardNum{

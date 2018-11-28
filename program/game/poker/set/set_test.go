@@ -2,7 +2,6 @@ package set
 
 import (
 	"testing"
-	"fmt"
 	"reflect"
 	"strconv"
 )
@@ -20,7 +19,7 @@ type Check struct{
 }
 
 func checkBool(t *testing.T,c []Check,funcName string){
-	for i,_ := range c{
+	for i := range c{
 		set := getPokerset(c[i].setStr)
 		setInfo := reflect.ValueOf(set)
 		method := setInfo.MethodByName(funcName)
@@ -36,7 +35,7 @@ func checkBool(t *testing.T,c []Check,funcName string){
 }
 
 func checkBoolWithType(t *testing.T,c []Check,funcName string){
-	for i,_ := range c{
+	for i := range c{
 		set := getPokerset(c[i].setStr)
 		setInfo := reflect.ValueOf(set)
 		method := setInfo.MethodByName(funcName)
@@ -109,15 +108,9 @@ func TestPokerSet_GetPokerset(t *testing.T){
 	}
 
 }
-func echoSets(set PokerSet){
-	for _,card := range set{
-		fmt.Print(card)
-	}
-	fmt.Println("")
-}
 func TestPokerSet_AddPokers(t *testing.T) {
 	set1 := PokerSet{}
-	for i,_ := range dec.Cards{
+	for i := range dec.Cards{
 		if set1.GetLength() != i{
 			t.Error("addPokers长度不匹配")
 		}
@@ -127,18 +120,19 @@ func TestPokerSet_AddPokers(t *testing.T) {
 
 func TestPokerSet_CheckFourPlus(t *testing.T) {
 	checks := []Check{
-				Check{[]string{"3"},false,-1},
-				Check{[]string{"3","3"},false,-1},
-				Check{[]string{"3","3","3"},false,-1},
-				Check{[]string{"3","3","3","3"},false,-1},
-				Check{[]string{"3","3","3","3","4"},false,-1},
-				Check{[]string{"3","3","3","3","4","4"},true,POKERS_SET_TYPE_FOUR_PLUS_TWO},
-				Check{[]string{"3","3","3","3","4","5"},true,POKERS_SET_TYPE_FOUR_PLUS_TWO},
-				Check{[]string{"3","3","3","3","4","4","5"},false,-1},
-				Check{[]string{"3","3","3","3","4","4","5","5"},true,POKERS_SET_TYPE_FOUR_PLUS_FOUR},
-				Check{[]string{"3","3","3","3","5","5","5","5"},true,POKERS_SET_TYPE_FOUR_PLUS_FOUR},
-				Check{[]string{"3","3","3","3","4","4","5","6"},false,-1},
-				Check{[]string{"3","3","3","3","4","4","5","5","6"},false,-1},
+				{[]string{"3"},false,-1},
+				{[]string{"3","3"},false,-1},
+				{[]string{"3","3","3"},false,-1},
+				{[]string{"3","3","3","3"},false,-1},
+				{[]string{"3","3","3","3","4"},false,-1},
+				{[]string{"3","3","3","3","4","4"},true,POKERS_SET_TYPE_FOUR_PLUS_TWO},
+				{[]string{"3","3","3","3","4","5"},true,POKERS_SET_TYPE_FOUR_PLUS_TWO},
+				{[]string{"3","3","3","3","4","4","5"},false,-1},
+				{[]string{"3","3","3","3","4","4","5","5"},true,POKERS_SET_TYPE_FOUR_PLUS_FOUR},
+				{[]string{"3","3","3","3","5","5","5","5"},true,POKERS_SET_TYPE_FOUR_PLUS_FOUR},
+				{[]string{"3","3","3","3","4","4","4","4"},false,-1},
+				{[]string{"3","3","3","3","4","4","5","6"},false,-1},
+				{[]string{"3","3","3","3","4","4","5","5","6"},false,-1},
 	}
 
 	checkBoolWithType(t,checks,"CheckFourPlus")
@@ -146,33 +140,33 @@ func TestPokerSet_CheckFourPlus(t *testing.T) {
 
 func TestPokerSet_CheckMultiFourPlus(t *testing.T) {
 	checks := []Check{
-		Check{[]string{"3"},false,-1},
-		Check{[]string{"3","3"},false,-1},
-		Check{[]string{"3","3","3"},false,-1},
-		Check{[]string{"3","3","3","3"},false,-1},
-		Check{[]string{"3","3","3","3","4"},false,-1},
+		{[]string{"3"},false,-1},
+		{[]string{"3","3"},false,-1},
+		{[]string{"3","3","3"},false,-1},
+		{[]string{"3","3","3","3"},false,-1},
+		{[]string{"3","3","3","3","4"},false,-1},
 
-		Check{[]string{"3","3","3","3","4","4","4","4"},true,POKERS_SET_TYPE_MULITY_FOUR},
-		Check{[]string{"3","3","3","3","4","4","4","4","5","5","5","5"},true,POKERS_SET_TYPE_MULITY_FOUR},
-		Check{[]string{"3","3","3","3","4","4","4","4","5"},false,-1},
-		Check{[]string{"3","3","3","3","4","4","4","4","5","5"},false,-1},
-		Check{[]string{"3","3","3","3","4","4","4","4","5","5","5"},false,-1},
+		{[]string{"3","3","3","3","4","4","4","4"},true,POKERS_SET_TYPE_MULITY_FOUR},
+		{[]string{"3","3","3","3","4","4","4","4","5","5","5","5"},true,POKERS_SET_TYPE_MULITY_FOUR},
+		{[]string{"3","3","3","3","4","4","4","4","5"},false,-1},
+		{[]string{"3","3","3","3","4","4","4","4","5","5"},false,-1},
+		{[]string{"3","3","3","3","4","4","4","4","5","5","5"},false,-1},
 
 
-		Check{[]string{"3","3","3","3","4","4","4","4","5","5","6","6"},true,POKERS_SET_TYPE_MULITY_FOUR_PLUS_TWO},
-		Check{[]string{"3","3","3","3","4","4","4","4","5","5","6","7"},true,POKERS_SET_TYPE_MULITY_FOUR_PLUS_TWO},
-		Check{[]string{"3","3","3","3","4","4","4","4","5","6","7","8"},true,POKERS_SET_TYPE_MULITY_FOUR_PLUS_TWO},
-		Check{[]string{"3","3","3","3","4","4","4","4","6","6","6","6"},true,POKERS_SET_TYPE_MULITY_FOUR_PLUS_TWO},
-		Check{[]string{"3","3","3","3","4","4","4","4","5","6","7","8","9"},false,-1},
+		{[]string{"3","3","3","3","4","4","4","4","5","5","6","6"},true,POKERS_SET_TYPE_MULITY_FOUR_PLUS_TWO},
+		{[]string{"3","3","3","3","4","4","4","4","5","5","6","7"},true,POKERS_SET_TYPE_MULITY_FOUR_PLUS_TWO},
+		{[]string{"3","3","3","3","4","4","4","4","5","6","7","8"},true,POKERS_SET_TYPE_MULITY_FOUR_PLUS_TWO},
+		{[]string{"3","3","3","3","4","4","4","4","6","6","6","6"},true,POKERS_SET_TYPE_MULITY_FOUR_PLUS_TWO},
+		{[]string{"3","3","3","3","4","4","4","4","5","6","7","8","9"},false,-1},
 
-		Check{[]string{"3","3","3","3","4","4","4","4","6","6","7","7","8","8","9","9"},true,POKERS_SET_TYPE_MULITY_FOUR_PLUS_FOUR},
-		Check{[]string{"3","3","3","3","4","4","4","4","6","6","7","7","7","7","9","9"},true,POKERS_SET_TYPE_MULITY_FOUR_PLUS_FOUR},
-		Check{[]string{"3","3","3","3","4","4","4","4","6","6","6","6","8","8","9","9"},true,POKERS_SET_TYPE_MULITY_FOUR_PLUS_FOUR},
-		Check{[]string{"3","3","3","3","4","4","4","4","6","6","6","6","8","8","8","8"},true,POKERS_SET_TYPE_MULITY_FOUR_PLUS_FOUR},
-		Check{[]string{"A","A","A","A","2","2","2","2"},false,-1},
-		Check{[]string{"K","K","K","K","A","A","A","A"},true,POKERS_SET_TYPE_MULITY_FOUR},
-		Check{[]string{"A","A","A","A","2","2","2","2","3","3","4","4","5","5","6","6"},false,-1},
-		Check{[]string{"A","A","A","A","2","2","2","2","3","4","5","6"},false,-1},
+		{[]string{"3","3","3","3","4","4","4","4","6","6","7","7","8","8","9","9"},true,POKERS_SET_TYPE_MULITY_FOUR_PLUS_FOUR},
+		{[]string{"3","3","3","3","4","4","4","4","6","6","7","7","7","7","9","9"},true,POKERS_SET_TYPE_MULITY_FOUR_PLUS_FOUR},
+		{[]string{"3","3","3","3","4","4","4","4","6","6","6","6","8","8","9","9"},true,POKERS_SET_TYPE_MULITY_FOUR_PLUS_FOUR},
+		{[]string{"3","3","3","3","4","4","4","4","6","6","6","6","8","8","8","8"},true,POKERS_SET_TYPE_MULITY_FOUR_PLUS_FOUR},
+		{[]string{"A","A","A","A","2","2","2","2"},false,-1},
+		{[]string{"K","K","K","K","A","A","A","A"},true,POKERS_SET_TYPE_MULITY_FOUR},
+		{[]string{"A","A","A","A","2","2","2","2","3","3","4","4","5","5","6","6"},false,-1},
+		{[]string{"A","A","A","A","2","2","2","2","3","4","5","6"},false,-1},
 	}
 
 	checkBoolWithType(t,checks,"CheckMultiFourPlus")
@@ -180,26 +174,26 @@ func TestPokerSet_CheckMultiFourPlus(t *testing.T) {
 
 func TestPokerSet_CheckMultiThreePlus(t *testing.T) {
 	checks := []Check{
-		Check{[]string{"3"},false,-1},
-		Check{[]string{"3","3"},false,-1},
-		Check{[]string{"3","3","3"},false,-1},
-		Check{[]string{"3","3","3","3"},false,-1},
-		Check{[]string{"3","3","3","3","4"},false,-1},
-		Check{[]string{"3","3","3","3","4","4"},false,-1},
-		Check{[]string{"3","3","3","3","4","5"},false,-1},
-		Check{[]string{"3","3","3","4","4","4"},true,POKERS_SET_TYPE_MULITY_THREE},
-		Check{[]string{"3","3","3","4","4","4","5","5"},true,POKERS_SET_TYPE_MULITY_THREE_PLUS_ONE},
-		Check{[]string{"3","3","3","4","4","4","5","6"},true,POKERS_SET_TYPE_MULITY_THREE_PLUS_ONE},
-		Check{[]string{"3","3","3","4","4","4","4","6"},true,POKERS_SET_TYPE_MULITY_THREE_PLUS_ONE},
-		Check{[]string{"3","3","3","5","5","5","6","6","6","6"},true,POKERS_SET_TYPE_MULITY_THREE_PLUS_TWO},
-		Check{[]string{"3","3","3","5","5","5","6","6","7","7"},true,POKERS_SET_TYPE_MULITY_THREE_PLUS_TWO},
-		Check{[]string{"3","3","3","5","5","5","6","6","7","8"},false,-1},
-		Check{[]string{"3","3","3","5","5","5","6","9","7","8"},false,-1},
-		Check{[]string{"3","3","3","4","4","4","6","6","6"},false,-1},
-		Check{[]string{"A","A","A","2","2","2"},false,-1},
-		Check{[]string{"A","A","A","2","2","2","3","4"},false,-1},
-		Check{[]string{"A","A","A","2","2","2","3","3","4","4"},false,-1},
-		Check{[]string{"k","k","k","A","A","A"},true,POKERS_SET_TYPE_MULITY_THREE},
+		{[]string{"3"},false,-1},
+		{[]string{"3","3"},false,-1},
+		{[]string{"3","3","3"},false,-1},
+		{[]string{"3","3","3","3"},false,-1},
+		{[]string{"3","3","3","3","4"},false,-1},
+		{[]string{"3","3","3","3","4","4"},false,-1},
+		{[]string{"3","3","3","3","4","5"},false,-1},
+		{[]string{"3","3","3","4","4","4"},true,POKERS_SET_TYPE_MULITY_THREE},
+		{[]string{"3","3","3","4","4","4","5","5"},true,POKERS_SET_TYPE_MULITY_THREE_PLUS_ONE},
+		{[]string{"3","3","3","4","4","4","5","6"},true,POKERS_SET_TYPE_MULITY_THREE_PLUS_ONE},
+		{[]string{"3","3","3","4","4","4","4","6"},true,POKERS_SET_TYPE_MULITY_THREE_PLUS_ONE},
+		{[]string{"3","3","3","5","5","5","6","6","6","6"},true,POKERS_SET_TYPE_MULITY_THREE_PLUS_TWO},
+		{[]string{"3","3","3","5","5","5","6","6","7","7"},true,POKERS_SET_TYPE_MULITY_THREE_PLUS_TWO},
+		{[]string{"3","3","3","5","5","5","6","6","7","8"},false,-1},
+		{[]string{"3","3","3","5","5","5","6","9","7","8"},false,-1},
+		{[]string{"3","3","3","4","4","4","6","6","6"},false,-1},
+		{[]string{"A","A","A","2","2","2"},false,-1},
+		{[]string{"A","A","A","2","2","2","3","4"},false,-1},
+		{[]string{"A","A","A","2","2","2","3","3","4","4"},false,-1},
+		{[]string{"k","k","k","A","A","A"},true,POKERS_SET_TYPE_MULITY_THREE},
 	}
 
 	checkBoolWithType(t,checks,"CheckMultiThreePlus")
@@ -207,12 +201,12 @@ func TestPokerSet_CheckMultiThreePlus(t *testing.T) {
 
 func TestPokerSet_CheckThreePlus(t *testing.T) {
 	checks := []Check{
-		Check{[]string{"3"},false,-1},
-		Check{[]string{"3","3"},false,-1},
-		Check{[]string{"3","3","3"},true,POKERS_SET_TYPE_THREE},
-		Check{[]string{"3","3","3","4"},true,POKERS_SET_TYPE_THREE_PLUS_ONE},
-		Check{[]string{"3","3","3","4","4"},true,POKERS_SET_TYPE_THREE_PLUS_TWO},
-		Check{[]string{"3","3","4","4","5"},false,-1},
+		{[]string{"3"},false,-1},
+		{[]string{"3","3"},false,-1},
+		{[]string{"3","3","3"},true,POKERS_SET_TYPE_THREE},
+		{[]string{"3","3","3","4"},true,POKERS_SET_TYPE_THREE_PLUS_ONE},
+		{[]string{"3","3","3","4","4"},true,POKERS_SET_TYPE_THREE_PLUS_TWO},
+		{[]string{"3","3","4","4","5"},false,-1},
 	}
 
 	checkBoolWithType(t,checks,"CheckMultiThreePlus")
@@ -312,9 +306,9 @@ func TestPokerSet_HasSamePoker(t *testing.T) {
 
 func TestPokerSet_IsCommonBomb(t *testing.T) {
 	checks := []Check{
-		Check{[]string{"3","3","3","3"},true,-1},
-		Check{[]string{"2","2","2","2"},true,-1},
-		Check{[]string{"3","3","3","4"},false,-1},
+		{[]string{"3","3","3","3"},true,-1},
+		{[]string{"2","2","2","2"},true,-1},
+		{[]string{"3","3","3","4"},false,-1},
 	}
 
 	checkBool(t,checks,"IsCommonBomb")
@@ -322,13 +316,13 @@ func TestPokerSet_IsCommonBomb(t *testing.T) {
 
 func TestPokerSet_IsDragon(t *testing.T) {
 	checks := []Check{
-		Check{[]string{"3","4","5","6"},false,-1},
-		Check{[]string{"3","4","5","6","7"},true,-1},
-		Check{[]string{"3","4","5","6","7","8"},true,-1},
-		Check{[]string{"3","4","5","6","7","8","9"},true,-1},
-		Check{[]string{"10","J","Q","K","A"},true,-1},
-		Check{[]string{"10","J","Q","K","A","2"},false,-1},
-		Check{[]string{"10","J","Q","K","A","2","BlackJoker"},false,-1},
+		{[]string{"3","4","5","6"},false,-1},
+		{[]string{"3","4","5","6","7"},true,-1},
+		{[]string{"3","4","5","6","7","8"},true,-1},
+		{[]string{"3","4","5","6","7","8","9"},true,-1},
+		{[]string{"10","J","Q","K","A"},true,-1},
+		{[]string{"10","J","Q","K","A","2"},false,-1},
+		{[]string{"10","J","Q","K","A","2","BlackJoker"},false,-1},
 	}
 
 	checkBool(t,checks,"IsDragon")
@@ -336,10 +330,10 @@ func TestPokerSet_IsDragon(t *testing.T) {
 
 func TestPokerSet_IsJokerBomb(t *testing.T) {
 	checks := []Check{
-		Check{[]string{"3","4","5","6"},false,-1},
-		Check{[]string{"BlackJoker","RedJoker"},true,-1},
-		Check{[]string{"BlackJoker","BlackJoker"},false,-1},
-		Check{[]string{"RedJoker","RedJoker"},false,-1},
+		{[]string{"3","4","5","6"},false,-1},
+		{[]string{"BlackJoker","RedJoker"},true,-1},
+		{[]string{"BlackJoker","BlackJoker"},false,-1},
+		{[]string{"RedJoker","RedJoker"},false,-1},
 	}
 
 	checkBool(t,checks,"IsJokerBomb")
@@ -347,11 +341,11 @@ func TestPokerSet_IsJokerBomb(t *testing.T) {
 
 func TestPokerSet_IsMultiPair(t *testing.T) {
 	checks := []Check{
-		Check{[]string{"3","4","5","6"},false,-1},
-		Check{[]string{"3","3","4","4"},false,-1},
-		Check{[]string{"3","3","4","4","5","5"},true,-1},
-		Check{[]string{"3","3","4","4","5","5","6","6"},true,-1},
-		Check{[]string{"3","3","4","4","5","5","7","7"},false,-1},
+		{[]string{"3","4","5","6"},false,-1},
+		{[]string{"3","3","4","4"},false,-1},
+		{[]string{"3","3","4","4","5","5"},true,-1},
+		{[]string{"3","3","4","4","5","5","6","6"},true,-1},
+		{[]string{"3","3","4","4","5","5","7","7"},false,-1},
 	}
 
 	checkBool(t,checks,"IsMultiPair")
@@ -359,9 +353,9 @@ func TestPokerSet_IsMultiPair(t *testing.T) {
 
 func TestPokerSet_IsPair(t *testing.T) {
 	checks := []Check{
-		Check{[]string{"3","4"},false,-1},
-		Check{[]string{"3","3"},true,-1},
-		Check{[]string{"BlackJoker","RedJoker"},false,-1},
+		{[]string{"3","4"},false,-1},
+		{[]string{"3","3"},true,-1},
+		{[]string{"BlackJoker","RedJoker"},false,-1},
 	}
 
 	checkBool(t,checks,"IsPair")
@@ -381,25 +375,25 @@ func TestPokerSet_ReplacePoker(t *testing.T) {
 
 func TestPokerSet_GetSetTypeInfo(t *testing.T) {
 	checks := []Check{
-		Check{[]string{"3"}, true, POKERS_SET_TYPE_SINGLE},
-		Check{[]string{"3", "3"}, true, POKERS_SET_TYPE_PAIR},
-		Check{[]string{"3", "3", "4", "4", "5", "5"}, true, POKERS_SET_TYPE_MULIT_PAIRS},
-		Check{[]string{"3", "3", "3"}, true, POKERS_SET_TYPE_THREE},
-		Check{[]string{"3", "3", "3", "4"}, true, POKERS_SET_TYPE_THREE_PLUS_ONE},
-		Check{[]string{"3", "3", "3", "4", "4"}, true, POKERS_SET_TYPE_THREE_PLUS_TWO},
-		Check{[]string{"3", "3", "3", "4", "4", "4"}, true, POKERS_SET_TYPE_MULITY_THREE},
-		Check{[]string{"3", "3", "3", "4", "4", "4", "5", "6"}, true, POKERS_SET_TYPE_MULITY_THREE_PLUS_ONE},
-		Check{[]string{"3", "3", "3", "4", "4", "4", "5", "6", "5", "6"}, true, POKERS_SET_TYPE_MULITY_THREE_PLUS_TWO},
+		{[]string{"3"}, true, POKERS_SET_TYPE_SINGLE},
+		{[]string{"3", "3"}, true, POKERS_SET_TYPE_PAIR},
+		{[]string{"3", "3", "4", "4", "5", "5"}, true, POKERS_SET_TYPE_MULIT_PAIRS},
+		{[]string{"3", "3", "3"}, true, POKERS_SET_TYPE_THREE},
+		{[]string{"3", "3", "3", "4"}, true, POKERS_SET_TYPE_THREE_PLUS_ONE},
+		{[]string{"3", "3", "3", "4", "4"}, true, POKERS_SET_TYPE_THREE_PLUS_TWO},
+		{[]string{"3", "3", "3", "4", "4", "4"}, true, POKERS_SET_TYPE_MULITY_THREE},
+		{[]string{"3", "3", "3", "4", "4", "4", "5", "6"}, true, POKERS_SET_TYPE_MULITY_THREE_PLUS_ONE},
+		{[]string{"3", "3", "3", "4", "4", "4", "5", "6", "5", "6"}, true, POKERS_SET_TYPE_MULITY_THREE_PLUS_TWO},
 
-		Check{[]string{"3", "3", "3", "3"}, true, POKERS_SET_TYPE_COMMON_BOMB},
-		Check{[]string{"3", "3", "3", "3", "4", "5"}, true, POKERS_SET_TYPE_FOUR_PLUS_TWO},
-		Check{[]string{"3", "3", "3", "3", "4", "4", "5", "5"}, true, POKERS_SET_TYPE_FOUR_PLUS_FOUR},
-		Check{[]string{"3", "3", "3", "3", "4", "4", "4", "4"}, true, POKERS_SET_TYPE_MULITY_FOUR},
-		Check{[]string{"3", "3", "3", "3", "4", "4", "4", "4", "5", "6", "7", "8"}, true, POKERS_SET_TYPE_MULITY_FOUR_PLUS_TWO},
-		Check{[]string{"3", "3", "3", "3", "4", "4", "4", "4", "5", "5", "6", "6", "7", "7", "8", "8"}, true, POKERS_SET_TYPE_MULITY_FOUR_PLUS_FOUR},
+		{[]string{"3", "3", "3", "3"}, true, POKERS_SET_TYPE_COMMON_BOMB},
+		{[]string{"3", "3", "3", "3", "4", "5"}, true, POKERS_SET_TYPE_FOUR_PLUS_TWO},
+		{[]string{"3", "3", "3", "3", "4", "4", "5", "5"}, true, POKERS_SET_TYPE_FOUR_PLUS_FOUR},
+		{[]string{"3", "3", "3", "3", "4", "4", "4", "4"}, true, POKERS_SET_TYPE_MULITY_FOUR},
+		{[]string{"3", "3", "3", "3", "4", "4", "4", "4", "5", "6", "7", "8"}, true, POKERS_SET_TYPE_MULITY_FOUR_PLUS_TWO},
+		{[]string{"3", "3", "3", "3", "4", "4", "4", "4", "5", "5", "6", "6", "7", "7", "8", "8"}, true, POKERS_SET_TYPE_MULITY_FOUR_PLUS_FOUR},
 
-		Check{[]string{"3", "4", "5", "6", "7", "8"}, true, POKERS_SET_TYPE_DRAGON},
-		Check{[]string{"BlackJoker", "RedJoker"}, true, POKERS_SET_TYPE_JOKER_BOMB},
+		{[]string{"3", "4", "5", "6", "7", "8"}, true, POKERS_SET_TYPE_DRAGON},
+		{[]string{"BlackJoker", "RedJoker"}, true, POKERS_SET_TYPE_JOKER_BOMB},
 	}
 
 	checkBoolWithType(t, checks, "GetSetTypeInfo")

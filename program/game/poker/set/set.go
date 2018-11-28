@@ -321,9 +321,11 @@ func (set PokerSet)CheckFourPlus() (*SetTypeInfo,error){
 		for k,v := range cardNum{
 			if v == 4{
 				if pokersNum == 6{
+					//支持444455这种四带二
 					return NewSetInfo(POKERS_SET_TYPE_FOUR_PLUS_TWO,k,k),nil
 				}else{
-					return NewSetInfo(POKERS_SET_TYPE_FOUR_PLUS_FOUR,k,k),nil
+					//不支持44446666这种四带四的牌
+					//return NewSetInfo(POKERS_SET_TYPE_FOUR_PLUS_FOUR,k,k),nil
 				}
 			}
 		}
@@ -344,10 +346,16 @@ func (set PokerSet)CheckFourPlus() (*SetTypeInfo,error){
 				}
 			}
 		}
-		if pokersNum == 6 {
-			return NewSetInfo(POKERS_SET_TYPE_FOUR_PLUS_TWO,mainValue,mainValue),nil
+		if mainValue == -1{
+			return nil,errors.New("不是四带牌")
 		}else{
-			return NewSetInfo(POKERS_SET_TYPE_FOUR_PLUS_FOUR,mainValue,mainValue),nil
+			if pokersNum == 6 {
+				//四带二444456这种
+				return NewSetInfo(POKERS_SET_TYPE_FOUR_PLUS_TWO,mainValue,mainValue),nil
+			}else{
+				//四带四44445566这种
+				return NewSetInfo(POKERS_SET_TYPE_FOUR_PLUS_FOUR,mainValue,mainValue),nil
+			}
 		}
 	} else{
 		return nil,errors.New("不是四带牌")

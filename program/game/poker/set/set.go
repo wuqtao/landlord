@@ -409,49 +409,62 @@ func (set PokerSet)CheckMultiThreePlus() (*SetTypeInfo,error){
 	for k,v := range cardNum{
 		if v == 3{
 			mainCardValues = append(mainCardValues,k)
-			//if mainCardValue == -1{
-			//	mainCardValue = k
-			//	mainCardNum++
-			//}else{
-			//	if k == mainCardValue+1{
-			//		mainCardValue = k
-			//		mainCardNum++
-			//	}else{//主牌连不起来，不能作为三顺子
-			//		return nil,errors.New("不是三顺")
-			//	}
-			//}
 		}else{
 			attachCardNumMap[k] = v
 			attachCardNum += v
 		}
 	}
-
-	mainCardNum := len(mainCardValues)
 	BubbleSortIntMin2Max(mainCardValues)
-
-	for i:=0;i<mainCardNum-1;i++{
-		if mainCardValues[i]+1 != mainCardValues[i+1]{
-			return nil,errors.New("不是三顺")
+	//只包含连续的主牌的数量，不连续的同数量的当做附牌对待
+	realMainCardValues := []int{}
+	//主牌连续，且只有一个连续的，其他的间断连续作为附牌处理
+	for i,value := range mainCardValues{
+		if i < len(mainCardValues)-1 && mainCardValues[i] + 1 == mainCardValues[i+1]{
+			if len(realMainCardValues) > 0 && value == realMainCardValues[len(realMainCardValues)-1]+1{
+				realMainCardValues = append(realMainCardValues,value)
+			}else if len(realMainCardValues) == 0{
+				realMainCardValues = append(realMainCardValues,value)
+			}else{
+				attachCardNumMap[value] = 3
+				attachCardNum += 3
+			}
+		}else if i > 0 && mainCardValues[i] == mainCardValues[i-1]+1{
+			if len(realMainCardValues) > 0 && value == realMainCardValues[len(realMainCardValues)-1]+1{
+				realMainCardValues = append(realMainCardValues,value)
+			}else if len(realMainCardValues) == 0{
+				realMainCardValues = append(realMainCardValues,value)
+			}else{
+				attachCardNumMap[value] = 3
+				attachCardNum += 3
+			}
+		}else{//该值的牌作为附牌对待
+			attachCardNumMap[value] = 3
+			attachCardNum += 3
 		}
 	}
 
+	mainCardNum := len(realMainCardValues)
+	if mainCardNum < 2 {//未构成连续牌型
+		return nil,errors.New("不是三顺")
+	}
+
 	//2和王不能参与连顺
-	if mainCardNum > 1 && mainCardValues[len(mainCardValues)-1] > card.POKER_VALUE_ACE{
+	if mainCardNum > 1 && realMainCardValues[len(realMainCardValues)-1] > card.POKER_VALUE_ACE{
 		return nil,errors.New("不是三顺")
 	}
 
 	//没有附牌
 	if attachCardNum == 0{
-		return NewSetInfo(POKERS_SET_TYPE_MULITY_THREE,mainCardValues[0],mainCardValues[len(mainCardValues)-1]),nil
+		return NewSetInfo(POKERS_SET_TYPE_MULITY_THREE,realMainCardValues[0],realMainCardValues[len(realMainCardValues)-1]),nil
 	}else if mainCardNum == attachCardNum{//三带一
-		return NewSetInfo(POKERS_SET_TYPE_MULITY_THREE_PLUS_ONE,mainCardValues[0],mainCardValues[len(mainCardValues)-1]),nil
+		return NewSetInfo(POKERS_SET_TYPE_MULITY_THREE_PLUS_ONE,realMainCardValues[0],realMainCardValues[len(realMainCardValues)-1]),nil
 	}else if mainCardNum*2 == attachCardNum{//三带二
 		for _,v := range attachCardNumMap{
-			if v != 2{
+			if v != 2 && v != 4{
 				return nil,errors.New("不是三顺")
 			}
 		}
-		return NewSetInfo(POKERS_SET_TYPE_MULITY_THREE_PLUS_TWO,mainCardValues[0],mainCardValues[len(mainCardValues)-1]),nil
+		return NewSetInfo(POKERS_SET_TYPE_MULITY_THREE_PLUS_TWO,realMainCardValues[0],realMainCardValues[len(realMainCardValues)-1]),nil
 	}else{
 		return nil,errors.New("不是三顺")
 	}
@@ -477,49 +490,63 @@ func (set PokerSet)CheckMultiFourPlus() (*SetTypeInfo,error){
 	for k,v := range cardNum{
 		if v == 4{
 			mainCardValues = append(mainCardValues,k)
-			//map遍历不能保证顺序输出，导致每次结果不一致，下面的判断方式，可能因为map的遍历的顺序产生不可预知的差异
-			//if mainCardValue == -1 {
-			//	mainCardValue = k
-			//	mainCardNum++
-			//}else{
-			//	if k == mainCardValue+1{
-			//		mainCardValue = k
-			//		mainCardNum++
-			//	}else{//主牌连不起来，不能作为三顺子
-			//		return nil,errors.New("不是四顺")
-			//	}
-			//}
 		}else{
 			attachCardNumMap[k] = v
 			attachCardNum += v
 		}
 	}
-	mainCardNum := len(mainCardValues)
 	BubbleSortIntMin2Max(mainCardValues)
 
-	for i:=0;i<mainCardNum-1;i++{
-		if mainCardValues[i]+1 != mainCardValues[i+1]{
-			return nil,errors.New("不是四顺")
+	//只包含连续的主牌的数量，不连续的同数量的当做附牌对待
+	realMainCardValues := []int{}
+	//主牌连续，且只有一个连续的，其他的间断连续作为附牌处理
+	for i,value := range mainCardValues{
+		if i < len(mainCardValues)-1 && mainCardValues[i] + 1 == mainCardValues[i+1]{
+			if len(realMainCardValues) > 0 && value == realMainCardValues[len(realMainCardValues)-1]+1{
+				realMainCardValues = append(realMainCardValues,value)
+			}else if len(realMainCardValues) == 0{
+				realMainCardValues = append(realMainCardValues,value)
+			}else{
+				attachCardNumMap[value] = 4
+				attachCardNum += 4
+			}
+		}else if i > 0 && mainCardValues[i] == mainCardValues[i-1]+1{
+			if len(realMainCardValues) > 0 && value == realMainCardValues[len(realMainCardValues)-1]+1{
+				realMainCardValues = append(realMainCardValues,value)
+			}else if len(realMainCardValues) == 0{
+				realMainCardValues = append(realMainCardValues,value)
+			}else{
+				attachCardNumMap[value] = 4
+				attachCardNum += 4
+			}
+		}else{//该值的牌作为附牌对待
+			attachCardNumMap[value] = 4
+			attachCardNum += 4
 		}
 	}
 
+	mainCardNum := len(realMainCardValues)
+	for mainCardNum < 2{
+		return nil,errors.New("不是四顺")
+	}
+
 	//2和王不能参与连顺
-	if mainCardNum > 1 && mainCardValues[len(mainCardValues)-1] > card.POKER_VALUE_ACE{
+	if mainCardNum > 1 && realMainCardValues[len(realMainCardValues)-1] > card.POKER_VALUE_ACE{
 		return nil,errors.New("不是四顺")
 	}
 
 	//没有附牌
 	if attachCardNum == 0{//四不带
-		return NewSetInfo(POKERS_SET_TYPE_MULITY_FOUR,mainCardValues[0],mainCardValues[len(mainCardValues)-1]),nil
+		return NewSetInfo(POKERS_SET_TYPE_MULITY_FOUR,realMainCardValues[0],realMainCardValues[len(realMainCardValues)-1]),nil
 	}else if mainCardNum*2 == attachCardNum{//四带二
-		return NewSetInfo(POKERS_SET_TYPE_MULITY_FOUR_PLUS_TWO,mainCardValues[0],mainCardValues[len(mainCardValues)-1]),nil
+		return NewSetInfo(POKERS_SET_TYPE_MULITY_FOUR_PLUS_TWO,realMainCardValues[0],realMainCardValues[len(realMainCardValues)-1]),nil
 	}else if mainCardNum*4 == attachCardNum{//四带四
 		for _,v := range attachCardNumMap{
-			if v != 2{
+			if v != 2 && v != 4{
 				return nil,errors.New("不是四顺")
 			}
 		}
-		return NewSetInfo(POKERS_SET_TYPE_MULITY_FOUR_PLUS_FOUR,mainCardValues[0],mainCardValues[len(mainCardValues)-1]),nil
+		return NewSetInfo(POKERS_SET_TYPE_MULITY_FOUR_PLUS_FOUR,realMainCardValues[0],realMainCardValues[len(realMainCardValues)-1]),nil
 	}else{
 		return nil,errors.New("不是四顺")
 	}

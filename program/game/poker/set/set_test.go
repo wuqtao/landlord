@@ -183,17 +183,20 @@ func TestPokerSet_CheckMultiThreePlus(t *testing.T) {
 		{[]string{"3","3","3","3","4","5"},false,-1},
 		{[]string{"3","3","3","4","4","4"},true,POKERS_SET_TYPE_MULITY_THREE},
 		{[]string{"3","3","3","4","4","4","5","5"},true,POKERS_SET_TYPE_MULITY_THREE_PLUS_ONE},
+		{[]string{"3","3","3","4","4","4","5","5","5","7","7","7"},true,POKERS_SET_TYPE_MULITY_THREE_PLUS_ONE},
+		{[]string{"3","3","3","4","4","4","6","6","6","7","7","7"},false,-1},
 		{[]string{"3","3","3","4","4","4","5","6"},true,POKERS_SET_TYPE_MULITY_THREE_PLUS_ONE},
-		{[]string{"3","3","3","4","4","4","4","6"},true,POKERS_SET_TYPE_MULITY_THREE_PLUS_ONE},
-		{[]string{"3","3","3","5","5","5","6","6","6","6"},true,POKERS_SET_TYPE_MULITY_THREE_PLUS_TWO},
-		{[]string{"3","3","3","5","5","5","6","6","7","7"},true,POKERS_SET_TYPE_MULITY_THREE_PLUS_TWO},
+		{[]string{"3","3","3","4","4","4","4","6"},false,-1},
+		{[]string{"3","3","3","5","5","5","6","6","6","6"},false,-1},
+		{[]string{"3","3","3","4","4","4","6","6","7","7"},true,POKERS_SET_TYPE_MULITY_THREE_PLUS_TWO},
 		{[]string{"3","3","3","5","5","5","6","6","7","8"},false,-1},
 		{[]string{"3","3","3","5","5","5","6","9","7","8"},false,-1},
 		{[]string{"3","3","3","4","4","4","6","6","6"},false,-1},
+
 		{[]string{"A","A","A","2","2","2"},false,-1},
 		{[]string{"A","A","A","2","2","2","3","4"},false,-1},
 		{[]string{"A","A","A","2","2","2","3","3","4","4"},false,-1},
-		{[]string{"k","k","k","A","A","A"},true,POKERS_SET_TYPE_MULITY_THREE},
+		{[]string{"K","K","K","A","A","A"},true,POKERS_SET_TYPE_MULITY_THREE},
 	}
 
 	checkBoolWithType(t,checks,"CheckMultiThreePlus")
@@ -209,7 +212,7 @@ func TestPokerSet_CheckThreePlus(t *testing.T) {
 		{[]string{"3","3","4","4","5"},false,-1},
 	}
 
-	checkBoolWithType(t,checks,"CheckMultiThreePlus")
+	checkBoolWithType(t,checks,"CheckThreePlus")
 }
 
 func TestPokerSet_DelPokers(t *testing.T) {

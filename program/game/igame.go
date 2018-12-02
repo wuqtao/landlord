@@ -2,7 +2,8 @@ package game
 
 import (
 	"github.com/sirupsen/logrus"
-	"chessSever/program/game/poker/set"
+	"github.com/wqtapp/pokergame"
+	"github.com/wqtapp/poker"
 )
 
 const (
@@ -56,11 +57,11 @@ type IGame interface {
 type LastCardsType struct{
 	PlayerCardIndexs []int		 	//扑克牌在出牌玩家所有牌中的index
 	PlayerIndex int              	//出牌的玩家index
-	Cards set.PokerSet	    		//出的牌
-	PokerSetTypeInfo *set.SetTypeInfo
+	Cards poker.PokerSet	    		//出的牌
+	PokerSetTypeInfo *pokergame.SetInfo
 }
 
-func NewLastCards(playerIndex int,cards set.PokerSet,cardIndexs []int,setTypeInfo *set.SetTypeInfo) *LastCardsType {
+func NewLastCards(playerIndex int,cards poker.PokerSet,cardIndexs []int,setTypeInfo *pokergame.SetInfo) *LastCardsType {
 	lastCards :=  &LastCardsType{
 		PlayerIndex:playerIndex,
 		Cards:cards,

@@ -11,9 +11,8 @@ import (
 	"errors"
 	"encoding/json"
 	"github.com/sirupsen/logrus"
-	"chessSever/program/game/poker/set"
-	"chessSever/program/game/poker/recorder"
-	"chessSever/program/game/poker/analyzer"
+	"github.com/wqtapp/poker"
+	"github.com/wqtapp/pokergame"
 )
 
 type Doudizhu struct {
@@ -34,15 +33,16 @@ type Doudizhu struct {
 	FirstCallScoreIndex int              //第一个叫地主的人的index
 	OutCardIndexs []int                  //出完牌的用户index
 
-	pokerCards set.PokerSet        //当前游戏中的所有的牌
+	pokerCards poker.PokerSet        //当前游戏中的所有的牌
 	lastCards  *game.LastCardsType 		 //最后的出牌结构
 
 	Players []game.IPlayer               //玩家数组
-	playerCards []set.PokerSet     //同桌不同玩家的牌的切片
-	playerPokerRecorders []recorder.PokerRecorder  //玩家的记牌器数组
-	playerPokerAnalyzer []analyzer.PokerAnalyzer   //玩家的牌型分析器
-	playerCardRecorder []recorder.PokerRecorder  //每个玩家的记牌器，帮助玩家记录其他两家手里牌的合计情况
-	bottomCards set.PokerSet       //底牌
+	playerCards []poker.PokerSet     //同桌不同玩家的牌的切片
+	setChecker pokergame.ISetChecker
+	playerPokerRecorders []pokergame.IRecorder  //玩家的记牌器数组
+	playerPokerAnalyzer []pokergame.IAnalyzer   //玩家的牌型分析器
+	playerCardRecorder []pokergame.IRecorder   //每个玩家的记牌器，帮助玩家记录其他两家手里牌的合计情况
+	bottomCards poker.PokerSet       //底牌
 }
 
 var originDoudizhu Doudizhu
@@ -69,21 +69,23 @@ func GetDoudizhu(baseScore int) game.IGame{
 
 	newDou.Lock()
 	newDou.baseScore = baseScore
-	newDou.pokerCards = set.PokerSet{}
+	newDou.pokerCards =  poker.PokerSet{}
 	newDou.Players = []game.IPlayer{}
-	newDou.playerCards = []set.PokerSet{set.PokerSet{},set.PokerSet{},set.PokerSet{}}
-	newDou.bottomCards = set.PokerSet{}
-	newDou.playerPokerRecorders = []recorder.PokerRecorder{}
-	newDou.playerPokerAnalyzer = []analyzer.PokerAnalyzer{}
+	newDou.playerCards = []poker.PokerSet{poker.PokerSet{},poker.PokerSet{},poker.PokerSet{}}
+	newDou.bottomCards = poker.PokerSet{}
+	newDou.playerPokerRecorders = []pokergame.IRecorder{}
+	newDou.playerPokerAnalyzer = []pokergame.IAnalyzer{}
+	newDou.setChecker = pokergame.NewSetChecker(pokergame.GAME_OF_LANDLORD)
+
 	for i:=0;i<newDou.playerNum;i++{
-		newDou.playerPokerRecorders = append(newDou.playerPokerRecorders,recorder.NewPokerRecorder())
-		newDou.playerPokerAnalyzer = append(newDou.playerPokerAnalyzer,analyzer.NewPokerAnalyzer())
+		newDou.playerPokerRecorders = append(newDou.playerPokerRecorders,pokergame.NewRecorder(pokergame.GAME_OF_LANDLORD))
+		newDou.playerPokerAnalyzer = append(newDou.playerPokerAnalyzer,pokergame.NewAnalyzer(pokergame.GAME_OF_LANDLORD))
 	}
 	newDou.id = game.GetRoom().AddGame(newDou.GetGameType(),&newDou)
 	newDou.Unlock()
 
 	newDou.initCards()
-
+	fmt.Println(newDou.pokerCards)
 	return &newDou
 }
 
@@ -271,7 +273,7 @@ func (dou *Doudizhu) PlayerCallScore(currPlayer game.IPlayer,score int){
 func (dou *Doudizhu) initGame(){
 	dou.Lock()
 	for i,_ := range dou.playerCards{
-		dou.playerCards[i] = set.PokerSet{}
+		dou.playerCards[i] = poker.PokerSet{}
 	}
 	dou.CalledLoardNum = 0
 	dou.lordIndex  = -1
@@ -293,7 +295,7 @@ func (dou *Doudizhu) callLoardEnd(){
 		dou.playerCards[dou.lordIndex] = append(dou.playerCards[dou.lordIndex],card)
 	}
 
-	set.SortAsc(dou.playerCards[dou.lordIndex])
+	dou.playerCards[dou.lordIndex].SortAsc()
 	dou.Players[dou.lordIndex].SetPokerCards(dou.playerCards[dou.lordIndex])
 
 	dou.BroadCastMsg(dou.Players[dou.lordIndex],msg.MSG_TYPE_OF_SEND_BOTTOM_CARDS,"发放底牌")
@@ -349,7 +351,7 @@ func (dou *Doudizhu) PlayerPlayCards(p game.IPlayer,cardIndexs []int){
 		return
 	}
 
-	cards := set.PokerSet{}
+	cards := poker.PokerSet{}
 	for _,card := range p.GetPlayerCards(cardIndexs){
 		//判断是否是之前出过的牌
 		cards = append(cards,card)
@@ -364,10 +366,10 @@ func (dou *Doudizhu) PlayerPlayCards(p game.IPlayer,cardIndexs []int){
 		//第一个出牌，或者上一次出牌没人管，或者出牌大于上家，此时满足出牌要求
 		if  dou.lastCards == nil || //第一次出牌
 			lastCards.PlayerIndex == dou.lastCards.PlayerIndex ||  //上一次出牌无人管
-			game.IsDoudizhuTypeBiger(lastCards.PokerSetTypeInfo.SetType,dou.lastCards.PokerSetTypeInfo.SetType) || //牌型压制
-			(lastCards.PokerSetTypeInfo.SetType == dou.lastCards.PokerSetTypeInfo.SetType &&  //同牌型比较大小
-				lastCards.PokerSetTypeInfo.CardValueMinAndMax["min"] > dou.lastCards.PokerSetTypeInfo.CardValueMinAndMax["min"] &&
-				lastCards.PokerSetTypeInfo.CardValueMinAndMax["max"] > dou.lastCards.PokerSetTypeInfo.CardValueMinAndMax["min"]){
+			game.IsDoudizhuTypeBiger(lastCards.PokerSetTypeInfo.GetSetType(),dou.lastCards.PokerSetTypeInfo.GetSetType()) || //牌型压制
+			(lastCards.PokerSetTypeInfo.GetSetType() == dou.lastCards.PokerSetTypeInfo.GetSetType() &&  //同牌型比较大小
+				lastCards.PokerSetTypeInfo.GetMinValue() > dou.lastCards.PokerSetTypeInfo.GetMinValue() &&
+				lastCards.PokerSetTypeInfo.GetMaxValue() > dou.lastCards.PokerSetTypeInfo.GetMinValue()){
 
 			if lastCards.PlayerCardIndexs == nil{
 				lastCards.PlayerCardIndexs = []int{}
@@ -380,8 +382,8 @@ func (dou *Doudizhu) PlayerPlayCards(p game.IPlayer,cardIndexs []int){
 			isBomb := false
 			dou.Lock()
 			dou.lastCards = lastCards
-			if dou.lastCards.PokerSetTypeInfo.SetType == set.POKERS_SET_TYPE_COMMON_BOMB ||
-				dou.lastCards.PokerSetTypeInfo.SetType == set.POKERS_SET_TYPE_JOKER_BOMB {
+			if dou.lastCards.PokerSetTypeInfo.GetSetType() == pokergame.LANDLORD_SET_TYPE_COMMON_BOMB ||
+				dou.lastCards.PokerSetTypeInfo.GetSetType() == pokergame.LANDLORD_SET_TYPE_JOKER_BOMB {
 				isBomb = true
 				dou.currMulti *= 2
 			}
@@ -450,7 +452,7 @@ func (dou *Doudizhu) gameOver(){
 	dou.Lock()
 	dou.IsPlaying = false
 	for i,_ := range dou.playerCards{
-		dou.playerCards[i] = set.PokerSet{}
+		dou.playerCards[i] = poker.PokerSet{}
 	}
 	dou.Unlock()
 	//todo结算分数
@@ -593,13 +595,7 @@ func (dou *Doudizhu)GetGameType() int{
 func (dou *Doudizhu) initCards(){
 	dou.Lock()
 	defer dou.Unlock()
-
-	for i:=0;i<dou.deckNum;i++{
-		deck := set.CreateDeck()
-		for i,_ := range deck.Cards{
-			dou.pokerCards = append(dou.pokerCards,&deck.Cards[i])
-		}
-	}
+	dou.pokerCards = poker.CreateDeck().ToPokerSet()
 }
 
 //洗牌
@@ -620,8 +616,8 @@ func (dou *Doudizhu)HintCards(p game.IPlayer) []int{
 }
 
 //检查出牌是否符合规则
-func (dou *Doudizhu) matchRoles(currPlayerIndex int,pokers set.PokerSet,cardIndexs []int) (*game.LastCardsType,error){
-	setTypeInfo,err := pokers.GetSetTypeInfo()
+func (dou *Doudizhu) matchRoles(currPlayerIndex int,pokers poker.PokerSet,cardIndexs []int) (*game.LastCardsType,error){
+	setTypeInfo,err := dou.setChecker.GetSetInfo(pokers)
 	if err == nil{
 		return game.NewLastCards(currPlayerIndex,pokers,cardIndexs,setTypeInfo),nil
 	}else{

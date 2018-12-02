@@ -2,9 +2,8 @@ package game
 
 import (
 	"chessSever/program/model"
-	"chessSever/program/game/poker/set"
-	"chessSever/program/game/poker/recorder"
-	"chessSever/program/game/poker/analyzer"
+	"github.com/wqtapp/poker"
+	"github.com/wqtapp/pokergame"
 )
 
 type IPlayer interface {
@@ -16,7 +15,7 @@ type IPlayer interface {
 	GetPlayerUser() *model.User
 	GetIndex() int
 	SetIndex(index int)
-	SetPokerCards(cards set.PokerSet)
+	SetPokerCards(cards poker.PokerSet)
 	StartCallScore()
 	StartPlay()
 	IsOutOfCards() bool  											//是否出完牌
@@ -36,8 +35,8 @@ type IPlayer interface {
 	Pass()	                                                        //过牌
 	HintCards()														//提示出牌
 	GetPlayedCardIndexs() []int
-	GetPlayerCards(indexs []int) set.PokerSet
+	GetPlayerCards(indexs []int) poker.PokerSet
 
-	SetPokerRecorder(recorder recorder.PokerRecorder)
-	SetPokerAnalyzer(analyzer analyzer.PokerAnalyzer)
+	SetPokerRecorder(recorder pokergame.IRecorder)
+	SetPokerAnalyzer(analyzer pokergame.IAnalyzer)
 }

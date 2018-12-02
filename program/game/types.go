@@ -1,13 +1,13 @@
 package game
 
-import "chessSever/program/game/poker/set"
+import "github.com/wqtapp/pokergame"
 
 func IsDoudizhuTypeBiger(type1 int,type2 int) bool{
-	if type1 == set.POKERS_SET_TYPE_JOKER_BOMB && type2 != set.POKERS_SET_TYPE_JOKER_BOMB {
+	if type1 == pokergame.LANDLORD_SET_TYPE_JOKER_BOMB && type2 != pokergame.LANDLORD_SET_TYPE_JOKER_BOMB {
 		return true
 	}
 
-	if type1 == set.POKERS_SET_TYPE_COMMON_BOMB && type2 != set.POKERS_SET_TYPE_JOKER_BOMB && type2 != set.POKERS_SET_TYPE_COMMON_BOMB {
+	if type1 == pokergame.LANDLORD_SET_TYPE_COMMON_BOMB && type2 != pokergame.LANDLORD_SET_TYPE_JOKER_BOMB && type2 != pokergame.LANDLORD_SET_TYPE_COMMON_BOMB {
 		return true
 	}
 

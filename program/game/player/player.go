@@ -11,10 +11,9 @@ import (
 	"chessSever/program/game"
 	"github.com/sirupsen/logrus"
 	"time"
-	"chessSever/program/game/poker/set"
-	"chessSever/program/game/poker/recorder"
-	"chessSever/program/game/poker/analyzer"
 	"chessSever/program/connection"
+	"github.com/wqtapp/poker"
+	"github.com/wqtapp/pokergame"
 )
 
 /**
@@ -24,7 +23,7 @@ type Player struct {
 	User *model.User
 	Conn  *connection.WebSocketConnection//用户socket链接
 	sync.RWMutex
-	PokerCards       set.PokerSet 		//玩家手里的扑克牌0
+	PokerCards       poker.PokerSet 		//玩家手里的扑克牌0
 
 	Index            int                //在桌子上的索引
 	IsReady          bool               //是否准备
@@ -37,10 +36,10 @@ type Player struct {
 	IsOnline bool                       //是否在线，用于断线重连
 	UpLineTime time.Time
 	OffLine time.Time
-	PokerRecorder recorder.PokerRecorder
-	PokerAnalyzer analyzer.PokerAnalyzer
+	PokerRecorder pokergame.IRecorder
+	PokerAnalyzer pokergame.IAnalyzer
 
-	UseablePokerSets []set.PokerSet
+	UseablePokerSets []poker.PokerSet
 	CurrHintSetIndex int
 }
 
@@ -82,9 +81,9 @@ func (p *Player) GetPlayedCardIndexs() []int{
 	return p.PlayedCardIndexs
 }
 
-func (p *Player) GetPlayerCards(indexs []int) set.PokerSet{
+func (p *Player) GetPlayerCards(indexs []int) poker.PokerSet{
 	if indexs != nil && len(indexs) > 0{
-		temCards := set.PokerSet{}
+		temCards := poker.PokerSet{}
 		for _,i := range indexs{
 			temCards = append(temCards,p.PokerCards[i])
 		}
@@ -94,7 +93,7 @@ func (p *Player) GetPlayerCards(indexs []int) set.PokerSet{
 	}
 }
 
-func (p *Player) SetPokerCards(cards set.PokerSet){
+func (p *Player) SetPokerCards(cards poker.PokerSet){
 
 	p.Lock()
 	p.PokerCards = cards
@@ -165,7 +164,7 @@ func (p *Player) StartPlay(){
 			 lastCards := currGame.GetLastCard()
 			 //如果上家没有出牌或者上次是当前玩家出牌，提示可用最小牌即可,否则根据上轮出牌给出可用的扑克牌
 			 if lastCards == nil || lastCards.PlayerIndex == p.Index || currGame.IsLastCardUserFinish(){
-				 p.UseablePokerSets = []set.PokerSet{p.PokerAnalyzer.GetMinPlayableCards()}
+				 p.UseablePokerSets = []poker.PokerSet{p.PokerAnalyzer.GetMinPlayableCards()}
 			 }else{
 			 	p.UseablePokerSets = p.PokerAnalyzer.GetUseableCards(lastCards.PokerSetTypeInfo)
 			 }
@@ -173,7 +172,7 @@ func (p *Player) StartPlay(){
 			 p.CurrHintSetIndex = 0
 		}
 		//如果有牌可以出，发送出牌消息，否则发送要不起消息
-		if len(p.UseablePokerSets) > 0 && p.UseablePokerSets[0].GetLength() > 0{
+		if len(p.UseablePokerSets) > 0 && p.UseablePokerSets[0].CountCards() > 0{
 			p.Unlock()
 			p.SendMsg(currMsg)
 		}else{
@@ -194,7 +193,7 @@ func (p *Player) StartPlay(){
 		//启动定时器,限制出牌时间，超时自动出牌
 		go func(){
 			//给玩家发送定时消息
-			second := 15
+			second := 3
 			for {
 				select {
 					case <-p.stopTimeChan:
@@ -452,9 +451,9 @@ func (p *Player) SendMsg(msg []byte){
 	p.Conn.SendMsg(msg)
 }
 
-func (p *Player) SetPokerRecorder(recorder recorder.PokerRecorder){
+func (p *Player) SetPokerRecorder(recorder pokergame.IRecorder){
 	p.PokerRecorder = recorder
 }
-func (p *Player) SetPokerAnalyzer(analyzer analyzer.PokerAnalyzer){
+func (p *Player) SetPokerAnalyzer(analyzer pokergame.IAnalyzer){
 	p.PokerAnalyzer = analyzer
 }

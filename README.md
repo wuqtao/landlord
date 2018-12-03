@@ -1,23 +1,27 @@
 # landlord
 
 #### 项目介绍
-GO 实现棋牌游戏服务器
+GO 实现的斗地主游戏，游戏代码规划兼容多中棋牌游戏，暂时只是先斗地主游戏
 
 #### 软件架构
-软件架构说明
+使用go语言构建
+包管理工具使用dep
 
 
 #### 安装教程
 
-1. xxxx
-2. xxxx
-3. xxxx
+1. git clone https://www.github.com/wqtapp/landlord
+2. go run main.go
+3. 浏览器开三个窗口localhost:8888，模拟游戏
 
 #### 使用说明
 
-1. xxxx
-2. xxxx
-3. xxxx
+1. 只使用默认生成的玩家，从第一个登陆玩家开始，三个一组进行游戏，没有用户登录系统和计算系统
+2. 叫地主采用叫地主和抢地主模式，不是叫3分模式
+3. 无人叫地主将重新发牌
+4. 支持叫地主倒计时和出牌倒计时
+5. 支持出炸弹自动翻倍
+6. 支持倒计时结束自动出牌，优先不拆拍原则
 
 #### 参与贡献
 
@@ -25,13 +29,3 @@ GO 实现棋牌游戏服务器
 2. 新建 Feat_xxx 分支
 3. 提交代码
 4. 新建 Pull Request
-
-
-#### 码云特技
-
-1. 使用 Readme\_XXX.md 来支持不同的语言，例如 Readme\_en.md, Readme\_zh.md
-2. 码云官方博客 [blog.gitee.com](https://blog.gitee.com)
-3. 你可以 [https://gitee.com/explore](https://gitee.com/explore) 这个地址来了解码云上的优秀开源项目
-4. [GVP](https://gitee.com/gvp) 全称是码云最有价值开源项目，是码云综合评定出的优秀开源项目
-5. 码云官方提供的使用手册 [https://gitee.com/help](https://gitee.com/help)
-6. 码云封面人物是一档用来展示码云会员风采的栏目 [https://gitee.com/gitee-stars/](https://gitee.com/gitee-stars/)

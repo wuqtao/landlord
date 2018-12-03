@@ -6,14 +6,14 @@ import (
 	"net/http"
 	"strconv"
 	"sync"
-	"chessSever/program/game/player"
+	"landlord/program/game/player"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
-	"chessSever/program/model"
-	"chessSever/program/game/msg"
-	"chessSever/program/game"
+	"landlord/program/model"
+	"landlord/program/game/msg"
+	"landlord/program/game"
 	"github.com/sirupsen/logrus"
 	"github.com/jinzhu/gorm"
-	"chessSever/program/connection"
+	"landlord/program/connection"
 )
 
 var addr = flag.String("addr", "localhost:8888", "http service address")

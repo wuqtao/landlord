@@ -1,8 +1,8 @@
 package games
 
 import (
-	"chessSever/program/game/games/doudizhu"
-	"chessSever/program/game"
+	"landlord/program/game/games/doudizhu"
+	"landlord/program/game"
 )
 
 /**

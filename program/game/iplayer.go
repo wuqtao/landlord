@@ -1,7 +1,7 @@
 package game
 
 import (
-	"chessSever/program/model"
+	"landlord/program/model"
 	"github.com/wqtapp/poker"
 	"github.com/wqtapp/pokergame"
 )

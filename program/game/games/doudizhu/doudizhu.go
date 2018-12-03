@@ -3,10 +3,10 @@ package doudizhu
 import (
 	"math/rand"
 	"time"
-	"chessSever/program/game"
+	"landlord/program/game"
 	"sync"
 	"fmt"
-	"chessSever/program/game/msg"
+	"landlord/program/game/msg"
 	"strconv"
 	"errors"
 	"encoding/json"

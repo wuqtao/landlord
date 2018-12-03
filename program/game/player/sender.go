@@ -2,7 +2,7 @@ package player
 
 import (
 	"fmt"
-	"chessSever/program/game/msg"
+	"landlord/program/game/msg"
 	"log"
 )
 

@@ -68,6 +68,22 @@
   pruneopts = "UT"
   revision = "1731857f09b1f38450e2c12409748407822dc6be"
 
+[[projects]]
+  branch = "master"
+  digest = "1:541ef6f87031e3e573252b7d15c8ead37729bd2074d80f2dbcd3573bf9501618"
+  name = "github.com/wqtapp/poker"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "fca6e2271d479d46d0193942572ebf6eabce3d39"
+
+[[projects]]
+  branch = "master"
+  digest = "1:bb7bd216967b00876a307d8903c79dca798e8552c7a5b63340532ea624e597f5"
+  name = "github.com/wqtapp/pokergame"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "554a0f6422271e91a40b39f26799a0646240a343"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
@@ -78,6 +94,8 @@
     "github.com/jinzhu/gorm/dialects/mysql",
     "github.com/sirupsen/logrus",
     "github.com/tidwall/gjson",
+    "github.com/wqtapp/poker",
+    "github.com/wqtapp/pokergame",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1

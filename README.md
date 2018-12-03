@@ -1,4 +1,4 @@
-# chessSever
+# landlord
 
 #### 项目介绍
 GO 实现棋牌游戏服务器
